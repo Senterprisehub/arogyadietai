@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d9488">
+<title>ArogyaDiet AI - Regional Clinical Prescription Diet Planner</title>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f8fafc;color:#1e293b;line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;font-size:inherit}
+button{cursor:pointer}
+img{max-width:100%;display:block}
+
+header.app-header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid #e2e8f0}
+.header-inner{max-width:1152px;margin:0 auto;padding:0 .75rem;height:3.75rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.brand{display:flex;align-items:center;gap:.5rem;min-width:0;flex:1}
+.logo{width:2.25rem;height:2.25rem;flex-shrink:0;border-radius:.625rem;background:linear-gradient(135deg,#0d9488,#34d399);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.25rem;box-shadow:0 4px 10px -2px rgba(13,148,136,.35)}
+.brand-text{min-width:0}
+.brand-title{font-size:1rem;font-weight:800;color:#0f172a;white-space:nowrap;letter-spacing:-.02em;line-height:1.1}
+.brand-title span{color:#0d9488}
+.brand-sub{font-size:.6875rem;color:#64748b;white-space:nowrap;line-height:1.2}
+.header-actions{display:flex;align-items:center;gap:.375rem;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .65rem;font-size:.75rem;font-weight:600;border-radius:.5rem;border:1px solid transparent;white-space:nowrap;transition:background .15s,transform .1s;line-height:1}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:#f1f5f9;color:#334155;border-color:#e2e8f0}
+.btn.ghost:hover{background:#e2e8f0}
+.btn.primary{background:#f0fdfa;color:#0f766e;border-color:#99f6e4}
+.btn.primary:hover{background:#ccfbf1}
+.status-pill{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .55rem;font-size:.6875rem;font-weight:500;border-radius:9999px;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;white-space:nowrap}
+.dot{position:relative;width:.5rem;height:.5rem;border-radius:9999px;background:#10b981;flex-shrink:0}
+.dot::before{content:'';position:absolute;inset:0;border-radius:9999px;background:#10b981;animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+@media (max-width:480px){.brand-sub{display:none}.btn .lbl{display:none}.btn{padding:.5rem}.status-pill .lbl{display:none}.status-pill{padding:.35rem}.logo{width:2rem;height:2rem;font-size:1rem}.brand-title{font-size:.9rem}}
+
+main{max-width:1152px;margin:0 auto;padding:1.5rem 1rem 2rem;display:flex;flex-direction:column;gap:1.5rem}
+.hero{position:relative;overflow:hidden;border-radius:1rem;padding:1.5rem;color:#fff;background:linear-gradient(90deg,#0f766e,#115e59,#0f172a);box-shadow:0 20px 25px -5px rgba(0,0,0,.15)}
+.hero-badge{display:inline-flex;align-items:center;gap:.375rem;padding:.25rem .75rem;border-radius:9999px;font-size:.75rem;background:rgba(20,184,166,.2);color:#99f6e4;border:1px solid rgba(45,212,191,.3);margin-bottom:.5rem}
+.hero h2{font-size:1.45rem;font-weight:800;line-height:1.25;margin-bottom:.5rem}
+.hero p{color:#ccfbf1;font-size:.9rem;font-weight:300;max-width:44rem;line-height:1.55}
+@media (min-width:640px){.hero{padding:2rem}.hero h2{font-size:1.75rem}}
+
+.grid{display:grid;grid-template-columns:1fr;gap:1.5rem;align-items:start}
+@media (min-width:1024px){.grid{grid-template-columns:5fr 7fr}}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.card-pad{padding:1.25rem}
+@media (min-width:640px){.card-pad{padding:1.5rem}}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:.75rem;border-bottom:1px solid #f1f5f9;margin-bottom:1rem}
+.card-head h3{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:.5rem}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:9999px;background:#ccfbf1;color:#115e59;font-size:.75rem;font-weight:700;flex-shrink:0}
+.step-meta{font-size:.75rem;color:#94a3b8}
+
+.field{margin-bottom:1rem}
+.field:last-child{margin-bottom:0}
+label.lbl{display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#475569;margin-bottom:.375rem}
+.req{color:#f43f5e}
+select,textarea,input[type="text"]{width:100%;padding:.625rem .75rem;font-size:.875rem;background:#f8fafc;border:1px solid #cbd5e1;border-radius:.75rem;color:#1e293b}
+select:focus,textarea:focus,input:focus{outline:none;border-color:#14b8a6;box-shadow:0 0 0 3px rgba(20,184,166,.15)}
+textarea{resize:none}
+.opt-tag{font-size:10px;color:#94a3b8;background:#f1f5f9;padding:.125rem .375rem;border-radius:.25rem;font-weight:500}
+.field-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.375rem}
+.field-head label.lbl{margin-bottom:0}
+.grid-2{display:grid;grid-template-columns:1fr;gap:.75rem}
+@media (min-width:640px){.grid-2{grid-template-columns:1fr 1fr}}
+
+.drop{position:relative;border:2px dashed #cbd5e1;border-radius:.875rem;padding:1.5rem 1.25rem;text-align:center;background:rgba(248,250,252,.7);cursor:pointer;transition:all .2s;overflow:hidden}
+.drop:hover,.drop.dragging{border-color:#14b8a6;background:rgba(240,253,250,.5)}
+.drop input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.drop-inner{display:flex;flex-direction:column;align-items:center;gap:.5rem;pointer-events:none}
+.drop-icon{width:3rem;height:3rem;border-radius:9999px;background:#ccfbf1;color:#0f766e;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.drop-text{font-size:.8125rem;color:#475569;font-weight:500}
+.drop-text strong{color:#0d9488;font-weight:600;text-decoration:underline}
+.drop-hint{font-size:11px;color:#94a3b8}
+
+.preview-card{position:relative;border:1px solid #99f6e4;border-radius:.875rem;overflow:hidden;background:linear-gradient(180deg,#f0fdfa,#fff);transition:all .2s;margin-top:.75rem}
+.preview-status{display:flex;align-items:center;gap:.5rem;padding:.625rem .875rem;background:rgba(204,251,241,.5);border-bottom:1px solid #99f6e4;font-size:.75rem;font-weight:600;color:#115e59}
+.preview-status .check{display:inline-flex;align-items:center;justify-content:center;width:1.125rem;height:1.125rem;border-radius:9999px;background:#0d9488;color:#fff;font-size:.6875rem}
+.preview-thumb{position:relative;padding:.75rem;display:flex;align-items:center;justify-content:center;background:#f8fafc}
+.preview-thumb-inner{position:relative;max-width:100%;max-height:13rem;border-radius:.5rem;overflow:hidden;border:1px solid #e2e8f0;background:#fff;box-shadow:0 4px 6px -1px rgba(15,23,42,.08);cursor:zoom-in}
+.preview-thumb img,.preview-thumb canvas{max-width:100%;max-height:13rem;width:auto;height:auto;object-fit:contain;display:block}
+.preview-zoom-hint{position:absolute;bottom:.5rem;right:.5rem;padding:.25rem .5rem;border-radius:.375rem;background:rgba(15,23,42,.75);color:#fff;font-size:.6875rem;font-weight:500;pointer-events:none}
+.preview-info{padding:.75rem .875rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;border-top:1px solid #99f6e4;background:#fff}
+.preview-meta{min-width:0;flex:1}
+.preview-name{font-size:.8125rem;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.preview-sub{font-size:.6875rem;color:#64748b;margin-top:.125rem;display:flex;align-items:center;gap:.375rem}
+.preview-sub .badge{display:inline-block;padding:.0625rem .375rem;background:#f0fdfa;color:#0f766e;border:1px solid #99f6e4;border-radius:.25rem;font-size:10px;font-weight:600;text-transform:uppercase}
+.preview-actions{display:flex;gap:.375rem;flex-shrink:0}
+.preview-actions button{width:2rem;height:2rem;border-radius:.5rem;border:1px solid #e2e8f0;background:#fff;color:#475569;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;transition:all .15s}
+.preview-actions button:hover{background:#f8fafc;color:#0f766e;border-color:#99f6e4}
+.preview-actions button.danger:hover{background:#fef2f2;color:#dc2626;border-color:#fecaca}
+
+.med-box{margin-top:.75rem;padding:.875rem;border-radius:.75rem;background:#f8fafc;border:1px solid #e2e8f0}
+.med-box-title{font-size:.75rem;font-weight:700;color:#334155;margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between}
+.med-tags{display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:.5rem;min-height:1.75rem}
+.med-pill{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .55rem;background:#f0fdfa;color:#0f766e;border:1px solid #99f6e4;border-radius:9999px;font-size:.6875rem;font-weight:600}
+.med-pill .del{cursor:pointer;font-weight:bold;color:#f43f5e;margin-left:.125rem}
+.med-add-row{display:flex;gap:.375rem}
+.med-add-row input{flex:1;padding:.375rem .625rem;font-size:.75rem;border-radius:.5rem}
+.med-add-row button{padding:.375rem .75rem;font-size:.75rem;font-weight:600;background:#0d9488;color:#fff;border:none;border-radius:.5rem}
+.quick-med-row{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.5rem}
+.quick-chip{font-size:10px;background:#e2e8f0;color:#475569;border:none;border-radius:.25rem;padding:.125rem .375rem;cursor:pointer}
+.quick-chip:hover{background:#cbd5e1;color:#1e293b}
+
+.gen-btn{width:100%;padding:.875rem 1.5rem;border-radius:.75rem;background:linear-gradient(90deg,#0d9488,#059669);color:#fff;font-weight:700;font-size:.95rem;border:none;box-shadow:0 10px 15px -3px rgba(13,148,136,.3);display:flex;align-items:center;justify-content:center;gap:.5rem;transition:transform .1s,box-shadow .2s;margin-top:1rem}
+.gen-btn:active{transform:scale(.98)}
+.gen-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.hint{margin-top:1rem;padding:.875rem;border-radius:.75rem;background:rgba(240,253,250,.7);border:1px solid #ccfbf1;display:flex;gap:.625rem;align-items:flex-start;font-size:.75rem;color:#475569;line-height:1.6}
+.hint-icon{font-size:1.125rem;line-height:1}
+.hint strong{color:#134e4a}
+
+.result-shell{display:flex;flex-direction:column;min-height:34rem}
+.result-head{padding:1rem 1.25rem;border-bottom:1px solid #f1f5f9;background:rgba(248,250,252,.6);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem}
+.result-head .title-block{min-width:0}
+.result-head .subtitle{font-size:.75rem;color:#64748b;margin-top:.125rem}
+.toolbar{display:none;align-items:center;gap:.375rem}
+.toolbar.active{display:flex}
+.tool-btn{display:inline-flex;align-items:center;gap:.25rem;padding:.375rem .625rem;border-radius:.5rem;border:1px solid #e2e8f0;background:#fff;color:#334155;font-size:.75rem;font-weight:500;transition:all .15s}
+.tool-btn:hover{background:#f8fafc;border-color:#99f6e4;color:#0f766e}
+.tool-btn.accent{background:#0d9488;color:#fff;border-color:#0d9488}
+.tool-btn.accent:hover{background:#0f766e;border-color:#0f766e;color:#fff}
+@media (max-width:480px){.tool-btn .lbl{display:none}.tool-btn{padding:.5rem .55rem}}
+
+.result-body{flex:1;padding:1.25rem;overflow-y:auto}
+@media (min-width:640px){.result-body{padding:1.5rem}}
+.panel-center{text-align:center;padding:3rem 1rem;max-width:28rem;margin:3rem auto}
+.panel-icon{width:4rem;height:4rem;border-radius:1rem;background:#f0fdfa;color:#0d9488;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
+.panel-icon.err{background:#fef2f2;color:#dc2626}
+.panel-center h4{font-weight:700;margin-bottom:.5rem;font-size:1rem}
+.panel-center p{font-size:.8125rem;color:#64748b;line-height:1.6}
+.panel-tip{display:inline-flex;align-items:center;gap:.5rem;padding:.375rem .75rem;background:#f1f5f9;border-radius:9999px;font-size:11px;color:#475569;margin-top:1rem}
+.spinner{width:3.5rem;height:3.5rem;margin:0 auto 1.25rem;border:4px solid #ccfbf1;border-top-color:#0d9488;border-radius:9999px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.source-strip{display:flex;align-items:center;gap:.75rem;padding:.625rem .75rem;margin-bottom:1rem;background:linear-gradient(135deg,#f0fdfa,#fff);border:1px solid #99f6e4;border-radius:.75rem}
+.source-strip-thumb{width:2.75rem;height:2.75rem;border-radius:.5rem;overflow:hidden;background:#f1f5f9;flex-shrink:0;border:1px solid #e2e8f0;cursor:zoom-in;display:flex;align-items:center;justify-content:center}
+.source-strip-thumb img,.source-strip-thumb canvas{width:100%;height:100%;object-fit:cover}
+.source-strip-text{flex:1;min-width:0}
+.source-strip-title{font-size:.75rem;font-weight:700;color:#115e59;display:flex;align-items:center;gap:.375rem}
+.source-strip-sub{font-size:.6875rem;color:#64748b;margin-top:.125rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge-row{display:flex;flex-wrap:wrap;gap:.5rem;padding-bottom:1rem;border-bottom:1px solid #f1f5f9;margin-bottom:1rem}
+.chip{display:inline-flex;align-items:center;gap:.25rem;padding:.25rem .625rem;border-radius:.375rem;font-size:.75rem;font-weight:600}
+.chip.teal{background:#f0fdfa;color:#115e59;border:1px solid #99f6e4}
+.chip.blue{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.chip.green{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.chip.amber{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.chip.purple{background:#faf5ff;color:#6b21a8;border:1px solid #e9d5ff}
+
+.output-body{line-height:1.7;font-size:.875rem;color:#334155}
+.output-body h1{font-size:1.35rem;color:#0f766e;font-weight:800;margin:1.25rem 0 .5rem;border-bottom:2px solid #ccfbf1;padding-bottom:.35rem}
+.output-body h2{font-size:1.15rem;color:#0f766e;font-weight:700;margin:1.25rem 0 .5rem}
+.output-body h3{font-size:1rem;color:#115e59;font-weight:700;margin:1rem 0 .4rem}
+.output-body p{margin:.5rem 0}
+.output-body ul,.output-body ol{margin:.5rem 0 .5rem 1.25rem}
+.output-body li{margin:.25rem 0}
+.output-body table{width:100%;border-collapse:collapse;margin:.75rem 0 1.25rem;font-size:.8125rem}
+.output-body th,.output-body td{border:1px solid #e2e8f0;padding:.6rem .75rem;text-align:left;vertical-align:top}
+.output-body th{background:#f0fdfa;color:#115e59;font-weight:700}
+.output-body tr:nth-child(even){background:#f8fafc}
+.output-body strong{color:#0f172a;font-weight:600}
+
+.lab-status{display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .45rem;border-radius:.25rem;font-size:11px;font-weight:700}
+.lab-status.high{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
+.lab-status.normal{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
+.lab-status.borderline{background:#fffbeb;color:#b45309;border:1px solid #fde68a}
+.lab-status.low{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+
+.pref-box{background:#fcfaf8;border:1px solid #fed7aa;border-radius:.75rem;padding:.875rem 1rem;margin:1rem 0}
+.pref-box-title{font-size:.8125rem;font-weight:700;color:#9a3412;margin-bottom:.35rem;display:flex;align-items:center;gap:.35rem}
+.pref-box ul{margin:0 0 0 1.1rem;font-size:12px;color:#7c2d12}
+
+.disclaimer{margin-top:1.5rem;padding:1rem;border-radius:.75rem;background:rgba(255,251,235,.8);border:1px solid #fde68a;color:#78350f;font-size:.75rem;display:flex;gap:.75rem;line-height:1.6}
+.disclaimer strong{color:#78350f}
+.dietitian-credit{text-align:center;font-size:11px;color:#94a3b8;margin-top:1.5rem;padding-top:.75rem;border-top:1px dashed #e2e8f0;letter-spacing:.02em}
+
+.features{display:grid;grid-template-columns:1fr;gap:1rem;margin-top:.5rem}
+@media (min-width:768px){.features{grid-template-columns:repeat(3,1fr)}}
+.feature{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;display:flex;gap:.75rem;align-items:flex-start}
+.feature-icon{width:2.25rem;height:2.25rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem}
+.feature h4{font-size:.75rem;font-weight:700;margin-bottom:.125rem;color:#1e293b}
+.feature p{font-size:11px;color:#64748b;line-height:1.5}
+
+footer{background:#fff;border-top:1px solid #e2e8f0;padding:1.5rem 1rem;text-align:center;font-size:.75rem;color:#64748b;margin-top:3rem}
+footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem}
+@media (min-width:768px){footer .inner{flex-direction:row;justify-content:space-between}}
+
+.visitor-pill{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .75rem;background:#f0fdfa;border:1px solid #99f6e4;border-radius:9999px;font-size:11px;color:#0f766e;font-weight:600}
+.visitor-pill strong{color:#0d9488}
+
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:50;background:#0f172a;color:#fff;padding:.75rem 1rem;border-radius:.75rem;display:flex;align-items:center;gap:.75rem;box-shadow:0 20px 25px -5px rgba(0,0,0,.3);transform:translateY(5rem);opacity:0;transition:all .3s;pointer-events:none;max-width:24rem;font-size:.75rem;font-weight:500;left:1.5rem}
+@media (min-width:640px){#toast{left:auto}}
+#toast.show{transform:translateY(0);opacity:1}
+
+.lightbox{position:fixed;inset:0;z-index:100;background:rgba(15,23,42,.92);display:none;align-items:center;justify-content:center;padding:1rem}
+.lightbox.open{display:flex}
+.lightbox-inner{position:relative;max-width:100%;max-height:100%;display:flex;flex-direction:column;align-items:center;gap:.75rem}
+.lightbox-inner img,.lightbox-inner canvas{max-width:100%;max-height:calc(100vh - 6rem);border-radius:.75rem;background:#fff;box-shadow:0 25px 50px -12px rgba(0,0,0,.5);object-fit:contain}
+.lightbox-close{position:absolute;top:-2.75rem;right:0;width:2.25rem;height:2.25rem;border-radius:9999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+
+@media print{body *{visibility:hidden}#printableOutput,#printableOutput *{visibility:visible}#printableOutput{position:absolute;left:0;top:0;width:100%;padding:1rem}.no-print,.no-print *{display:none!important}}
+</style>
+</head>
+
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">🌱</div>
+      <div class="brand-text">
+        <div class="brand-title">Arogya<span>Diet</span> AI</div>
+        <div class="brand-sub">Clinical Prescription &amp; Lab-Based Regional Diet Planner</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div id="status" class="status-pill" role="status" aria-live="polite">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="lbl">Ready</span>
+      </div>
+      <button id="demoBtn" class="btn ghost" type="button">
+        ⚡ <span class="lbl">Try Sample</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="hero-badge">✓ 100% Free • Custom Preferences &amp; Allergies • All Indian Labs • Native Language</div>
+    <h2>Prescription &amp; Diagnostic Lab Report to Clinical Diet Chart</h2>
+    <p>Scans doctor handwriting, diagnostic impressions, and Indian clinical lab panels (Sugar, BP, Lipid, KFT/RFT, LFT, Thyroid, CBC). Fully tailors authentic regional kitchen meals to your personal food preferences, allergies, and lifestyle in your mother tongue.</p>
+  </section>
+
+  <div class="grid">
+
+    <section class="card card-pad">
+      <div class="card-head">
+        <h3><span class="step-num">1</span> Prescription, Labs &amp; Patient Setup</h3>
+        <span class="step-meta">Step 1 of 2</span>
+      </div>
+
+      <div class="field">
+        <label class="lbl">Upload Prescription or Lab Report <span class="req">*</span></label>
+        <div id="drop" class="drop">
+          <input type="file" id="file" accept="image/*,application/pdf" aria-label="Choose prescription file">
+          <div id="dropPrompt" class="drop-inner">
+            <div class="drop-icon" aria-hidden="true">📋</div>
+            <div class="drop-text"><strong>Click to upload prescription/lab photo</strong> or drag &amp; drop</div>
+            <div class="drop-hint">JPEG, PNG, WebP, or PDF reports up to 10MB</div>
+          </div>
+        </div>
+
+        <div id="previewCard" class="preview-card" style="display:none;">
+          <div class="preview-status">
+            <span class="check" aria-hidden="true">✓</span>
+            <span>Document loaded &amp; optical scanner ready</span>
+          </div>
+          <div class="preview-thumb">
+            <div class="preview-thumb-inner" id="thumbClick" title="Click to zoom">
+              <img id="imgPreview" alt="Prescription preview" style="display:none;">
+              <canvas id="pdfCanvas" style="display:none;"></canvas>
+              <span class="preview-zoom-hint">🔍 Tap to inspect</span>
+            </div>
+          </div>
+          <div class="preview-info">
+            <div class="preview-meta">
+              <div class="preview-name" id="fname">document.jpg</div>
+              <div class="preview-sub">
+                <span class="badge" id="ftype">JPG</span>
+                <span id="fsize">— KB</span>
+              </div>
+            </div>
+            <div class="preview-actions">
+              <button type="button" id="changeBtn" title="Change file">↻</button>
+              <button type="button" id="removeBtn" class="danger" title="Remove">🗑</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="med-box">
+          <div class="med-box-title">
+            <span>💊 Identified Prescription Medicines</span>
+            <span class="opt-tag" id="medCountTag">0 Verified</span>
+          </div>
+          <div id="medTags" class="med-tags">
+            <span style="font-size:11px;color:#94a3b8;align-self:center;">Upload a prescription or click sample to auto-detect</span>
+          </div>
+          <div class="med-add-row">
+            <input type="text" id="manualMedInput" placeholder="Add or correct medicine (e.g. Metformin 500, Telma 40)...">
+            <button type="button" id="addMedBtn">+ Add</button>
+          </div>
+          <div class="quick-med-row">
+            <span style="font-size:10px;color:#64748b;margin-right:.25rem;">Quick Select:</span>
+            <button type="button" class="quick-chip" data-med="Metformin 500mg">Metformin</button>
+            <button type="button" class="quick-chip" data-med="Telmisartan 40mg">Telmisartan</button>
+            <button type="button" class="quick-chip" data-med="Atorvastatin 10mg">Atorvastatin</button>
+            <button type="button" class="quick-chip" data-med="Thyronorm 50mcg">Thyronorm</button>
+            <button type="button" class="quick-chip" data-med="Febuxostat 40mg">Febuxostat</button>
+            <button type="button" class="quick-chip" data-med="Pan 40">Pan-40</button>
+            <button type="button" class="quick-chip" data-med="Shelcal 500">Shelcal</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label class="lbl" for="region">Region <span class="req">*</span></label>
+          <select id="region">
+            <option>Eastern India</option>
+            <option>Northern India</option>
+            <option>Western India</option>
+            <option>Southern India</option>
+            <option>Central India</option>
+            <option>North-Eastern India</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="state">State <span class="req">*</span></label>
+          <select id="state"></select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="lbl" for="lang">Diet Chart Language <span class="req">*</span></label>
+        <select id="lang">
+          <option>Bengali (বাংলা)</option>
+          <option>Hindi (हिन्दी)</option>
+          <option>English</option>
+          <option>Tamil (தமிழ்)</option>
+          <option>Telugu (తెలుగు)</option>
+          <option>Marathi (मराठी)</option>
+          <option>Gujarati (ગુજરાતી)</option>
+          <option>Odia (ଓଡ଼ିଆ)</option>
+          <option>Punjabi (ਪੰਜਾਬੀ)</option>
+          <option>Kannada (ಕನ್ನಡ)</option>
+          <option>Malayalam (മലയാളം)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label class="lbl" for="dietitianName">Dietitian / Clinic / Company Name</label>
+          <span class="opt-tag">Optional</span>
+        </div>
+        <input type="text" id="dietitianName" placeholder="e.g. Dr. R. Sharma, Clinical Nutritionist / Arogya Wellness Center">
+      </div>
+
+      <div class="field">
+        <div class="field-head">
+          <label class="lbl" for="extra">Patient Preferences / Notes <span class="req">*</span></label>
+          <span class="opt-tag" style="background:#e0f2fe;color:#0369a1;font-weight:600;">Active in Nutrition Math</span>
+        </div>
+        <textarea id="extra" rows="3" placeholder="e.g. Pure Vegetarian (no fish/eggs), Age 54, mild acid reflux, allergic to peanuts, no dairy..."></textarea>
+      </div>
+
+      <button id="genBtn" class="gen-btn" type="button">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+        </svg>
+        <span>Analyze Labs &amp; Generate Diet Chart</span>
+      </button>
+
+      <div class="hint">
+        <span class="hint-icon" aria-hidden="true">🌾</span>
+        <div>
+          <strong id="hintTitle">Local Staple Focus:</strong>
+          <span id="hintDesc"> Parboiled rice, Macher jhol (stew), Shukto, Patol, Lau, Moong dal, Chhena.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card result-shell">
+      <div class="result-head">
+        <div class="title-block">
+          <h3 style="font-size:1rem;font-weight:700;display:flex;align-items:center;gap:.5rem;">
+            <span class="step-num">2</span> Clinical Regional Diet Chart
+          </h3>
+          <p class="subtitle" id="subtitle">Awaiting prescription upload &amp; lab analysis</p>
+        </div>
+
+        <div id="toolbar" class="toolbar">
+          <button id="copyBtn" class="tool-btn" type="button" title="Copy Chart">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
+            </svg>
+            <span class="lbl">Copy</span>
+          </button>
+          <button id="printBtn" class="tool-btn accent" type="button" title="Print Chart">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+            </svg>
+            <span class="lbl">Print / PDF</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="result-body">
+
+        <div id="idle" class="panel-center">
+          <div class="panel-icon" aria-hidden="true">📊</div>
+          <h4>No Prescription Scanned Yet</h4>
+          <p>Upload a doctor's prescription or clinical lab report. The engine cross-analyzes all diagnostics, identifies confirmed diseases, factors in your personal food preferences, and formulates your custom regional meal plan.</p>
+          <div class="panel-tip">💡 Tip: Tap "Try Sample" above to see a live clinical analysis</div>
+        </div>
+
+        <div id="loading" class="panel-center" style="display:none;">
+          <div class="spinner" aria-hidden="true"></div>
+          <h4 id="loadTitle">Scanning Lab Reports &amp; Prescription...</h4>
+          <p id="loadDesc">Analyzing diagnostic values, liver/renal markers, blood sugar, and active health conditions.</p>
+        </div>
+
+        <div id="error" class="panel-center" style="display:none;">
+          <div class="panel-icon err" aria-hidden="true">⚠️</div>
+          <h4>Could Not Complete Scan</h4>
+          <p id="errMsg">Something went wrong during optical recognition.</p>
+          <button id="retryBtn" class="tool-btn accent" type="button" style="margin-top:1rem;padding:.5rem 1rem;">Retry Scan</button>
+        </div>
+
+        <div id="result" style="display:none;">
+          <div id="sourceStrip" class="source-strip">
+            <div class="source-strip-thumb" id="sourceThumbClick" title="Click to zoom">
+              <img id="sourceImgPreview" style="display:none;" alt="Source prescription">
+              <canvas id="sourcePdfCanvas" style="display:none;"></canvas>
+            </div>
+            <div class="source-strip-text">
+              <div class="source-strip-title">📄 Source Document Analyzed</div>
+              <div class="source-strip-sub" id="sourceFileName">document.jpg</div>
+            </div>
+          </div>
+
+          <div id="badges" class="badge-row"></div>
+
+          <div id="printableOutput">
+            <div id="output" class="output-body"></div>
+            
+            <div class="disclaimer">
+              <span aria-hidden="true">⚠️</span>
+              <p><strong>Medical Disclaimer:</strong> This clinical regional diet plan is generated based on identified laboratory diagnostic parameters, optical prescription extraction, and Indian therapeutic nutritional guidelines. Patients should always consult their treating physician or clinical dietitian before altering medical treatment regimens.</p>
+            </div>
+
+            <div id="dietitianSignature" class="dietitian-credit" style="display:none;"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon" style="background:#f0fdfa;color:#0d9488;" aria-hidden="true">🧪</div>
+      <div>
+        <h4>Pan-India Diagnostic Lab OCR</h4>
+        <p>Parses FBS, PPBS, HbA1c, Lipid Profiles, Kidney (Creatinine/Uric Acid), Liver (SGPT), Thyroid (TSH), and CBC markers.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon" style="background:#ecfdf5;color:#059669;" aria-hidden="true">🥑</div>
+      <div>
+        <h4>Dietary Notes &amp; Allergies</h4>
+        <p>Dynamically customizes every meal for Vegetarians, Vegans, Fish-eaters, and those with Acid Reflux or food allergies.</p>
+      </div>
+    </div>
+    <div class="feature">
+      <div class="feature-icon" style="background:#eef2ff;color:#4f46e5;" aria-hidden="true">🌾</div>
+      <div>
+        <h4>Pure Mother-Tongue Output</h4>
+        <p>100% native script for food names, regional grains, vegetables, and seasonal fruits across all Indian states.</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="inner">
+    <div><strong>ArogyaDiet AI</strong> • Evidence-Based Clinical Nutrition Initiative</div>
+    <div class="visitor-pill">
+      👥 Total Global Visitors: <span id="visitor-count">Loading...</span>
+    </div>
+    <div>Designed for Patients, Clinical Caregivers &amp; Healthcare Practitioners across India</div>
+  </div>
+</footer>
+
+<div id="toast" role="status" aria-live="polite">
+  <span id="toastIcon" aria-hidden="true">ℹ️</span>
+  <span id="toastText">Notification</span>
+</div>
+
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Prescription zoom">
+  <div class="lightbox-inner">
+    <button id="lightboxClose" class="lightbox-close" type="button" aria-label="Close">✕</button>
+    <img id="lightboxImg" alt="Prescription full view" style="display:none;">
+    <canvas id="lightboxCanvas" style="display:none;"></canvas>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var REGIONAL_DATA = {
+    "Eastern India": [
+      { n: "West Bengal", s: "ঢেঁকিছাঁটা চালের ভাত, রুই/কাতলা মাছের পাতলা ঝোল, শুক্তো, পটল, লাউ ঘণ্ট, মুগ ডাল, ছানা" },
+      { n: "Odisha", s: "ଡାଲମା, ଉଷୁନା ଭାତ, ଶାଗ ଭଜା, ସନ୍ତୁଳା, ରୋହି ମାଛ ତରକାରୀ, ମୁଗ ଡାଲି" },
+      { n: "Bihar", s: "सत्तू ड्रिंक, चना दाल, लौकी का भर्ता, खिचड़ी, चोखा, जौ-गेहूं की रोटी" },
+      { n: "Jharkhand", s: "कुर्थी दाल, मड़ुआ रोटी, हरा साग, अरहर दाल, उबले चावल" }
+    ],
+    "Northern India": [
+      { n: "Punjab", s: "ਮੂੰਗ ਦਾਲ, ਮਲਟੀਗ੍ਰੇਨ ਫੁਲਕਾ, ਤਾਜ਼ਾ ਦਹੀਂ, ਪਾਲਕ ਸਾਗ, ਸਪ੍ਰਾਉਟਸ ਚਨਾ, ਛਾਛ" },
+      { n: "Uttar Pradesh", s: "अरहर दाल, तोरी-लौकी की सब्जी, टिंडा, पतली चपाती, दलिया, छाछ" },
+      { n: "Haryana", s: "बाजरा रोटी, ताजा दही, मूंग दाल खिचड़ी, मिक्स वेज, नमकीन लस्सी" },
+      { n: "Rajasthan", s: "जौ-चने की रोटी, पंचमेल दाल, गट्टे की उबली सब्जी, सांगरी, मूंग चीला" },
+      { n: "Himachal Pradesh", s: "माह दाल, सेपू बड़ी (कम तेल), लाल चावल, पालक का साग, छाछ" },
+      { n: "Jammu & Kashmir", s: "हाख साग, नदरू, मूंग दाल, उबले चावल, बिना चीनी का कहवा" }
+    ],
+    "Western India": [
+      { n: "Maharashtra", s: "ज्वारीची भाकरी, मटकी उसळ, आमटी, वरण-भात, मेथीची भाजी, ताक" },
+      { n: "Gujarat", s: "રોટલી, બાફેલી ખીચડી, મગની દાળ, મેથી થેપલા, ભીંડા સંભારો, છાશ" },
+      { n: "Goa", s: "ઉકડા ચોખા, કોકમ સાથે તાજી માછલી, તામડી ભાજી, પાતળી દાળ" }
+    ],
+    "Southern India": [
+      { n: "Tamil Nadu", s: "சாம்பார், கைக்குத்தல் அரிசி சாதம், ரசம், கீரை பொரியல், கூட்டு, மோர்" },
+      { n: "Kerala", s: "മട്ട അരി ചോറ്, അവിയൽ, തോരൻ, മോരുകറി, ചെറുപയർ പരിപ്പ്, മീൻ കറി" },
+      { n: "Karnataka", s: "ರಾಗಿ ಮುದ್ದೆ, ಬಿಸಿಬೇಳೆ ಬಾತ್ (ಹೆಚ್ಚು ತರಕಾರಿ), ಸಾರು, ಮಜ್ಜಿಗೆ ಹುಳಿ, ಕೋಸಂಬರಿ" },
+      { n: "Andhra Pradesh / Telangana", s: "ముడి బియ్యం అన్నം, తోటకూర పప్పు, చారు, పెసరట్టు, మజ్జిగ" }
+    ],
+    "Central India": [
+      { n: "Madhya Pradesh", s: "ज्वार-गेहूं रोटी, अंकुरित पोहा, दाल, लौकी की सब्जी, छाछ" },
+      { n: "Chhattisgarh", s: "लाल भाजी, दाल, उबले चावल, दुबकी कढ़ी, परवल की सब्जी" }
+    ],
+    "North-Eastern India": [
+      { n: "Assam", s: "জোহা ভাত, মাছৰ টেঙা, লাই শাক, মাটি মাহৰ ডালি" },
+      { n: "Tripura", s: "সেদ্ধ ভাত, মাছৰ ঝোল, বাঁহৰ গাজৰ তৰকাৰী, শাক ভাজি" },
+      { n: "Meghalaya & Nagaland", s: "Boiled wild greens, steamed rice, local fish stew, lentils" }
+    ]
+  };
+
+  /* -------------------------------------------------------------
+     INDIAN PHARMACOPEIA DATABASE (120+ Brands & Generics)
+  ------------------------------------------------------------- */
+  var PHARMA_DB = [
+    { name: "Metformin 500mg", syn: ["metformin", "glycomet", "gluformin", "glyciphage", "formine", "cetapin"], condition: "Type 2 Diabetes Mellitus" },
+    { name: "Metformin 850mg/1000mg", syn: ["glycomet sr", "glyciphage sr", "metformin 1000"], condition: "Type 2 Diabetes Mellitus" },
+    { name: "Glimepiride 1mg/2mg", syn: ["glimepiride", "amaryl", "zoryl", "glypride", "gemer"], condition: "Type 2 Diabetes Mellitus" },
+    { name: "Teneligliptin 20mg", syn: ["teneligliptin", "tendia", "tenalim", "dynaglipt"], condition: "Type 2 Diabetes Mellitus" },
+    { name: "Dapagliflozin 10mg", syn: ["dapagliflozin", "forxiga", "dapa", "oxra"], condition: "Type 2 Diabetes Mellitus" },
+    { name: "Telmisartan 40mg", syn: ["telmisartan", "telma", "telpres", "telsar", "telmikem"], condition: "Essential Hypertension" },
+    { name: "Amlodipine 5mg", syn: ["amlodipine", "stamlo", "amlong", "amlovas", "amlocab"], condition: "Essential Hypertension" },
+    { name: "Losartan 50mg", syn: ["losartan", "losacar", "repace", "tozaar"], condition: "Essential Hypertension" },
+    { name: "Atorvastatin 10mg/20mg", syn: ["atorvastatin", "atorva", "atorlip", "atocor", "storvas", "tonact"], condition: "Dyslipidemia & High Cholesterol" },
+    { name: "Rosuvastatin 10mg", syn: ["rosuvastatin", "rosuvas", "rozavel", "rosave"], condition: "Dyslipidemia & High Cholesterol" },
+    { name: "Fenofibrate 145mg/160mg", syn: ["fenofibrate", "lipicard", "fibator", "fenolip"], condition: "Hypertriglyceridemia" },
+    { name: "Febuxostat 40mg", syn: ["febuxostat", "feburic", "febugood", "febutaz", "fabulas"], condition: "Hyperuricemia & Gout" },
+    { name: "Allopurinol 100mg", syn: ["allopurinol", "zyloric"], condition: "Hyperuricemia & Gout" },
+    { name: "Thyronorm 25/50/75mcg", syn: ["thyronorm", "eltroxin", "levothyroxine", "thyrox"], condition: "Hypothyroidism" },
+    { name: "Pantoprazole 40mg", syn: ["pantoprazole", "pan 40", "pantocid", "pan-d", "pantodac"], condition: "GERD & Gastritis" },
+    { name: "Rabeprazole 20mg", syn: ["rabeprazole", "rabeloc", "rabicip", "happi"], condition: "GERD & Gastritis" },
+    { name: "Orofer-XT / Iron", syn: ["orofer", "autrin", "dexorange", "ferrous ascorbate", "livogen"], condition: "Iron Deficiency Anemia" },
+    { name: "Shelcal 500 / Calcium", syn: ["shelcal", "cipcal", "gemcal", "calcimax"], condition: "Osteopenia & Calcium Deficiency" },
+    { name: "Saroglitazar 4mg", syn: ["saroglitazar", "lipaglyn"], condition: "NAFLD & Diabetic Dyslipidemia" },
+    { name: "Ursodeoxycholic Acid 300mg", syn: ["udiliv", "ursochol", "ursokem"], condition: "Fatty Liver & Cholestasis" },
+    { name: "Torsemide 10mg", syn: ["torsemide", "dytor", "tide"], condition: "Hypertension & Fluid Retention" }
+  ];
+
+  /* -------------------------------------------------------------
+     INDIAN STANDARD LAB PANELS & NORMAL RANGES
+  ------------------------------------------------------------- */
+  var LAB_PANELS_REF = {
+    fbs: { name: "Fasting Blood Sugar (FBS)", unit: "mg/dL", normal: "< 100", border: "100 - 125", high: "≥ 126", cond: "Type 2 Diabetes Mellitus" },
+    ppbs: { name: "Post-Prandial Sugar (PPBS)", unit: "mg/dL", normal: "< 140", border: "140 - 199", high: "≥ 200", cond: "Type 2 Diabetes Mellitus" },
+    hba1c: { name: "Glycated Hemoglobin (HbA1c)", unit: "%", normal: "< 5.7", border: "5.7 - 6.4", high: "≥ 6.5", cond: "Type 2 Diabetes Mellitus" },
+    bp_sys: { name: "Systolic Blood Pressure", unit: "mmHg", normal: "< 120", border: "120 - 139", high: "≥ 140", cond: "Essential Hypertension" },
+    bp_dia: { name: "Diastolic Blood Pressure", unit: "mmHg", normal: "< 80", border: "80 - 89", high: "≥ 90", cond: "Essential Hypertension" },
+    chol: { name: "Total Cholesterol", unit: "mg/dL", normal: "< 200", border: "200 - 239", high: "≥ 240", cond: "Dyslipidemia & High Cholesterol" },
+    tg: { name: "Triglycerides (TG)", unit: "mg/dL", normal: "< 150", border: "150 - 199", high: "≥ 200", cond: "Hypertriglyceridemia" },
+    ldl: { name: "LDL Bad Cholesterol", unit: "mg/dL", normal: "< 100", border: "100 - 159", high: "≥ 160", cond: "Dyslipidemia & High Cholesterol" },
+    creat: { name: "Serum Creatinine", unit: "mg/dL", normal: "0.6 - 1.2", border: "1.2 - 1.4", high: "> 1.4", cond: "Renal Impairment / CKD" },
+    uric: { name: "Serum Uric Acid", unit: "mg/dL", normal: "3.5 - 7.0", border: "7.0 - 7.4", high: "> 7.5", cond: "Hyperuricemia & Gout" },
+    sgpt: { name: "SGPT (ALT) - Liver", unit: "U/L", normal: "7 - 55", border: "55 - 65", high: "> 65", cond: "NAFLD & Grade 1 Fatty Liver" },
+    tsh: { name: "Thyroid Stimulating Hormone (TSH)", unit: "µIU/mL", normal: "0.4 - 4.5", border: "4.5 - 5.5", high: "> 5.5", cond: "Hypothyroidism" },
+    hb: { name: "Hemoglobin (Hb)", unit: "g/dL", normal: "12.5 - 16.0", low: "< 12.0", cond: "Iron Deficiency Anemia" }
+  };
+
+  /* -------------------------------------------------------------
+     NATIVE LANGUAGE DICTIONARIES FOR FOODS, MEALS & DAYS
+  ------------------------------------------------------------- */
+  var TRANSLATIONS = {
+    "Bengali (বাংলা)": {
+      days: ["সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার", "রবিবার"],
+      meals: {
+        early: "প্রাতঃকালীন (সকাল ৬:৩০)",
+        breakfast: "সকালের জলখাবার (সকাল ৮:৩০)",
+        mid: "মিড-মর্নিং তাজা ফল ও পানীয় (সকাল ১১:০০)",
+        lunch: "দুপুরের প্রধান খাবার (দুপুর ১:৩০)",
+        snack: "বিকেলের নাস্তা (বিকেল ৫:০০)",
+        dinner: "রাতের সহজপাচ্য খাবার (রাত ৮:৩০)",
+        bedtime: "শয়নকালীন হালকা পানীয় (রাত ১০:০০)"
+      },
+      headers: {
+        reportSummary: "প্রেসক্রিপশন ও ল্যাব টেস্ট রিপোর্ট বিশ্লেষণ (Clinical Diagnostic Summary)",
+        labTable: "শনাক্তকৃত ল্যাব টেস্ট ও ক্লিনিক্যাল অবস্থা (Lab Diagnostics & Markers)",
+        testCol: "পরীক্ষার নাম (Test Name)",
+        valCol: "রিপোর্টের মান (Detected Value)",
+        normCol: "স্বাভাবিক মাত্রা (Standard Range)",
+        statusCol: "অবস্থা (Status)",
+        actionCol: "পথ্যজনিত সিদ্ধান্ত (Nutritional Action Taken)",
+        activeCond: "শনাক্তকৃত রোগ ও স্বাস্থ্যগত অবস্থা (Active Health Conditions)",
+        prefCard: "রোগীর ব্যক্তিস্বার্থ, খাদ্য পছন্দ ও বিশেষ নির্দেশনা (Factored Patient Preferences)",
+        calorieCard: "দৈনিক নির্ধারিত শক্তির মাত্রা (Prescribed Daily Energy Target)",
+        dailyPlan: "সময়ভিত্তিক সম্পূর্ণ ১-দিনের আঞ্চলিক থেরাপিউটিক ডায়েট চার্ট",
+        mealCol: "খাবারের পর্ব ও সময়",
+        menuCol: "আঞ্চলিক খাবারের পদ ও সঠিক পরিমাপ (Regional Menu & Portion)",
+        kcalCol: "ক্যালোরি (Kilocalories)",
+        weeklyPlan: "৭-দিনের সাপ্তাহিক আঞ্চলিক ডায়েট রোটেশন (Monday - Sunday)",
+        dayCol: "দিন (Day)",
+        eatTitle: "কী কী খাবেন ও কী কী পরিহার করবেন (What to Eat vs. Strictly Avoid)",
+        catCol: "খাদ্য শ্রেণি",
+        allowedCol: "কী কী খাবেন (Recommended Foods)",
+        avoidCol: "কী কী খাবেন না (Strictly Avoid)"
+      },
+      cats: {
+        grains: "দানাশস্য ও চাল (Grains)",
+        veggies: "সবজি ও শাক (Vegetables & Greens)",
+        fruits: "ফলমূল (Fruits)",
+        protein: "ডাল ও প্রোটিন উৎস (Pulses & Protein)",
+        drinks: "তেল, মশলা ও পানীয় (Oils & Beverages)"
+      }
+    },
+    "Hindi (हिन्दी)": {
+      days: ["सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"],
+      meals: {
+        early: "प्रातःकालीन (सुबह 6:30 बजे)",
+        breakfast: "सुबह का नाश्ता (सुबह 8:30 बजे)",
+        mid: "मिड-मॉर्निंग ताजे फल व पेय (सुबह 11:00 बजे)",
+        lunch: "दोपहर का मुख्य भोजन (दोपहर 1:30 बजे)",
+        snack: "शाम का अल्पाहार (शाम 5:00 बजे)",
+        dinner: "रात का हल्का भोजन (रात 8:30 बजे)",
+        bedtime: "सोने से पहले (रात 10:00 बजे)"
+      },
+      headers: {
+        reportSummary: "प्रिस्क्रिप्शन एवं लैब टेस्ट रिपोर्ट विश्लेषण (Clinical Diagnostic Summary)",
+        labTable: "जांचे गए लैब टेस्ट एवं स्वास्थ्य स्थिति (Lab Diagnostics & Markers)",
+        testCol: "टेस्ट का नाम (Test Name)",
+        valCol: "जांच का परिणाम (Detected Value)",
+        normCol: "सामान्य स्तर (Standard Range)",
+        statusCol: "स्थिति (Status)",
+        actionCol: "आहार संबंधी निर्णय (Nutritional Action Taken)",
+        activeCond: "सक्रिय चिकित्सीय स्थितियां एवं रोग (Active Health Conditions)",
+        prefCard: "मरीज की व्यक्तिगत प्राथमिकताएं व खानपान आदतें (Factored Patient Preferences)",
+        calorieCard: "दैनिक निर्धारित ऊर्जा का स्तर (Prescribed Daily Energy Target)",
+        dailyPlan: "समय अनुसार 1-दिवसीय सम्पूर्ण क्षेत्रीय डाइट चार्ट",
+        mealCol: "समय व भोजन का पहर",
+        menuCol: "पारंपरिक प्रांतीय व्यंजन एवं माप (Regional Menu & Portion)",
+        kcalCol: "ऊर्जा (Kilocalories)",
+        weeklyPlan: "7-दिवसीय साप्ताहिक क्षेत्रीय भोजन तालिका (Monday - Sunday)",
+        dayCol: "दिन (Day)",
+        eatTitle: "क्या खाएं और क्या बिल्कुल न खाएं (What to Eat vs. Strictly Avoid)",
+        catCol: "खाद्य समूह",
+        allowedCol: "क्या खाएं (अनुशंसित खाद्य पदार्थ)",
+        avoidCol: "क्या बिल्कुल न खाएं (वर्जित खाद्य पदार्थ)"
+      },
+      cats: {
+        grains: "अनाज व रोटियां (Grains)",
+        veggies: "सब्जियां व साग (Vegetables & Greens)",
+        fruits: "ताजे फल (Fruits)",
+        protein: "दालें व प्रोटीन (Pulses & Protein)",
+        drinks: "तेल, मसाले व पेय (Oils & Beverages)"
+      }
+    },
+    "English": {
+      days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      meals: {
+        early: "Early Morning (6:30 AM)",
+        breakfast: "Breakfast (8:30 AM)",
+        mid: "Mid-Morning Fresh Fruit & Drink (11:00 AM)",
+        lunch: "Lunch (1:30 PM)",
+        snack: "Evening Healthy Snack (5:00 PM)",
+        dinner: "Dinner (8:30 PM)",
+        bedtime: "Bedtime (10:00 PM)"
+      },
+      headers: {
+        reportSummary: "Clinical Prescription & Lab Diagnostics Analysis",
+        labTable: "Detected Lab Reports & Diagnostic Health Markers",
+        testCol: "Test Parameter",
+        valCol: "Detected Value",
+        normCol: "Normal Reference Range",
+        statusCol: "Clinical Status",
+        actionCol: "Nutritional Action Taken",
+        activeCond: "Diagnosed Clinical Health Conditions",
+        prefCard: "Patient Preferences & Dietary Adaptations (Factored Notes)",
+        calorieCard: "Prescribed Total Daily Energy Target",
+        dailyPlan: "Time-Wise 1-Day Comprehensive Regional Diet Plan",
+        mealCol: "Meal Timing & Slot",
+        menuCol: "Authentic Regional Dish & Household Portion",
+        kcalCol: "Energy (Kilocalories)",
+        weeklyPlan: "7-Day Weekly Regional Meal Rotation (Monday - Sunday)",
+        dayCol: "Day",
+        eatTitle: "Dietary Directives: What to Eat vs. What Strictly to Avoid",
+        catCol: "Food Group",
+        allowedCol: "Foods to Eat (Recommended)",
+        avoidCol: "Foods Strictly to Avoid"
+      },
+      cats: {
+        grains: "Grains & Cereals",
+        veggies: "Vegetables & Greens",
+        fruits: "Fresh Fruits",
+        protein: "Pulses & Protein Sources",
+        drinks: "Cooking Mediums & Beverages"
+      }
+    }
+  };
+
+  function $(id) { return document.getElementById(id); }
+  function on(el, ev, fn) { if (el) el.addEventListener(ev, fn); }
+  function fmtBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(0) + ' KB';
+    return (b / 1024 / 1024).toFixed(1) + ' MB';
+  }
+  function extOf(name) { var m = /\.([a-z0-9]+)$/i.exec(name || ''); return m ? m[1].toUpperCase() : 'FILE'; }
+
+  var fileInput = $('file'), drop = $('drop');
+  var dropPrompt = $('dropPrompt'), previewCard = $('previewCard');
+  var imgPreview = $('imgPreview'), pdfCanvas = $('pdfCanvas');
+  var fname = $('fname'), ftype = $('ftype'), fsize = $('fsize');
+  var changeBtn = $('changeBtn'), removeBtn = $('removeBtn'), thumbClick = $('thumbClick');
+  var regionSel = $('region'), stateSel = $('state'), langSel = $('lang');
+  var dietitianNameInput = $('dietitianName'), extra = $('extra');
+  var genBtn = $('genBtn'), demoBtn = $('demoBtn');
+  var hintTitle = $('hintTitle'), hintDesc = $('hintDesc');
+  var idle = $('idle'), loading = $('loading'), error = $('error'), result = $('result');
+  var loadTitle = $('loadTitle'), loadDesc = $('loadDesc');
+  var errMsg = $('errMsg'), output = $('output'), badges = $('badges');
+  var retryBtn = $('retryBtn');
+  var subtitle = $('subtitle'), toolbar = $('toolbar');
+  var copyBtn = $('copyBtn'), printBtn = $('printBtn');
+  var sourceStrip = $('sourceStrip'), dietitianSignature = $('dietitianSignature');
+  var sourceImgPreview = $('sourceImgPreview'), sourcePdfCanvas = $('sourcePdfCanvas');
+  var sourceThumbClick = $('sourceThumbClick'), sourceFileName = $('sourceFileName');
+  var lightbox = $('lightbox'), lightboxImg = $('lightboxImg');
+  var lightboxCanvas = $('lightboxCanvas'), lightboxClose = $('lightboxClose');
+  var medTags = $('medTags'), manualMedInput = $('manualMedInput'), addMedBtn = $('addMedBtn'), medCountTag = $('medCountTag');
+
+  var currentImage = null, currentMime = null;
+  var currentFileName = '', currentFileSize = 0;
+  var currentPreviewDataUrl = null, currentIsPdf = false;
+  var toastTimer = null, extractedOcrText = '';
+  var verifiedMedicines = [];
+
+  function toast(msg, icon, ms) {
+    var t = $('toast');
+    $('toastIcon').textContent = icon || 'ℹ️';
+    $('toastText').textContent = msg;
+    t.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, ms || 3500);
+  }
+
+  function updateStates() {
+    var list = REGIONAL_DATA[regionSel.value] || [];
+    stateSel.innerHTML = '';
+    list.forEach(function (st) {
+      var o = document.createElement('option');
+      o.value = st.n; o.textContent = st.n;
+      stateSel.appendChild(o);
+    });
+    updateHint();
+  }
+  function updateHint() {
+    var list = REGIONAL_DATA[regionSel.value] || [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].n === stateSel.value) {
+        hintTitle.textContent = list[i].n + ' Staple Focus:';
+        hintDesc.textContent = ' ' + list[i].s;
+        return;
+      }
+    }
+  }
+  on(regionSel, 'change', updateStates);
+  on(stateSel, 'change', updateHint);
+  updateStates();
+
+  function renderMedPills() {
+    medTags.innerHTML = '';
+    if (verifiedMedicines.length === 0) {
+      medTags.innerHTML = '<span style="font-size:11px;color:#94a3b8;align-self:center;">Upload a prescription or add medicines manually</span>';
+      medCountTag.textContent = '0 Verified';
+      return;
+    }
+    medCountTag.textContent = verifiedMedicines.length + ' Verified';
+    verifiedMedicines.forEach(function (med, idx) {
+      var p = document.createElement('span');
+      p.className = 'med-pill';
+      p.innerHTML = '💊 ' + escapeHtml(med) + ' <span class="del" title="Remove" data-idx="' + idx + '">&times;</span>';
+      medTags.appendChild(p);
+    });
+    var dels = medTags.querySelectorAll('.del');
+    dels.forEach(function (btn) {
+      btn.onclick = function () {
+        var id = parseInt(this.getAttribute('data-idx'), 10);
+        verifiedMedicines.splice(id, 1);
+        renderMedPills();
+      };
+    });
+  }
+
+  function addMedicine(name) {
+    name = (name || '').trim();
+    if (!name) return;
+    for (var i = 0; i < verifiedMedicines.length; i++) {
+      if (verifiedMedicines[i].toLowerCase() === name.toLowerCase()) return;
+    }
+    verifiedMedicines.push(name);
+    renderMedPills();
+  }
+
+  on(addMedBtn, 'click', function () {
+    addMedicine(manualMedInput.value);
+    manualMedInput.value = '';
+  });
+  on(manualMedInput, 'keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addMedicine(manualMedInput.value);
+      manualMedInput.value = '';
+    }
+  });
+
+  document.querySelectorAll('.quick-chip').forEach(function (chip) {
+    on(chip, 'click', function () {
+      addMedicine(this.getAttribute('data-med'));
+    });
+  });
+
+  function clearFile() {
+    fileInput.value = '';
+    currentImage = null; currentMime = null;
+    currentFileName = ''; currentFileSize = 0;
+    currentPreviewDataUrl = null; currentIsPdf = false;
+    extractedOcrText = '';
+    verifiedMedicines = [];
+    renderMedPills();
+    dropPrompt.style.display = 'flex';
+    previewCard.style.display = 'none';
+    imgPreview.style.display = 'none'; imgPreview.src = '';
+    pdfCanvas.style.display = 'none';
+    sourceImgPreview.style.display = 'none'; sourceImgPreview.src = '';
+    sourcePdfCanvas.style.display = 'none';
+    sourceFileName.textContent = '—';
+    sourceStrip.style.display = 'none';
+  }
+
+  function showPreviewCard() {
+    dropPrompt.style.display = 'none';
+    previewCard.style.display = 'block';
+    if (currentIsPdf) {
+      var srcCtx = sourcePdfCanvas.getContext('2d');
+      sourcePdfCanvas.width = pdfCanvas.width;
+      sourcePdfCanvas.height = pdfCanvas.height;
+      srcCtx.drawImage(pdfCanvas, 0, 0);
+      sourcePdfCanvas.style.display = 'block';
+      sourceImgPreview.style.display = 'none';
+    } else if (currentPreviewDataUrl) {
+      sourceImgPreview.src = currentPreviewDataUrl;
+      sourceImgPreview.style.display = 'block';
+      sourcePdfCanvas.style.display = 'none';
+    }
+    sourceFileName.textContent = currentFileName || 'Prescription';
+  }
+
+  function runOCR(imageDataUri) {
+    if (!window.Tesseract) return;
+    toast('Scanning text, medicines & lab reports...', '🔍');
+    window.Tesseract.recognize(imageDataUri, 'eng')
+      .then(function (res) {
+        if (res && res.data && res.data.text) {
+          extractedOcrText = res.data.text;
+          detectMedicinesFromText(extractedOcrText);
+          toast('Prescription & labs analyzed!', '✅');
+        }
+      })
+      .catch(function (e) {
+        console.warn('OCR error:', e);
+      });
+  }
+
+  function detectMedicinesFromText(txt) {
+    var lower = txt.toLowerCase();
+    PHARMA_DB.forEach(function (drug) {
+      for (var i = 0; i < drug.syn.length; i++) {
+        var pattern = new RegExp('\\b' + drug.syn[i] + '\\b', 'i');
+        if (pattern.test(lower)) {
+          addMedicine(drug.name);
+          break;
+        }
+      }
+    });
+  }
+
+  function handleFile(f) {
+    if (!f) return;
+    if (f.size > 10 * 1024 * 1024) { toast('File too large (max 10 MB)', '⚠️'); clearFile(); return; }
+    var isPdf = f.type === 'application/pdf';
+    var isImg = f.type.indexOf('image/') === 0;
+    if (!isPdf && !isImg) { toast('Please upload an image or PDF', '⚠️'); clearFile(); return; }
+
+    currentFileName = f.name;
+    currentFileSize = f.size;
+    fname.textContent = f.name;
+    ftype.textContent = extOf(f.name);
+    fsize.textContent = fmtBytes(f.size);
+
+    if (isPdf) {
+      if (!window.pdfjsLib) { toast('PDF engine loading, please wait...', '⚠️'); clearFile(); return; }
+      currentIsPdf = true;
+      var reader = new FileReader();
+      reader.onload = function () {
+        window.pdfjsLib.getDocument({ data: new Uint8Array(reader.result) }).promise
+          .then(function (pdf) { return pdf.getPage(1); })
+          .then(function (page) {
+            var vp = page.getViewport({ scale: 1.5 });
+            pdfCanvas.width = vp.width; pdfCanvas.height = vp.height;
+            return page.render({ canvasContext: pdfCanvas.getContext('2d'), viewport: vp }).promise;
+          })
+          .then(function () {
+            pdfCanvas.style.display = 'block';
+            imgPreview.style.display = 'none';
+            currentPreviewDataUrl = pdfCanvas.toDataURL('image/jpeg', 0.9);
+            currentImage = currentPreviewDataUrl.split(',')[1];
+            currentMime = 'image/jpeg';
+            showPreviewCard();
+            runOCR(currentPreviewDataUrl);
+          })
+          .catch(function (e) {
+            console.error(e);
+            toast('Failed to parse PDF', '❌');
+            clearFile();
+          });
+      };
+      reader.readAsArrayBuffer(f);
+    } else {
+      currentIsPdf = false;
+      var r = new FileReader();
+      r.onload = function (e) {
+        imgPreview.src = e.target.result;
+        imgPreview.style.display = 'block';
+        pdfCanvas.style.display = 'none';
+        currentPreviewDataUrl = e.target.result;
+        currentImage = e.target.result.split(',')[1];
+        currentMime = f.type;
+        showPreviewCard();
+        runOCR(currentPreviewDataUrl);
+      };
+      r.readAsDataURL(f);
+    }
+  }
+
+  on(fileInput, 'change', function (e) { if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]); });
+  on(removeBtn, 'click', function (e) { e.stopPropagation(); clearFile(); });
+  on(changeBtn, 'click', function (e) { e.stopPropagation(); fileInput.click(); });
+
+  ['dragenter','dragover'].forEach(function (ev) {
+    on(drop, ev, function (e) { e.preventDefault(); drop.classList.add('dragging'); });
+  });
+  ['dragleave','drop'].forEach(function (ev) {
+    on(drop, ev, function (e) { e.preventDefault(); drop.classList.remove('dragging'); });
+  });
+  on(drop, 'drop', function (e) { if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
+  function openLightbox() {
+    if (!currentPreviewDataUrl) return;
+    lightboxImg.style.display = 'none';
+    lightboxCanvas.style.display = 'none';
+    if (currentIsPdf) {
+      lightboxCanvas.width = pdfCanvas.width;
+      lightboxCanvas.height = pdfCanvas.height;
+      lightboxCanvas.getContext('2d').drawImage(pdfCanvas, 0, 0);
+      lightboxCanvas.style.display = 'block';
+    } else {
+      lightboxImg.src = currentPreviewDataUrl;
+      lightboxImg.style.display = 'block';
+    }
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  on(thumbClick, 'click', openLightbox);
+  on(sourceThumbClick, 'click', openLightbox);
+  on(lightboxClose, 'click', closeLightbox);
+  on(lightbox, 'click', function (e) { if (e.target === lightbox) closeLightbox(); });
+
+  on(demoBtn, 'click', function () {
+    toast('Generating sample prescription & clinical lab report...', '📝');
+    var c = document.createElement('canvas');
+    c.width = 850; c.height = 1150;
+    var ctx = c.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 850, 1150);
+    
+    ctx.fillStyle = '#0f766e'; ctx.fillRect(0, 0, 850, 105);
+    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 24px sans-serif';
+    ctx.fillText('APEX CARDIOMETABOLIC & GENERAL CLINIC', 40, 48);
+    ctx.font = '13px sans-serif';
+    ctx.fillText('Dr. S. Mukherjee, MBBS, MD (Med) | Reg. No: WB-849204 | Salt Lake, Kolkata', 40, 78);
+    
+    ctx.fillStyle = '#1e293b'; ctx.font = '14px sans-serif';
+    ctx.fillText('Patient Name: Amitava Ghosh        Age: 54 Yrs        Gender: Male', 40, 140);
+    ctx.fillText('Date: 12-Oct-2026', 40, 165);
+    
+    ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(40, 185); ctx.lineTo(810, 185); ctx.stroke();
+
+    ctx.fillStyle = '#f0fdfa'; ctx.fillRect(40, 200, 770, 150);
+    ctx.strokeStyle = '#99f6e4'; ctx.strokeRect(40, 200, 770, 150);
+    ctx.fillStyle = '#0f766e'; ctx.font = 'bold 15px sans-serif';
+    ctx.fillText('CLINICAL VITALS & LAB DIAGNOSTIC REPORT (Current):', 55, 225);
+
+    ctx.fillStyle = '#1e293b'; ctx.font = '13px sans-serif';
+    ctx.fillText('• Blood Pressure (BP): 142/90 mmHg (Stage 1 HTN)', 55, 255);
+    ctx.fillText('• Fasting Blood Sugar (FBS): 168 mg/dL (High)', 55, 280);
+    ctx.fillText('• Glycated HbA1c: 7.9% (Uncontrolled T2DM)', 55, 305);
+    ctx.fillText('• Serum Creatinine: 1.0 mg/dL (Normal)', 55, 330);
+
+    ctx.fillText('• Total Cholesterol: 232 mg/dL (Borderline)', 440, 255);
+    ctx.fillText('• Serum Triglycerides: 210 mg/dL (Elevated)', 440, 280);
+    ctx.fillText('• Serum Uric Acid: 7.6 mg/dL (High / Hyperuricemia)', 440, 305);
+    ctx.fillText('• SGPT (ALT): 58 U/L (Mild elevation / NAFLD)', 440, 330);
+
+    ctx.fillStyle = '#0f766e'; ctx.font = 'bold 15px sans-serif';
+    ctx.fillText('CLINICAL IMPRESSION / ACTIVE DIAGNOSIS:', 40, 385);
+    ctx.fillStyle = '#334155'; ctx.font = '14px sans-serif';
+    ctx.fillText('1. Type 2 Diabetes Mellitus with uncontrolled glycemic index', 55, 415);
+    ctx.fillText('2. Essential Hypertension (Stage 1)', 55, 440);
+    ctx.fillText('3. Mixed Dyslipidemia & Grade 1 Fatty Liver (NAFLD)', 55, 465);
+    ctx.fillText('4. Asymptomatic Hyperuricemia with high uric acid', 55, 490);
+
+    ctx.fillStyle = '#0d9488'; ctx.font = 'bold 36px serif';
+    ctx.fillText('\u211E', 40, 550);
+    ctx.fillStyle = '#1e293b'; ctx.font = 'bold 15px sans-serif';
+    ctx.fillText('1. Tab. Metformin 500 mg - Twice daily after meals', 65, 590);
+    ctx.fillText('2. Tab. Telmisartan 40 mg - Morning after breakfast', 65, 630);
+    ctx.fillText('3. Tab. Atorvastatin 10 mg - At bedtime', 65, 670);
+    ctx.fillText('4. Tab. Febuxostat 40 mg - Once daily afternoon', 65, 710);
+
+    ctx.fillStyle = '#0f766e'; ctx.font = 'bold 15px sans-serif';
+    ctx.fillText('THERAPEUTIC NUTRITION DIRECTIVE:', 40, 770);
+    ctx.fillStyle = '#334155'; ctx.font = '14px sans-serif';
+    ctx.fillText('- Strict low-glycemic, high soluble fiber diet tailored to authentic Bengali staples.', 55, 800);
+    ctx.fillText('- Low purine protocol: strictly avoid organ meats, masoor dal, red spinach.', 55, 825);
+    ctx.fillText('- Sodium restricted to < 3g/day, eliminate processed fried snacks.', 55, 850);
+    ctx.fillText('- Energy requirement calculated strictly between 1,450 to 1,500 kcal/day.', 55, 875);
+
+    ctx.fillStyle = '#64748b'; ctx.font = 'italic 18px cursive';
+    ctx.fillText('Dr. S. Mukherjee', 620, 1020);
+    ctx.strokeStyle = '#cbd5e1'; ctx.strokeRect(580, 980, 200, 70);
+
+    var url = c.toDataURL('image/jpeg', 0.92);
+    currentImage = url.split(',')[1];
+    currentMime = 'image/jpeg';
+    currentPreviewDataUrl = url;
+    currentIsPdf = false;
+    currentFileName = 'Clinical_Prescription_DrMukherjee_Labs.jpg';
+    currentFileSize = Math.round(url.length * 0.75);
+
+    imgPreview.src = url;
+    imgPreview.style.display = 'block';
+    pdfCanvas.style.display = 'none';
+    fname.textContent = currentFileName;
+    ftype.textContent = 'JPG';
+    fsize.textContent = fmtBytes(currentFileSize);
+    showPreviewCard();
+
+    verifiedMedicines = ["Metformin 500mg", "Telmisartan 40mg", "Atorvastatin 10mg", "Febuxostat 40mg"];
+    renderMedPills();
+
+    extractedOcrText = 'Amitava Ghosh 54 Yrs BP: 142/90 mmHg Fasting Blood Sugar FBS: 168 mg/dL HbA1c: 7.9% Total Cholesterol: 232 mg/dL Triglycerides: 210 mg/dL Serum Uric Acid: 7.6 mg/dL S. Creatinine: 1.0 mg/dL SGPT: 58 U/L Type 2 Diabetes Mellitus Essential Hypertension Dyslipidemia Grade 1 Fatty Liver Hyperuricemia Tab Metformin 500mg Tab Telmisartan 40mg Tab Atorvastatin 10mg Tab Febuxostat 40mg';
+
+    regionSel.value = 'Eastern India'; updateStates();
+    stateSel.value = 'West Bengal'; updateHint();
+    langSel.value = 'Bengali (বাংলা)';
+    dietitianNameInput.value = 'Dr. R. Sharma, Chief Clinical Nutritionist, Kolkata';
+    extra.value = 'Pure Vegetarian (No fish/eggs), Age 54, mild acid reflux, allergic to peanuts';
+    toast('Sample loaded with complete lab markers & preferences! Click Generate.', '✨', 4500);
+  });
+
+  function parseAllLabReports(text) {
+    var labs = [];
+    var t = (text || '') + ' ' + (extra.value || '');
+
+    function matchNum(patterns) {
+      for (var i = 0; i < patterns.length; i++) {
+        var m = patterns[i].exec(t);
+        if (m && m[1]) return parseFloat(m[1]);
+      }
+      return null;
+    }
+
+    var fbs = matchNum([/fbs[:\s=]+([0-9]{2,3}(?:\.[0-9]+)?)/i, /fasting\s*(?:blood\s*)?sugar[:\s=]+([0-9]{2,3}(?:\.[0-9]+)?)/i]);
+    if (fbs) {
+      var st = fbs >= 126 ? 'high' : (fbs >= 100 ? 'borderline' : 'normal');
+      labs.push({
+        name: LAB_PANELS_REF.fbs.name,
+        val: fbs + ' mg/dL',
+        normal: LAB_PANELS_REF.fbs.normal + ' mg/dL',
+        status: st,
+        action: st === 'high' ? 'Low glycemic index meals; eliminate table sugar and refined grains; unpolished rice with fibrous greens.' : 'Standard glycemic balance maintained.'
+      });
+    }
+
+    var ppbs = matchNum([/ppbs[:\s=]+([0-9]{2,3}(?:\.[0-9]+)?)/i, /post\s*prandial[:\s=]+([0-9]{2,3}(?:\.[0-9]+)?)/i]);
+    if (ppbs) {
+      var stPp = ppbs >= 200 ? 'high' : (ppbs >= 140 ? 'borderline' : 'normal');
+      labs.push({
+        name: LAB_PANELS_REF.ppbs.name,
+        val: ppbs + ' mg/dL',
+        normal: LAB_PANELS_REF.ppbs.normal + ' mg/dL',
+        status: stPp,
+        action: stPp === 'high' ? 'Portion controlled carbohydrates; split lunches and dinners; pair meals with fiber (Lau, Patol, Methi).' : 'Normal post-meal tolerance.'
+      });
+    }
+
+    var a1c = matchNum([/hba1c[:\s=]+([0-9]+(?:\.[0-9]+)?)/i, /glycated\s*h(?:a?e?moglobin)?[:\s=]+([0-9]+(?:\.[0-9]+)?)/i]);
+    if (a1c) {
+      var stA1c = a1c >= 6.5 ? 'high' : (a1c >= 5.7 ? 'borderline' : 'normal');
+      labs.push({
+        name: LAB_PANELS_REF.hba1c.name,
+        val: a1c + '%',
+        normal: '< 5.7%',
+        status: stA1c,
+        action: stA1c === 'high' ? 'Caloric cap at 1,450 kcal/day; zero high-GI fruits (mango/banana); introduce methi seeds and bitter gourd.' : 'Good 3-month glycemic control.'
+      });
+    }
+
+    var bpM = /(?:bp|blood\s*pressure)[:\s=]+([0-9]{2,3})\s*[\/|\\]\s*([0-9]{2,3})/i.exec(t);
+    if (bpM) {
+      var sys = parseInt(bpM[1], 10), dia = parseInt(bpM[2], 10);
+      var stBp = (sys >= 140 || dia >= 90) ? 'high' : ((sys >= 120 || dia >= 80) ? 'borderline' : 'normal');
+      labs.push({
+        name: 'Blood Pressure (BP)',
+        val: sys + '/' + dia + ' mmHg',
+        normal: '< 120/80 mmHg',
+        status: stBp,
+        action: stBp === 'high' ? 'DASH nutrition protocol: sodium restricted (< 3g salt/day); strictly avoid pickles, papad, chanachur; increase natural potassium.' : 'Normotensive status.'
+      });
+    }
+
+    var chol = matchNum([/(?:total\s*cholesterol|s\.?\s*cholesterol)[:\s=]+([0-9]{2,3})/i]);
+    if (chol) {
+      var stChol = chol >= 240 ? 'high' : (chol >= 200 ? 'borderline' : 'normal');
+      labs.push({
+        name: LAB_PANELS_REF.chol.name,
+        val: chol + ' mg/dL',
+        normal: '< 200 mg/dL',
+        status: stChol,
+        action: stChol !== 'normal' ? 'Cooking oil restricted to 15 ml (3 tsp) per day; prioritize steamed or boiled food; zero ghee/butter.' : 'Desirable lipid level.'
+      });
+    }
+
+    var tg = matchNum([/(?:triglycerides|tgl|tg)[:\s=]+([0-9]{2,3})/i]);
+    if (tg) {
+      var stTg = tg >= 200 ? 'high' : (tg >= 150 ? 'borderline' : 'normal');
+      labs.push({
+        name: LAB_PANELS_REF.tg.name,
+        val: tg + ' mg/dL',
+        normal: '< 150 mg/dL',
+        status: stTg,
+        action: stTg !== 'normal' ? 'Strictly eliminate refined sugar, sweets, bakeries, and sweetened fruit juices.' : 'Normal triglyceride level.'
+      });
+    }
+
+    var uric = matchNum([/(?:uric\s*acid|s\.?\s*uric\s*acid)[:\s=]+([0-9]+(?:\.[0-9]+)?)/i]);
+    if (uric) {
+      var stUric = uric >= 7.5 ? 'high' : (uric >= 7.0 ? 'borderline' : 'normal');
+      labs.push({
+        name: LAB_PANELS_REF.uric.name,
+        val: uric + ' mg/dL',
+        normal: '3.5 - 7.0 mg/dL',
+        status: stUric,
+        action: stUric !== 'normal' ? 'Low-purine diet: avoid red meat, organ meats, masoor dal, spinach, and alcohol; hydrate with 3 liters of water daily.' : 'Uric acid within safe threshold.'
+      });
+    }
+
+    var creat = matchNum([/(?:s\.?\s*creatinine|serum\s*creatinine)[:\s=]+([0-9]+(?:\.[0-9]+)?)/i]);
+    if (creat) {
+      var stCreat = creat > 1.4 ? 'high' : (creat > 1.2 ? 'borderline' : 'normal');
+      labs.push({
+        name: LAB_PANELS_REF.creat.name,
+        val: creat + ' mg/dL',
+        normal: '0.6 - 1.2 mg/dL',
+        status: stCreat,
+        action: stCreat === 'high' ? 'Moderate protein (0.8g/kg body weight); restrict excess potassium and phosphorus; maintain monitored hydration.' : 'Normal renal filtration.'
+      });
+    }
+
+    var sgpt = matchNum([/(?:sgpt|alt)[:\s=]+([0-9]{1,3})/i]);
+    if (sgpt) {
+      var stSgpt = sgpt > 65 ? 'high' : (sgpt > 55 ? 'borderline' : 'normal');
+      labs.push({
+        name: LAB_PANELS_REF.sgpt.name,
+        val: sgpt + ' U/L',
+        normal: '7 - 55 U/L',
+        status: stSgpt,
+        action: stSgpt !== 'normal' ? 'NAFLD protocol: zero fried meals; light stews (jhol/shukto); antioxidants from turmeric and green leafy vegetables.' : 'Healthy liver enzyme activity.'
+      });
+    }
+
+    var tsh = matchNum([/tsh[:\s=]+([0-9]+(?:\.[0-9]+)?)/i]);
+    if (tsh) {
+      var stTsh = tsh > 5.5 ? 'high' : (tsh < 0.4 ? 'low' : 'normal');
+      labs.push({
+        name: LAB_PANELS_REF.tsh.name,
+        val: tsh + ' µIU/mL',
+        normal: '0.4 - 4.5 µIU/mL',
+        status: stTsh,
+        action: stTsh === 'high' ? 'Avoid raw goitrogenic vegetables (cabbage, cauliflower, radish); ensure adequate iodine and selenium.' : 'Euthyroid state.'
+      });
+    }
+
+    var hb = matchNum([/(?:hemoglobin|haemoglobin|hb)[:\s=]+([0-9]+(?:\.[0-9]+)?)/i]);
+    if (hb) {
+      var stHb = hb < 12.0 ? 'low' : 'normal';
+      labs.push({
+        name: LAB_PANELS_REF.hb.name,
+        val: hb + ' g/dL',
+        normal: '12.5 - 16.0 g/dL',
+        status: stHb,
+        action: stHb === 'low' ? 'Anemia corrective protocol: iron-dense moringa (sojne) leaves, pomegranate, dates paired with vitamin C (amla/lemon).' : 'Optimal blood oxygenation.'
+      });
+    }
+
+    return labs;
+  }
+
+  function detectActiveDiseases(ocrText, verifiedMeds, labs) {
+    var diseases = [];
+    var raw = (ocrText + ' ' + extra.value).toLowerCase();
+
+    function addDis(d) {
+      if (diseases.indexOf(d) === -1) diseases.push(d);
+    }
+
+    labs.forEach(function (l) {
+      if (l.status === 'high' || l.status === 'borderline') {
+        if (l.name.indexOf('Sugar') !== -1 || l.name.indexOf('HbA1c') !== -1) addDis("Type 2 Diabetes Mellitus");
+        if (l.name.indexOf('Pressure') !== -1) addDis("Essential Hypertension (Stage 1)");
+        if (l.name.indexOf('Cholesterol') !== -1) addDis("Dyslipidemia & High Cholesterol");
+        if (l.name.indexOf('Triglycerides') !== -1) addDis("Hypertriglyceridemia");
+        if (l.name.indexOf('Uric') !== -1) addDis("Hyperuricemia & Gout");
+        if (l.name.indexOf('SGPT') !== -1) addDis("Grade 1 Fatty Liver (NAFLD)");
+        if (l.name.indexOf('TSH') !== -1) addDis("Hypothyroidism");
+        if (l.name.indexOf('Creatinine') !== -1) addDis("Renal Impairment (CKD Stage 2)");
+      }
+      if (l.status === 'low' && l.name.indexOf('Hemoglobin') !== -1) addDis("Iron Deficiency Anemia");
+    });
+
+    verifiedMeds.forEach(function (m) {
+      var mLower = m.toLowerCase();
+      PHARMA_DB.forEach(function (item) {
+        for (var i = 0; i < item.syn.length; i++) {
+          if (mLower.indexOf(item.syn[i]) !== -1) {
+            addDis(item.condition);
+            break;
+          }
+        }
+      });
+    });
+
+    if (raw.indexOf('diabet') !== -1 || raw.indexOf('t2dm') !== -1) addDis("Type 2 Diabetes Mellitus");
+    if (raw.indexOf('hypertens') !== -1 || raw.indexOf('htn') !== -1) addDis("Essential Hypertension");
+    if (raw.indexOf('fatty liver') !== -1 || raw.indexOf('nafld') !== -1) addDis("Grade 1 Fatty Liver (NAFLD)");
+    if (raw.indexOf('uric') !== -1 || raw.indexOf('gout') !== -1) addDis("Hyperuricemia & Gout");
+    if (raw.indexOf('thyroid') !== -1 || raw.indexOf('hypothyroid') !== -1) addDis("Hypothyroidism");
+    if (raw.indexOf('reflux') !== -1 || raw.indexOf('gerd') !== -1 || raw.indexOf('gastritis') !== -1) addDis("Acid Reflux (GERD) & Gastritis");
+
+    if (diseases.length === 0) diseases.push("General Cardiometabolic Health Maintenance");
+    return diseases;
+  }
+
+  /* -------------------------------------------------------------
+     PARSE PATIENT PREFERENCES & NOTES (ACTIVE PARSING)
+  ------------------------------------------------------------- */
+  function parsePatientPreferences(text) {
+    var raw = (text || '').trim();
+    var lower = raw.toLowerCase();
+    var prefs = {
+      raw: raw,
+      isVeg: false,
+      isVegan: false,
+      isFishEater: false,
+      noEgg: false,
+      noDairy: false,
+      hasReflux: false,
+      peanutAllergy: false,
+      elderly: false,
+      statedAge: null,
+      customDirectives: []
+    };
+
+    if (!raw) return prefs;
+
+    // Detect Diet Type
+    if (/(pure\s*veg|vegetarian|shakahari|niramish|নিরামিষ|शाकाहारी)/i.test(lower) && !/(non[- ]?veg|mach|fish)/i.test(lower)) {
+      prefs.isVeg = true;
+      prefs.customDirectives.push("100% Pure Vegetarian menu applied (all animal meats & fish removed)");
+    } else if (/(fish|macher|mach|মাছ|non[- ]?veg)/i.test(lower)) {
+      prefs.isFishEater = true;
+      prefs.customDirectives.push("Freshwater fish stew allowed in moderate portions");
+    }
+
+    if (/vegan/i.test(lower)) {
+      prefs.isVegan = true;
+      prefs.noDairy = true;
+      prefs.isVeg = true;
+      prefs.customDirectives.push("Strict Vegan: All dairy (milk, curd, chhena, paneer) replaced with soy/plant bases");
+    }
+
+    if (/(no\s*egg|egg\s*allergy|ডিম\s*না|ডিম\s*অ্যালার্জি)/i.test(lower) || (prefs.isVeg && !/eggitarian/i.test(lower))) {
+      prefs.noEgg = true;
+      prefs.customDirectives.push("Egg-free protein sources prioritized (fresh chhena, sprouts, pulses)");
+    }
+
+    if (/(no\s*dairy|lactose|milk\s*allergy|দুধ\s*না)/i.test(lower)) {
+      prefs.noDairy = true;
+      prefs.customDirectives.push("Dairy-free: replaced milk/buttermilk with herbal infusions or lemon-cumin water");
+    }
+
+    if (/(reflux|gerd|acid|heartburn|গ্যাস|অম্বল|এসিডিটি)/i.test(lower)) {
+      prefs.hasReflux = true;
+      prefs.customDirectives.push("GERD/Acid Reflux Protocol: Alkaline warm cumin/fennel water instead of citrus, zero chili/fried items");
+    }
+
+    if (/(peanut|nut\s*allergy|চীনাবাদাম)/i.test(lower)) {
+      prefs.peanutAllergy = true;
+      prefs.customDirectives.push("Peanut Allergy Alert: strictly excluded peanuts and peanut oil");
+    }
+
+    var ageMatch = /(?:age|বছর|বয়স)[:\s=]+([0-9]{2})/i.exec(lower) || /([0-9]{2})\s*(?:yrs|years|yr|বছর)/i.exec(lower);
+    if (ageMatch && ageMatch[1]) {
+      prefs.statedAge = parseInt(ageMatch[1], 10);
+      if (prefs.statedAge >= 60) {
+        prefs.elderly = true;
+        prefs.customDirectives.push("Geriatric Nutrition Consideration: Soft-cooked easily digestible grains and lighter fiber");
+      }
+    }
+
+    return prefs;
+  }
+
+  function calculateKcalTarget(diseases, labs, prefs) {
+    var hasDiabetes = false, hasHTN = false, hasFattyLiver = false, hasCKD = false;
+    diseases.forEach(function (d) {
+      var dl = d.toLowerCase();
+      if (dl.indexOf('diabet') !== -1) hasDiabetes = true;
+      if (dl.indexOf('hypertens') !== -1) hasHTN = true;
+      if (dl.indexOf('fatty liver') !== -1) hasFattyLiver = true;
+      if (dl.indexOf('renal') !== -1 || dl.indexOf('ckd') !== -1) hasCKD = true;
+    });
+
+    var baseKcal = 1600;
+    var note = "Balanced Cardiometabolic Energy Target";
+
+    if (hasDiabetes && (hasHTN || hasFattyLiver)) {
+      baseKcal = 1450;
+      note = "Therapeutic Caloric Restriction for Glycemic & Lipid Normalization";
+    } else if (hasDiabetes) {
+      baseKcal = 1500;
+      note = "Moderate Low Glycemic Target";
+    } else if (hasCKD) {
+      baseKcal = 1650;
+      note = "Renal Protection & Glomerular Shielding";
+    }
+
+    // Age adjustment if specified in notes
+    if (prefs && prefs.statedAge) {
+      if (prefs.statedAge >= 65 && baseKcal > 1400) {
+        baseKcal -= 50;
+        note += " (Adjusted for age " + prefs.statedAge + ")";
+      }
+    }
+
+    return {
+      total: baseKcal,
+      label: baseKcal.toLocaleString() + " kcal / day",
+      carbs: baseKcal === 1450 ? "50% (180g)" : "52% (195g)",
+      protein: baseKcal === 1650 ? "12% (50g)" : "20% (72g)",
+      fat: "28% (46g)",
+      note: note
+    };
+  }
+
+  function buildRegionalNutritionPlan(stName, lang, diseases, labs, kcalProfile, prefs) {
+    var tr = TRANSLATIONS[lang] || TRANSLATIONS["English"];
+    var isBengali = lang.indexOf('Bengali') !== -1;
+    var isHindi = lang.indexOf('Hindi') !== -1;
+
+    var isDiabetic = diseases.some(function(d){ return d.toLowerCase().indexOf('diabet') !== -1; });
+    var isGout = diseases.some(function(d){ return d.toLowerCase().indexOf('uric') !== -1 || d.toLowerCase().indexOf('gout') !== -1; });
+
+    var isVeg = prefs.isVeg;
+    var hasReflux = prefs.hasReflux;
+    var noEgg = prefs.noEgg;
+    var noDairy = prefs.noDairy;
+
+    var dailyMeals = [];
+    if (isBengali) {
+      var morningDrink = hasReflux ? "১ গ্লাস কুসুম গরম মৌরি ও জিরে ভেজানো জল (গ্যাস ও রিফ্লাক্সের আরামদায়ক)" : "১ গ্লাস কুসুম গরম মেথি ভেজানো জল";
+      var morningNuts = prefs.peanutAllergy ? "৪টি ভেজানো খোসা ছাড়ানো কাঠবাদাম (Almonds) - চিনাবাদাম সম্পূর্ণ নিষিদ্ধ" : "৪টি ভেজানো খোসা ছাড়ানো কাঠবাদাম (Almonds)";
+      
+      var breakfastProt = (noEgg || isVeg) ? "৫০ গ্রাম বাড়িতে তৈরি তাজা ছানা বা ১ বাটি সেদ্ধ অঙ্কুরিত মুগ" : "১টি সেদ্ধ ডিমের সাদা অংশ (অথবা ৫০ গ্রাম ঘরে তৈরি ছানা)";
+      var midDrink = noDairy ? "১ গ্লাস ডাবের জল বা পাতলা লেবু-পুদিনার জল" : "১ গ্লাস চিনি ও লবণ ছাড়া পাতলা ঘোল (বা লেবুর জল)";
+      
+      var lunchCurry = isVeg ? 
+        "১ বাটি সুস্বাদু কম তেলের ছানার ডালনা অথবা সোয়াবিন ও পটলের পাতলা রসা (১০০% নিরামিষ প্রোটিন)" : 
+        "১ টুকরো হালকা রুই বা কাতলা মাছের জিরে-বাটা পাতলা ঝোল";
+
+      var bedtimeDrink = noDairy ? "১ কাপ হালকা গরম ক্যামোমাইল চা বা ইসবগুলের ভুসি সহ কুসুম গরম জল" : "১ কাপ হালকা গরম মাখন-তোলা জল মেশানো গরুর দুধ অথবা ১ গ্লাস গরম জল ও ১ চামচ ইসবগুল";
+
+      dailyMeals = [
+        { time: tr.meals.early, menu: morningDrink + " + " + morningNuts, kcal: "80 kcal" },
+        { time: tr.meals.breakfast, menu: "২টি হাতে গড়া লাল আটার রুটি + ১ বাটি হালকা তেল-মশলায় রান্না লাউ/ঝিঙে বা পেঁপে তরকারি + " + breakfastProt, kcal: "340 kcal" },
+        { time: tr.meals.mid, menu: "১টি কচি ডাঁসা পেয়ারা (অথবা ১ বাটি শসা ও পাকা পেঁপে) + " + midDrink, kcal: "110 kcal" },
+        { time: tr.meals.lunch, menu: "১ ছোট বাটি ঢেঁকিছাঁটা বা সিদ্ধ চালের ভাত (১০০ গ্রাম রান্না) + ১ বাটি পাতলা মুগ ডাল + ১ বাটি নিরামিষ শুক্তো/লাউ ঘণ্ট + " + lunchCurry, kcal: "490 kcal" },
+        { time: tr.meals.snack, menu: "১ কাপ চিনি ছাড়া লাল চা (বা গ্রিন টি) + ১ ছোট বাটি শুকনো খোলায় ভাজা চালভাঙা মুড়ি ও সেদ্ধ ছোলা বা অঙ্কুরিত মুগ", kcal: "140 kcal" },
+        { time: tr.meals.dinner, menu: "২টি পাতলা লাল আটার ফুলকো রুটি + ১ বাটি কম তেলের পটল বা সজনে ডাঁটার তরকারি + ১ ছোট বাটি পাতলা মুগ ডাল বা ৫০ গ্রাম ছানার তরকারি", kcal: "310 kcal" },
+        { time: tr.meals.bedtime, menu: bedtimeDrink, kcal: "80 kcal" }
+      ];
+    } else if (isHindi) {
+      var morningDrinkH = hasReflux ? "1 गिलास गुनगुना सौंफ व जीरे का पानी (एसिडिटी रोधी)" : "1 गिलास गुनगुना मेथी का पानी";
+      var breakfastProtH = (noEgg || isVeg) ? "50 ग्राम ताजा गाय का पनीर या उबले अंकुरित मूंग" : "1 उबले अंडे का सफेद भाग (या 50 ग्राम पनीर)";
+      var lunchProtH = isVeg ? "1 कटोरी सोयाबीन करी या उबले गट्टे की कम तेल की सब्जी (100% शाकाहारी)" : "1 टुकड़ा कम मसाले वाली तली-रहित मछली की झोल";
+
+      dailyMeals = [
+        { time: tr.meals.early, menu: morningDrinkH + " + 4 भीगे हुए बादाम", kcal: "80 kcal" },
+        { time: tr.meals.breakfast, menu: "2 गेहूं व चने के आटे की पतली रोटियां + 1 कटोरी तोरी/लौकी की कम तेल वाली सब्जी + " + breakfastProtH, kcal: "340 kcal" },
+        { time: tr.meals.mid, menu: "1 ताजा अमरूद (या खीरा व पपीता) + 1 गिलास बिना चीनी व नमक की छाछ", kcal: "110 kcal" },
+        { time: tr.meals.lunch, menu: "1 छोटी कटोरी उबले चावल + 1 कटोरी मूंग दाल + 1 कटोरी टिंडे/तोरी की सब्जी + " + lunchProtH, kcal: "490 kcal" },
+        { time: tr.meals.snack, menu: "1 कप बिना चीनी की हर्बल चाय + 1 कटोरी उबले अंकुरित चने व भुने मखाने", kcal: "140 kcal" },
+        { time: tr.meals.dinner, menu: "2 पतली फुलका रोटियां + 1 कटोरी लौकी का भर्ता या परवल की सब्जी + 1 कटोरी पतली दाल", kcal: "310 kcal" },
+        { time: tr.meals.bedtime, menu: "1 कप बिना मलाई का गुनगुना दूध व चुटकी भर हल्दी", kcal: "80 kcal" }
+      ];
+    } else {
+      var morningDrinkE = hasReflux ? "1 glass lukewarm fennel & cumin soaked water (alkaline, acid reflux relief)" : "1 glass lukewarm fenugreek water";
+      var breakfastProtE = (noEgg || isVeg) ? "50g fresh homemade cottage cheese (paneer) or boiled sprouts" : "1 boiled egg white (or 50g fresh paneer)";
+      var lunchProtE = isVeg ? "1 bowl low-fat cottage cheese (paneer) or nutri-nugget soya stew (100% Vegetarian)" : "1 piece light freshwater fish stew";
+
+      dailyMeals = [
+        { time: tr.meals.early, menu: morningDrinkE + " + 4 soaked peeled almonds", kcal: "80 kcal" },
+        { time: tr.meals.breakfast, menu: "2 whole wheat multigrain rotis + 1 bowl low-oil bottle gourd (lauki) sabzi + " + breakfastProtE, kcal: "340 kcal" },
+        { time: tr.meals.mid, menu: "1 fresh guava (or papaya bowl) + 1 glass unsweetened diluted chaas", kcal: "110 kcal" },
+        { time: tr.meals.lunch, menu: "1 small cup unpolished steamed rice + 1 bowl yellow moong dal + 1 bowl seasonal vegetable curry + " + lunchProtE, kcal: "490 kcal" },
+        { time: tr.meals.snack, menu: "1 cup unsweetened green tea + 1 small bowl roasted makhana and boiled sprouts", kcal: "140 kcal" },
+        { time: tr.meals.dinner, menu: "2 soft thin phulkas + 1 bowl pointed gourd (parwal) sabzi + 1 small bowl thin dal", kcal: "310 kcal" },
+        { time: tr.meals.bedtime, menu: "1 cup warm skimmed milk or warm isabgol water", kcal: "80 kcal" }
+      ];
+    }
+
+    var weeklyPlan = [];
+    if (isBengali) {
+      var monLunch = isVeg ? "ভাত + মুগ ডাল + শুক্তো + ছানার ডালনা" : "ভাত + মুগ ডাল + শুক্তো + রুই মাছের ঝোল";
+      var tueLunch = isVeg ? "ভাত + মুসুর ছাড়া ডাল + পটল পোড়া + সোয়াবিন তরকারি" : "ভাত + মুসুর ছাড়া ডাল + পটল পোড়া + কাতলা মাছের ঝোল";
+      var wedLunch = isVeg ? "ভাত + লাউ ডাল + পেঁপে তরকারি + সজনে ডাঁটার চচ্চড়ি" : "ভাত + লাউ ডাল + পেঁপে তরকারি + মৌরলা মাছের চচ্চড়ি";
+      var thuLunch = isVeg ? "ভাত + মুগ ডাল + এঁচোড়ের ডালনা (কম তেল) + ছানা" : "ভাত + মুগ ডাল + এঁচোড়ের ডালনা + মাছের ঝোল";
+      var friLunch = isVeg ? "ভাত + শুক্তো + ডালমা + ভেন্ডি পোস্ত কম তেল" : "ভাত + শুক্তো + তোপসে বা রুই মাছের পাতলা ঝোল";
+      var satLunch = isVeg ? "ভাত + ডালমা + ভেন্ডির তরকারি + পনিরের তরকারি" : "ভাত + ডালমা + ভেন্ডির তরকারি + পাতলা মাছের ঝোল";
+      var sunLunch = isVeg ? "সিদ্ধ চালের ভাত + মেথি শাকের তরকারি + ধোকার ডালনা" : "সিদ্ধ চালের ভাত + মেথি শাকের তরকারি + বাটা মাছের ঝোল";
+
+      weeklyPlan = [
+        { day: tr.days[0], breakfast: "২টি আটার রুটি + লাউ তরকারি", mid: "১টি পেয়ারা + পাতলা ঘোল", lunch: monLunch, snack: "মুড়ি ও সেদ্ধ ছোলা + লাল চা", dinner: "২টি ফুলকো রুটি + পটলের ডালনা" },
+        { day: tr.days[1], breakfast: "১ বাটি ওটস খিচুড়ি বা ডালিয়া", mid: "শসা ও পাকা পেঁপে", lunch: tueLunch, snack: "ভাজা মাখানা + গ্রিন টি", dinner: "২টি রুটি + সজনে ডাঁটার তরকারি + ছানা" },
+        { day: tr.days[2], breakfast: "২টি রুটি + ঝিঙে আলুর তরকারি", mid: "১টি ছোট আপেল", lunch: wedLunch, snack: "অঙ্কুরিত মুগ ডাল চাট", dinner: "২টি রুটি + কম তেলের বেগুন ভর্তা + পাতলা ডাল" },
+        { day: tr.days[3], breakfast: (noEgg || isVeg) ? "২টি আটার রুটি + ঘরে তৈরি ছানা" : "২টি আটার রুটি + ডিমের সাদা অংশ", mid: "পাতলা লেবুর জল + পেয়ারা", lunch: thuLunch, snack: "মুড়ি ও শসা কুচি + লাল চা", dinner: "২টি রুটি + চালকুমড়োর ঘণ্ট + এক বাটি ডাল" },
+        { day: tr.days[4], breakfast: "ভেজিটেবল সুজি উপমা (কম তেল)", mid: "১ বাটি পাকা পেঁপে", lunch: friLunch, snack: "ভাজা ছোলা + সবুজ চা", dinner: "২টি রুটি + লাউয়ের ডালনা + পাতলা ডাল" },
+        { day: tr.days[5], breakfast: "২টি আটার রুটি + পেঁপের তরকারি", mid: "১টি মুসাম্বি লেবু বা শসা", lunch: satLunch, snack: "মুড়ি মাখা (তেল ছাড়া)", dinner: "২টি রুটি + পটল আলুর পাতলা তরকারি" },
+        { day: tr.days[6], breakfast: "২টি বেসন বা ছাতুর হালকা রুটি", mid: "১টি টাটকা পেয়ারা + ঘোল", lunch: sunLunch, snack: "রোস্টেড মাখানা + লাল চা", dinner: "২টি রুটি + পেঁপে ও ঝিঙের ঝোল + ঘরে পাতা টক দই" }
+      ];
+    } else if (isHindi) {
+      weeklyPlan = [
+        { day: tr.days[0], breakfast: "2 रोटी + तोरी की सब्जी", mid: "1 अमरूद + छाछ", lunch: "उबले चावल + मूंग दाल + टिंडे की सब्जी + सलाद", snack: "भुने मखाने + ग्रीन टी", dinner: "2 रोटी + लौकी की सब्जी" },
+        { day: tr.days[1], breakfast: "1 कटोरी वेज दलिया", mid: "पपीता व खीरा", lunch: "रोटी + अरहर दाल + भिंडी + दही", snack: "अंकुरित चना + चाय", dinner: "2 रोटी + तोरी की भुर्जी" },
+        { day: tr.days[2], breakfast: "2 मिस्सी रोटी + पनीर", mid: "1 सेब", lunch: "चावल + पंचमेल दाल + परवल की सब्जी", snack: "भुना चना + छाछ", dinner: "2 रोटी + मेथी की सब्जी" },
+        { day: tr.days[3], breakfast: "मूंग दाल चीला", mid: "खीरा + जीरा पानी", lunch: "रोटी + मूंग दाल + लौकी का कोफ्ता (उबला)", snack: "मखाना चाट", dinner: "2 पतली रोटी + दाल" },
+        { day: tr.days[4], breakfast: "2 मल्टीग्रेन रोटी + उबले चने", mid: "1 अमरूद", lunch: "चावल + कढ़ी (कम तेल) + पालक की सब्जी", snack: "भुने चने + ग्रीन टी", dinner: "2 रोटी + टिंडे की सब्जी" },
+        { day: tr.days[5], breakfast: "वेजिटेबल ओट्स", mid: "मौसमी या पपीता", lunch: "रोटी + दाल तड़का + परवल आलू कम तेल", snack: "मुरमुरा + चाय", dinner: "2 रोटी + कद्दू की सब्जी" },
+        { day: tr.days[6], breakfast: "2 बेसन की रोटी + दही", mid: "ताजा छाछ + सेब", lunch: "चावल + सादा दाल + मेथी आलू + सलाद", snack: "अंकुरित मूंग चाट", dinner: "2 रोटी + लौकी का सूप व सब्जी" }
+      ];
+    } else {
+      weeklyPlan = [
+        { day: tr.days[0], breakfast: "2 rotis + bottle gourd sabzi", mid: "1 fresh guava + buttermilk", lunch: "Rice + yellow dal + vegetable stew + cottage cheese", snack: "Roasted makhana + green tea", dinner: "2 phulkas + pointed gourd sabzi" },
+        { day: tr.days[1], breakfast: "1 bowl vegetable dalia porridge", mid: "Papaya & cucumber slices", lunch: "Rotis + moong dal + ridge gourd + curd", snack: "Boiled sprouts + herbal tea", dinner: "2 phulkas + zucchini/lauki sabzi" },
+        { day: tr.days[2], breakfast: "2 multigrain rotis + paneer", mid: "1 green apple", lunch: "Steamed rice + panchmel dal + mixed veg", snack: "Roasted chickpeas + cumin water", dinner: "2 phulkas + fenugreek greens" },
+        { day: tr.days[3], breakfast: "1 moong dal cheela with mint chutney", mid: "Cucumber + fennel water", lunch: "Rotis + moong dal + steamed lauki kofta", snack: "Makhana chaat", dinner: "2 thin rotis + thin dal" },
+        { day: tr.days[4], breakfast: "2 rotis + boiled sprouts", mid: "1 fresh guava", lunch: "Brown rice + light kadhi + spinach stew", snack: "Roasted chana + black tea", dinner: "2 phulkas + round gourd curry" },
+        { day: tr.days[5], breakfast: "Vegetable oats upma", mid: "Sweet lime or papaya", lunch: "Rotis + dal tadka + pointed gourd sabzi", snack: "Puffed rice (oil-free) + tea", dinner: "2 rotis + pumpkin curry" },
+        { day: tr.days[6], breakfast: "2 sattu/besan rotis + curd", mid: "Diluted chaas + apple", lunch: "Steamed rice + moong dal + methi sabzi", snack: "Sprouted moong salad", dinner: "2 rotis + bottle gourd soup & sabzi" }
+      ];
+    }
+
+    var eatAvoidTable = [];
+    if (isBengali) {
+      var protEat = isVeg ? 
+        "পাতলা মুগ ডাল, বাড়িতে পাতা কম ফ্যাটের ছানা, সয়াবিন কারি, অঙ্কুরিত মুগ ও চনা, পনির।" : 
+        "পাতলা মুগ ডাল, রুই/কাতলা/মৌরলা মাছের ঝোল (কম তেল), সেদ্ধ ডিমের সাদা অংশ, বাড়িতে পাতা কম ফ্যাটের ছানা।";
+
+      var protAvoid = isVeg ? 
+        "সকল প্রকার মাছ, মাংস, ডিম ও সামুদ্রিক খাদ্য (রোগীর নিরামিষ পছন্দ অনুযায়ী সম্পূর্ণ পরিহারযোগ্য)।" : 
+        (isGout ? "খাসির মাংস (Mutton), বিফ, চিংড়ি মাছ, কাঁকড়া, অর্গান মিট (মেটে/কলিজা), মসুর ডাল।" : "রেড মিট, খাসির মাংসের চর্বি, চিংড়ি, ফাস্ট ফুড।");
+
+      var drinksAvoid = hasReflux ? 
+        "কড়া ব্ল্যাক কফি, কড়া চা, কার্বনেটেড কোল্ড ড্রিংকস, মদ, কাঁচা পেঁয়াজ-রসুন, অতিরিক্ত ভাজা চানাচুর।" : 
+        "ডালডা, পাম অয়েল, মাখন, ঘি, প্যাকেটজাত কোল্ড ড্রিংকস, মদ বা অ্যালকোহল, মিষ্টি শরবত, চানাচুর।";
+
+      eatAvoidTable = [
+        {
+          cat: tr.cats.grains,
+          eat: "ঢেঁকিছাঁটা বা সিদ্ধ চাল (পরিমিত), লাল আটা, ওটস, বার্লি, দালিয়া।",
+          avoid: "ময়দা, লুচি, পরোটা, সাদা পাউরুটি, চাউমিন, বাসি পোলাও ও বিরিয়ানি।"
+        },
+        {
+          cat: tr.cats.veggies,
+          eat: "লাউ, পটল, ঝিঙে, উচ্ছে বা করলা, শুক্তোর সবজি, পেঁপে, সজনে ডাঁটা, কুঁদরি, চালকুমড়ো।",
+          avoid: isGout ? "অতিরিক্ত পালং শাক, ফুলকপি, লাল শাক, কচু, অতিরিক্ত মাটির নিচের আলু।" : "ডিপ-ফ্রাই করা আলু ভাজা, বেগুনি, চপ, কড়া মশলাদার দম আলু।"
+        },
+        {
+          cat: tr.cats.fruits,
+          eat: "টাটকা পেয়ারা, পাকা পেঁপে, আপেল, শসা, জাম, জামরুল, বাতাবি লেবু।",
+          avoid: isDiabetic ? "পাকা আম, কাঁঠাল, পাকা কলা, লিচু, স্যাপোটা (সফেদা), কিসমিস ও মিষ্টি ফলের রস।" : "চিনির সিরায় ভেজানো ক্যানড ফ্রুটস।"
+        },
+        {
+          cat: tr.cats.protein,
+          eat: protEat,
+          avoid: protAvoid
+        },
+        {
+          cat: tr.cats.drinks,
+          eat: "কাঁচা সরষের তেল বা রাইস ব্রান অয়েল (দিনে সর্বোচ্চ ৩ চামচ বা ১৫ মিলি), মৌরি জল, পাতলা টক দইয়ের ঘোল, ইসবগুল।",
+          avoid: drinksAvoid
+        }
+      ];
+    } else if (isHindi) {
+      eatAvoidTable = [
+        {
+          cat: tr.cats.grains,
+          eat: "जौ, चना व चोकर युक्त गेहूं की रोटियां, भूरे चावल, दलिया, ओट्स।",
+          avoid: "मैदा, सफेद ब्रेड, नान, भटूरे, समोसा, कचौरी, पूरी।"
+        },
+        {
+          cat: tr.cats.veggies,
+          eat: "लौकी, तोरी, परवल, टिंडा, करेला, खीरा, कद्दू, शिमला मिर्च।",
+          avoid: isGout ? "पालक, फूलगोभी, अरबी, मशरूम, तली हुई कटहल की सब्जी।" : "तले हुए आलू, भरवां पकोड़े, अधिक मसालेदार तरी वाली ग्रेवी।"
+        },
+        {
+          cat: tr.cats.fruits,
+          eat: "अमरूद, कच्चा/पका पपीता, हरा सेब, जामुन, संतरा, मौसमी।",
+          avoid: isDiabetic ? "पका आम, चीकू, लीची, केला, अंगूर, डिब्बाबंद मीठे जूस।" : "चीनी चाशनी में डूबे डिब्बाबंद फल।"
+        },
+        {
+          cat: tr.cats.protein,
+          eat: isVeg ? "मूंग दाल, ताजा गाय का पनीर, अंकुरित मूंग, चना, सोयाबीन (शाकाहारी)।" : "मूंग दाल, ताजा पनीर, उबला अंडा, पतली मछली का झोल।",
+          avoid: isVeg ? "मांसाहार, मछली, अंडा, सी-फूड (मरीज के शाकाहारी होने के कारण वर्जित)।" : "रेड मीट, चर्बी वाला मांस, डीप फ्राई की हुई मछली।"
+        },
+        {
+          cat: tr.cats.drinks,
+          eat: "सरसों तेल या राइस ब्रान तेल (15ml / 3 चम्मच प्रतिदिन), सौंफ पानी, छाछ, मेथी जल।",
+          avoid: "डालडा, वनस्पति घी, मक्खन, कोल्ड ड्रिंक्स, पैकेज्ड जूस, शराब, नमकीन भुजिया।"
+        }
+      ];
+    } else {
+      eatAvoidTable = [
+        {
+          cat: tr.cats.grains,
+          eat: "Unpolished parboiled rice, whole wheat multigrain roti, oats, barley, dalia.",
+          avoid: "Refined flour (maida), white bread, naans, bhaturas, puris, fried noodles."
+        },
+        {
+          cat: tr.cats.veggies,
+          eat: "Bottle gourd (lauki), pointed gourd (parwal), ridge gourd (turai), bitter gourd, raw papaya, ivy gourd.",
+          avoid: isGout ? "Excess spinach, cauliflower, mushrooms, deep-fried jackfruit, excess potatoes." : "Deep-fried vegetable pakoras, rich buttery gravies."
+        },
+        {
+          cat: tr.cats.fruits,
+          eat: "Fresh local guava, green apple, raw/ripe papaya, Indian jamun, sweet lime, cucumber.",
+          avoid: isDiabetic ? "Ripe mangoes, chiku (sapodilla), grapes, litchis, bananas, commercial fruit juices." : "Canned fruits preserved in heavy sugar syrup."
+        },
+        {
+          cat: tr.cats.protein,
+          eat: isVeg ? "Yellow moong dal, low-fat homemade paneer, boiled sprouts, nutrimeat soya." : "Yellow moong dal, thin freshwater fish stew, egg whites, cottage cheese.",
+          avoid: isVeg ? "All meat, poultry, seafood, and eggs (as per patient's vegetarian choice)." : "Mutton, organ meats, prawns, heavy masoor dal."
+        },
+        {
+          cat: tr.cats.drinks,
+          eat: "Mustard or rice bran oil (< 15 ml / 3 tsp per day), diluted buttermilk (chaas), fennel water, isabgol.",
+          avoid: "Vanaspati ghee, butter, commercial soft drinks, alcohol, sweetened beverages, packaged namkeen."
+        }
+      ];
+    }
+
+    return {
+      dailyMeals: dailyMeals,
+      weeklyPlan: weeklyPlan,
+      eatAvoidTable: eatAvoidTable,
+      headers: tr.headers
+    };
+  }
+
+  function renderDietChartHTML(stName, regName, lang, verifiedMeds, labs, diseases, kcalProfile, plan, prefs) {
+    var h = plan.headers;
+    var html = '';
+
+    html += '<h1>' + escapeHtml(h.reportSummary) + '</h1>';
+    html += '<p><strong>' + escapeHtml(stName) + ' (' + escapeHtml(regName) + ')</strong> | ' + escapeHtml(lang) + '</p>';
+
+    // Factored Patient Preferences Box
+    if (prefs.raw || prefs.customDirectives.length > 0) {
+      html += '<div class="pref-box">';
+      html += '<div class="pref-box-title"><span>👤</span> ' + escapeHtml(h.prefCard) + '</div>';
+      if (prefs.raw) {
+        html += '<p style="margin:0 0 .35rem;font-size:12px;color:#431407;"><strong>Stated Notes:</strong> "' + escapeHtml(prefs.raw) + '"</p>';
+      }
+      if (prefs.customDirectives.length > 0) {
+        html += '<ul>';
+        prefs.customDirectives.forEach(function (cd) {
+          html += '<li>' + escapeHtml(cd) + '</li>';
+        });
+        html += '</ul>';
+      }
+      html += '</div>';
+    }
+
+    html += '<h2>' + escapeHtml(h.labTable) + '</h2>';
+    if (labs.length === 0) {
+      html += '<p style="color:#64748b;font-style:italic;">No abnormal numeric lab test markers detected. General prophylactic clinical parameters applied.</p>';
+    } else {
+      html += '<table>';
+      html += '<thead><tr>';
+      html += '<th>' + escapeHtml(h.testCol) + '</th>';
+      html += '<th>' + escapeHtml(h.valCol) + '</th>';
+      html += '<th>' + escapeHtml(h.normCol) + '</th>';
+      html += '<th>' + escapeHtml(h.statusCol) + '</th>';
+      html += '<th>' + escapeHtml(h.actionCol) + '</th>';
+      html += '</tr></thead><tbody>';
+
+      labs.forEach(function (lb) {
+        var statusBadge = '';
+        if (lb.status === 'high') statusBadge = '<span class="lab-status high">🚨 High / Elevated</span>';
+        else if (lb.status === 'borderline') statusBadge = '<span class="lab-status borderline">⚠️ Borderline</span>';
+        else if (lb.status === 'low') statusBadge = '<span class="lab-status low">⬇️ Below Normal</span>';
+        else statusBadge = '<span class="lab-status normal">✅ Within Range</span>';
+
+        html += '<tr>';
+        html += '<td><strong>' + escapeHtml(lb.name) + '</strong></td>';
+        html += '<td>' + escapeHtml(lb.val) + '</td>';
+        html += '<td style="color:#64748b;">' + escapeHtml(lb.normal) + '</td>';
+        html += '<td>' + statusBadge + '</td>';
+        html += '<td style="font-size:12px;">' + escapeHtml(lb.action) + '</td>';
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+    }
+
+    html += '<h3>' + escapeHtml(h.activeCond) + '</h3>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:1rem;">';
+    diseases.forEach(function (d) {
+      html += '<span class="chip teal">🩺 ' + escapeHtml(d) + '</span>';
+    });
+    html += '</div>';
+
+    if (verifiedMeds.length > 0) {
+      html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications:</strong> ' + escapeHtml(verifiedMeds.join(', ')) + '</p>';
+    }
+
+    html += '<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:.75rem;padding:1rem;margin:1rem 0;">';
+    html += '<h3 style="margin:0 0 .25rem;color:#0f766e;">⚡ ' + escapeHtml(h.calorieCard) + ': ' + escapeHtml(kcalProfile.label) + '</h3>';
+    html += '<p style="margin:0 0 .5rem;font-size:12px;color:#134e4a;"><strong>Clinical Protocol:</strong> ' + escapeHtml(kcalProfile.note) + '</p>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:.75rem;font-size:12px;font-weight:600;color:#0f766e;">';
+    html += '<span>🍞 Carbs: ' + escapeHtml(kcalProfile.carbs) + '</span>';
+    html += '<span>🥚 Protein: ' + escapeHtml(kcalProfile.protein) + '</span>';
+    html += '<span>🥑 Healthy Fats: ' + escapeHtml(kcalProfile.fat) + '</span>';
+    html += '</div></div>';
+
+    html += '<h2>' + escapeHtml(h.dailyPlan) + '</h2>';
+    html += '<table>';
+    html += '<thead><tr>';
+    html += '<th style="width:25%;">' + escapeHtml(h.mealCol) + '</th>';
+    html += '<th style="width:60%;">' + escapeHtml(h.menuCol) + '</th>';
+    html += '<th style="width:15%;">' + escapeHtml(h.kcalCol) + '</th>';
+    html += '</tr></thead><tbody>';
+
+    plan.dailyMeals.forEach(function (m) {
+      html += '<tr>';
+      html += '<td><strong>' + escapeHtml(m.time) + '</strong></td>';
+      html += '<td>' + escapeHtml(m.menu) + '</td>';
+      html += '<td style="font-weight:600;color:#0d9488;">' + escapeHtml(m.kcal) + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+
+    html += '<h2>' + escapeHtml(h.weeklyPlan) + '</h2>';
+    html += '<table>';
+    html += '<thead><tr>';
+    html += '<th>' + escapeHtml(h.dayCol) + '</th>';
+    html += '<th>সকাল / Breakfast</th>';
+    html += '<th>মিড-মর্নিং / Mid-Morning</th>';
+    html += '<th>দুপুর / Lunch</th>';
+    html += '<th>বিকেল / Snack</th>';
+    html += '<th>রাত / Dinner</th>';
+    html += '</tr></thead><tbody>';
+
+    plan.weeklyPlan.forEach(function (row) {
+      html += '<tr>';
+      html += '<td><strong>' + escapeHtml(row.day) + '</strong></td>';
+      html += '<td style="font-size:12px;">' + escapeHtml(row.breakfast) + '</td>';
+      html += '<td style="font-size:12px;">' + escapeHtml(row.mid) + '</td>';
+      html += '<td style="font-size:12px;">' + escapeHtml(row.lunch) + '</td>';
+      html += '<td style="font-size:12px;">' + escapeHtml(row.snack) + '</td>';
+      html += '<td style="font-size:12px;">' + escapeHtml(row.dinner) + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+
+    html += '<h2>' + escapeHtml(h.eatTitle) + '</h2>';
+    html += '<table>';
+    html += '<thead><tr>';
+    html += '<th style="width:22%;">' + escapeHtml(h.catCol) + '</th>';
+    html += '<th style="width:39%;color:#047857;">' + escapeHtml(h.allowedCol) + '</th>';
+    html += '<th style="width:39%;color:#b91c1c;">' + escapeHtml(h.avoidCol) + '</th>';
+    html += '</tr></thead><tbody>';
+
+    plan.eatAvoidTable.forEach(function (c) {
+      html += '<tr>';
+      html += '<td><strong>' + escapeHtml(c.cat) + '</strong></td>';
+      html += '<td style="font-size:12px;color:#065f46;">' + escapeHtml(c.eat) + '</td>';
+      html += '<td style="font-size:12px;color:#991b1b;">' + escapeHtml(c.avoid) + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+
+    return html;
+  }
+
+  function generateDietChart() {
+    if (!currentImage && verifiedMedicines.length === 0) {
+      toast('Please upload a prescription or add a medicine first!', '⚠️');
+      drop.style.borderColor = '#f43f5e';
+      setTimeout(function () { drop.style.borderColor = '#cbd5e1'; }, 2000);
+      return;
+    }
+
+    var rv = regionSel.value, sv = stateSel.value, lv = langSel.value;
+    var dietitianName = (dietitianNameInput.value || '').trim();
+
+    idle.style.display = 'none';
+    loading.style.display = 'block';
+    error.style.display = 'none';
+    result.style.display = 'none';
+    genBtn.disabled = true;
+    toolbar.classList.remove('active');
+
+    setTimeout(function () {
+      try {
+        var patientPrefs = parsePatientPreferences(extra.value);
+        var parsedLabs = parseAllLabReports(extractedOcrText);
+        var activeDiseases = detectActiveDiseases(extractedOcrText, verifiedMedicines, parsedLabs);
+        var kcalProfile = calculateKcalTarget(activeDiseases, parsedLabs, patientPrefs);
+        var planData = buildRegionalNutritionPlan(sv, lv, activeDiseases, parsedLabs, kcalProfile, patientPrefs);
+
+        var finalHTML = renderDietChartHTML(sv, rv, lv, verifiedMedicines, parsedLabs, activeDiseases, kcalProfile, planData, patientPrefs);
+        output.innerHTML = finalHTML;
+
+        badges.innerHTML =
+          '<span class="chip teal">📍 ' + escapeHtml(sv) + ' (' + escapeHtml(rv) + ')</span>' +
+          '<span class="chip blue">🗣️ ' + escapeHtml(lv) + '</span>' +
+          '<span class="chip amber">⚡ ' + escapeHtml(kcalProfile.label) + '</span>' +
+          '<span class="chip purple">🥑 ' + (patientPrefs.isVeg ? 'Pure Vegetarian' : (patientPrefs.isFishEater ? 'Fish Eater' : 'Personal Diet')) + '</span>' +
+          '<span class="chip green">🧪 ' + parsedLabs.length + ' Lab Markers Analyzed</span>';
+
+        if (dietitianName) {
+          dietitianSignature.textContent = 'Clinical Diet Chart customized & formulated by: ' + dietitianName;
+          dietitianSignature.style.display = 'block';
+        } else {
+          dietitianSignature.style.display = 'none';
+        }
+
+        subtitle.textContent = 'Prescription, diagnostics & patient notes mapped for ' + sv;
+        loading.style.display = 'none';
+        result.style.display = 'block';
+        toolbar.classList.add('active');
+        toast('Clinical diet chart formulated with preferences!', '🎉');
+
+        if (window.innerWidth < 1024) {
+          try { result.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        }
+      } catch (err) {
+        console.error(err);
+        loading.style.display = 'none';
+        errMsg.textContent = 'Error during clinical formulation: ' + (err.message || 'unknown');
+        error.style.display = 'block';
+      } finally {
+        genBtn.disabled = false;
+      }
+    }, 600);
+  }
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  on(genBtn, 'click', generateDietChart);
+  on(retryBtn, 'click', generateDietChart);
+
+  on(copyBtn, 'click', function () {
+    var txt = output.innerText || '';
+    if (!txt) return;
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(txt).then(function () { toast('Diet chart copied to clipboard!', '📋'); });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      toast(ok ? 'Copied!' : 'Failed to copy', ok ? '📋' : '⚠️');
+    }
+  });
+
+  on(printBtn, 'click', function () { window.print(); });
+
+  console.log('[ArogyaDiet AI] Clinical Diagnostic, Lab & Preference Parser Ready ✓');
+})();
+</script>
+
+<script>
+  (function () {
+    const siteKey = 'arogyadiet-ai-official';
+    const counterEl = document.getElementById('visitor-count');
+    if (!counterEl) return;
+
+    fetch(`https://counterapi.dev/${siteKey}/increment`)
+      .then(response => {
+        if (!response.ok) throw new Error('Primary counter service unavailable');
+        return response.json();
+      })
+      .then(data => {
+        counterEl.innerText = data.value !== undefined ? data.value : (data.count !== undefined ? data.count : '1');
+      })
+      .catch(error => {
+        fetch(`https://api.counterapi.dev/v1/${siteKey}/visits/up`)
+          .then(r => r.json())
+          .then(d => {
+            counterEl.innerText = d.count !== undefined ? d.count : (d.value !== undefined ? d.value : '1');
+          })
+          .catch(err => {
+            console.error('Error fetching counter:', err);
+            counterEl.innerText = "Unavailable";
+          });
+      });
+  })();
+</script>
+
+</body>
+</html>
