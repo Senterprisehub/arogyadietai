@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0d9488">
-<title>ArogyaDiet AI - Regional Clinical Prescription Diet Planner</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ArogyaDiet AI">
+<title>ArogyaDiet AI - Clinical Prescription &amp; Medical Diagnostic Diet Planner</title>
+
+<!-- Manifest Link for PWA Installation -->
+<link rel="manifest" id="manifestLink">
 
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -14,196 +20,708 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:#f8fafc;color:#1e293b;line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:#f8fafc;
+  color:#1e293b;
+  line-height:1.5;
+  min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
 button,input,select,textarea{font-family:inherit;font-size:inherit}
 button{cursor:pointer}
 img{max-width:100%;display:block}
 
-header.app-header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid #e2e8f0}
-.header-inner{max-width:1152px;margin:0 auto;padding:0 .75rem;height:3.75rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
-.brand{display:flex;align-items:center;gap:.5rem;min-width:0;flex:1}
-.logo{width:2.25rem;height:2.25rem;flex-shrink:0;border-radius:.625rem;background:linear-gradient(135deg,#0d9488,#34d399);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.25rem;box-shadow:0 4px 10px -2px rgba(13,148,136,.35)}
+/* RESPONSIVE HEADER */
+header.app-header{
+  position:sticky;
+  top:0;
+  z-index:40;
+  background:rgba(255,255,255,.96);
+  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid #e2e8f0;
+  padding-top:env(safe-area-inset-top,0px);
+}
+.header-inner{
+  max-width:1200px;
+  margin:0 auto;
+  padding:0 clamp(0.75rem,3vw,1.25rem);
+  height:3.75rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:0.5rem;
+}
+.brand{display:flex;align-items:center;gap:0.5rem;min-width:0;flex:1}
+.logo{
+  width:2.25rem;
+  height:2.25rem;
+  flex-shrink:0;
+  border-radius:0.625rem;
+  background:linear-gradient(135deg,#0d9488,#34d399);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:1.25rem;
+  box-shadow:0 4px 10px -2px rgba(13,148,136,.35);
+}
 .brand-text{min-width:0}
-.brand-title{font-size:1rem;font-weight:800;color:#0f172a;white-space:nowrap;letter-spacing:-.02em;line-height:1.1}
+.brand-title{
+  font-size:clamp(0.875rem,2.5vw,1.05rem);
+  font-weight:800;
+  color:#0f172a;
+  white-space:nowrap;
+  letter-spacing:-0.02em;
+  line-height:1.1;
+}
 .brand-title span{color:#0d9488}
-.brand-sub{font-size:.6875rem;color:#64748b;white-space:nowrap;line-height:1.2}
-.header-actions{display:flex;align-items:center;gap:.375rem;flex-shrink:0}
-.btn{display:inline-flex;align-items:center;gap:.3rem;padding:.4rem .65rem;font-size:.75rem;font-weight:600;border-radius:.5rem;border:1px solid transparent;white-space:nowrap;transition:background .15s,transform .1s;line-height:1}
+.brand-sub{font-size:0.6875rem;color:#64748b;white-space:nowrap;line-height:1.2}
+.header-actions{display:flex;align-items:center;gap:0.375rem;flex-shrink:0}
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:0.3rem;
+  padding:0.45rem 0.75rem;
+  min-height:36px;
+  font-size:0.75rem;
+  font-weight:600;
+  border-radius:0.5rem;
+  border:1px solid transparent;
+  white-space:nowrap;
+  transition:background .15s,transform .1s;
+}
 .btn:active{transform:scale(.97)}
 .btn.ghost{background:#f1f5f9;color:#334155;border-color:#e2e8f0}
 .btn.ghost:hover{background:#e2e8f0}
 .btn.primary{background:#f0fdfa;color:#0f766e;border-color:#99f6e4}
 .btn.primary:hover{background:#ccfbf1}
-.status-pill{display:inline-flex;align-items:center;gap:.35rem;padding:.3rem .55rem;font-size:.6875rem;font-weight:500;border-radius:9999px;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;white-space:nowrap}
-.dot{position:relative;width:.5rem;height:.5rem;border-radius:9999px;background:#10b981;flex-shrink:0}
+.btn.install{
+  background:linear-gradient(135deg,#0d9488,#059669);
+  color:#fff;
+  box-shadow:0 2px 6px rgba(13,148,136,.3);
+}
+.btn.install:hover{background:#0f766e}
+
+.status-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:0.35rem;
+  padding:0.35rem 0.6rem;
+  min-height:32px;
+  font-size:0.6875rem;
+  font-weight:500;
+  border-radius:9999px;
+  background:#ecfdf5;
+  color:#047857;
+  border:1px solid #a7f3d0;
+  white-space:nowrap;
+}
+.dot{position:relative;width:0.5rem;height:0.5rem;border-radius:9999px;background:#10b981;flex-shrink:0}
 .dot::before{content:'';position:absolute;inset:0;border-radius:9999px;background:#10b981;animation:blink 1.2s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
-@media (max-width:480px){.brand-sub{display:none}.btn .lbl{display:none}.btn{padding:.5rem}.status-pill .lbl{display:none}.status-pill{padding:.35rem}.logo{width:2rem;height:2rem;font-size:1rem}.brand-title{font-size:.9rem}}
+@media (max-width:480px){
+  .brand-sub{display:none}
+  .btn .lbl{display:none}
+  .status-pill .lbl{display:none}
+  .btn{padding:0.45rem 0.6rem}
+}
 
-main{max-width:1152px;margin:0 auto;padding:1.5rem 1rem 2rem;display:flex;flex-direction:column;gap:1.5rem}
-.hero{position:relative;overflow:hidden;border-radius:1rem;padding:1.5rem;color:#fff;background:linear-gradient(90deg,#0f766e,#115e59,#0f172a);box-shadow:0 20px 25px -5px rgba(0,0,0,.15)}
-.hero-badge{display:inline-flex;align-items:center;gap:.375rem;padding:.25rem .75rem;border-radius:9999px;font-size:.75rem;background:rgba(20,184,166,.2);color:#99f6e4;border:1px solid rgba(45,212,191,.3);margin-bottom:.5rem}
-.hero h2{font-size:1.45rem;font-weight:800;line-height:1.25;margin-bottom:.5rem}
-.hero p{color:#ccfbf1;font-size:.9rem;font-weight:300;max-width:44rem;line-height:1.55}
-@media (min-width:640px){.hero{padding:2rem}.hero h2{font-size:1.75rem}}
+/* RESPONSIVE LAYOUT CONTAINER */
+main{
+  max-width:1200px;
+  margin:0 auto;
+  padding:clamp(1rem,3vw,1.75rem) clamp(0.75rem,3vw,1.25rem) 2rem;
+  display:flex;
+  flex-direction:column;
+  gap:1.5rem;
+}
 
-.grid{display:grid;grid-template-columns:1fr;gap:1.5rem;align-items:start}
-@media (min-width:1024px){.grid{grid-template-columns:5fr 7fr}}
-.card{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;box-shadow:0 1px 2px rgba(15,23,42,.05)}
-.card-pad{padding:1.25rem}
-@media (min-width:640px){.card-pad{padding:1.5rem}}
-.card-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:.75rem;border-bottom:1px solid #f1f5f9;margin-bottom:1rem}
-.card-head h3{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:.5rem}
-.step-num{display:inline-flex;align-items:center;justify-content:center;width:1.5rem;height:1.5rem;border-radius:9999px;background:#ccfbf1;color:#115e59;font-size:.75rem;font-weight:700;flex-shrink:0}
-.step-meta{font-size:.75rem;color:#94a3b8}
+.hero{
+  position:relative;
+  overflow:hidden;
+  border-radius:1rem;
+  padding:clamp(1.25rem,4vw,2rem);
+  color:#fff;
+  background:linear-gradient(90deg,#0f766e,#115e59,#0f172a);
+  box-shadow:0 20px 25px -5px rgba(0,0,0,.15);
+}
+.hero-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:0.375rem;
+  padding:0.25rem 0.75rem;
+  border-radius:9999px;
+  font-size:clamp(0.6875rem,2vw,0.75rem);
+  background:rgba(20,184,166,.2);
+  color:#99f6e4;
+  border:1px solid rgba(45,212,191,.3);
+  margin-bottom:0.5rem;
+  flex-wrap:wrap;
+}
+.hero h2{font-size:clamp(1.25rem,3.5vw,1.75rem);font-weight:800;line-height:1.25;margin-bottom:0.5rem}
+.hero p{color:#ccfbf1;font-size:clamp(0.8125rem,2.2vw,0.925rem);font-weight:300;max-width:46rem;line-height:1.55}
 
+/* ADAPTIVE DUAL COLUMN GRID */
+.grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:1.5rem;
+  align-items:start;
+}
+@media (min-width:1024px){
+  .grid{grid-template-columns:5fr 7fr}
+}
+
+.card{
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:1rem;
+  box-shadow:0 1px 2px rgba(15,23,42,.05);
+  overflow:hidden;
+}
+.card-pad{padding:clamp(1rem,3vw,1.5rem)}
+.card-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding-bottom:0.75rem;
+  border-bottom:1px solid #f1f5f9;
+  margin-bottom:1rem;
+}
+.card-head h3{font-size:clamp(0.875rem,2.5vw,1rem);font-weight:700;display:flex;align-items:center;gap:0.5rem}
+.step-num{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:1.5rem;
+  height:1.5rem;
+  border-radius:9999px;
+  background:#ccfbf1;
+  color:#115e59;
+  font-size:0.75rem;
+  font-weight:700;
+  flex-shrink:0;
+}
+.step-meta{font-size:0.75rem;color:#94a3b8}
+
+/* FORM FIELDS */
 .field{margin-bottom:1rem}
 .field:last-child{margin-bottom:0}
-label.lbl{display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#475569;margin-bottom:.375rem}
+label.lbl{display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#475569;margin-bottom:0.375rem}
 .req{color:#f43f5e}
-select,textarea,input[type="text"]{width:100%;padding:.625rem .75rem;font-size:.875rem;background:#f8fafc;border:1px solid #cbd5e1;border-radius:.75rem;color:#1e293b}
+select,textarea,input[type="text"]{
+  width:100%;
+  padding:0.625rem 0.75rem;
+  font-size:clamp(0.8125rem,2.2vw,0.875rem);
+  background:#f8fafc;
+  border:1px solid #cbd5e1;
+  border-radius:0.75rem;
+  color:#1e293b;
+  min-height:42px;
+}
 select:focus,textarea:focus,input:focus{outline:none;border-color:#14b8a6;box-shadow:0 0 0 3px rgba(20,184,166,.15)}
-textarea{resize:none}
-.opt-tag{font-size:10px;color:#94a3b8;background:#f1f5f9;padding:.125rem .375rem;border-radius:.25rem;font-weight:500}
-.field-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.375rem}
+textarea{resize:none;min-height:70px}
+.opt-tag{font-size:10px;color:#94a3b8;background:#f1f5f9;padding:0.15rem 0.4rem;border-radius:0.25rem;font-weight:500}
+.field-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.375rem}
 .field-head label.lbl{margin-bottom:0}
-.grid-2{display:grid;grid-template-columns:1fr;gap:.75rem}
+
+.grid-2{display:grid;grid-template-columns:1fr;gap:0.75rem}
 @media (min-width:640px){.grid-2{grid-template-columns:1fr 1fr}}
 
-.drop{position:relative;border:2px dashed #cbd5e1;border-radius:.875rem;padding:1.5rem 1.25rem;text-align:center;background:rgba(248,250,252,.7);cursor:pointer;transition:all .2s;overflow:hidden}
+/* UPLOAD DROPZONE */
+.drop{
+  position:relative;
+  border:2px dashed #cbd5e1;
+  border-radius:0.875rem;
+  padding:clamp(1.25rem,3vw,1.75rem) 1rem;
+  text-align:center;
+  background:rgba(248,250,252,.7);
+  cursor:pointer;
+  transition:all .2s;
+  overflow:hidden;
+}
 .drop:hover,.drop.dragging{border-color:#14b8a6;background:rgba(240,253,250,.5)}
 .drop input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
-.drop-inner{display:flex;flex-direction:column;align-items:center;gap:.5rem;pointer-events:none}
-.drop-icon{width:3rem;height:3rem;border-radius:9999px;background:#ccfbf1;color:#0f766e;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
-.drop-text{font-size:.8125rem;color:#475569;font-weight:500}
+.drop-inner{display:flex;flex-direction:column;align-items:center;gap:0.5rem;pointer-events:none}
+.drop-icon{
+  width:3rem;
+  height:3rem;
+  border-radius:9999px;
+  background:#ccfbf1;
+  color:#0f766e;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.5rem;
+}
+.drop-text{font-size:clamp(0.75rem,2.2vw,0.8125rem);color:#475569;font-weight:500}
 .drop-text strong{color:#0d9488;font-weight:600;text-decoration:underline}
 .drop-hint{font-size:11px;color:#94a3b8}
 
-.preview-card{position:relative;border:1px solid #99f6e4;border-radius:.875rem;overflow:hidden;background:linear-gradient(180deg,#f0fdfa,#fff);transition:all .2s;margin-top:.75rem}
-.preview-status{display:flex;align-items:center;gap:.5rem;padding:.625rem .875rem;background:rgba(204,251,241,.5);border-bottom:1px solid #99f6e4;font-size:.75rem;font-weight:600;color:#115e59}
-.preview-status .check{display:inline-flex;align-items:center;justify-content:center;width:1.125rem;height:1.125rem;border-radius:9999px;background:#0d9488;color:#fff;font-size:.6875rem}
-.preview-thumb{position:relative;padding:.75rem;display:flex;align-items:center;justify-content:center;background:#f8fafc}
-.preview-thumb-inner{position:relative;max-width:100%;max-height:13rem;border-radius:.5rem;overflow:hidden;border:1px solid #e2e8f0;background:#fff;box-shadow:0 4px 6px -1px rgba(15,23,42,.08);cursor:zoom-in}
+/* PREVIEW CARD */
+.preview-card{
+  position:relative;
+  border:1px solid #99f6e4;
+  border-radius:0.875rem;
+  overflow:hidden;
+  background:linear-gradient(180deg,#f0fdfa,#fff);
+  margin-top:0.75rem;
+}
+.preview-status{
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+  padding:0.625rem 0.875rem;
+  background:rgba(204,251,241,.5);
+  border-bottom:1px solid #99f6e4;
+  font-size:0.75rem;
+  font-weight:600;
+  color:#115e59;
+}
+.preview-status .check{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:1.125rem;
+  height:1.125rem;
+  border-radius:9999px;
+  background:#0d9488;
+  color:#fff;
+  font-size:0.6875rem;
+}
+.preview-thumb{position:relative;padding:0.75rem;display:flex;align-items:center;justify-content:center;background:#f8fafc}
+.preview-thumb-inner{
+  position:relative;
+  max-width:100%;
+  max-height:13rem;
+  border-radius:0.5rem;
+  overflow:hidden;
+  border:1px solid #e2e8f0;
+  background:#fff;
+  box-shadow:0 4px 6px -1px rgba(15,23,42,.08);
+  cursor:zoom-in;
+}
 .preview-thumb img,.preview-thumb canvas{max-width:100%;max-height:13rem;width:auto;height:auto;object-fit:contain;display:block}
-.preview-zoom-hint{position:absolute;bottom:.5rem;right:.5rem;padding:.25rem .5rem;border-radius:.375rem;background:rgba(15,23,42,.75);color:#fff;font-size:.6875rem;font-weight:500;pointer-events:none}
-.preview-info{padding:.75rem .875rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;border-top:1px solid #99f6e4;background:#fff}
+.preview-zoom-hint{
+  position:absolute;
+  bottom:0.5rem;
+  right:0.5rem;
+  padding:0.25rem 0.5rem;
+  border-radius:0.375rem;
+  background:rgba(15,23,42,.75);
+  color:#fff;
+  font-size:0.6875rem;
+  font-weight:500;
+  pointer-events:none;
+}
+.preview-info{
+  padding:0.75rem 0.875rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:0.75rem;
+  border-top:1px solid #99f6e4;
+  background:#fff;
+}
 .preview-meta{min-width:0;flex:1}
-.preview-name{font-size:.8125rem;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.preview-sub{font-size:.6875rem;color:#64748b;margin-top:.125rem;display:flex;align-items:center;gap:.375rem}
-.preview-sub .badge{display:inline-block;padding:.0625rem .375rem;background:#f0fdfa;color:#0f766e;border:1px solid #99f6e4;border-radius:.25rem;font-size:10px;font-weight:600;text-transform:uppercase}
-.preview-actions{display:flex;gap:.375rem;flex-shrink:0}
-.preview-actions button{width:2rem;height:2rem;border-radius:.5rem;border:1px solid #e2e8f0;background:#fff;color:#475569;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;transition:all .15s}
+.preview-name{font-size:0.8125rem;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.preview-sub{font-size:0.6875rem;color:#64748b;margin-top:0.125rem;display:flex;align-items:center;gap:0.375rem}
+.preview-sub .badge{
+  display:inline-block;
+  padding:0.0625rem 0.375rem;
+  background:#f0fdfa;
+  color:#0f766e;
+  border:1px solid #99f6e4;
+  border-radius:0.25rem;
+  font-size:10px;
+  font-weight:600;
+  text-transform:uppercase;
+}
+.preview-actions{display:flex;gap:0.375rem;flex-shrink:0}
+.preview-actions button{
+  width:2.25rem;
+  height:2.25rem;
+  border-radius:0.5rem;
+  border:1px solid #e2e8f0;
+  background:#fff;
+  color:#475569;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1rem;
+}
 .preview-actions button:hover{background:#f8fafc;color:#0f766e;border-color:#99f6e4}
 .preview-actions button.danger:hover{background:#fef2f2;color:#dc2626;border-color:#fecaca}
 
-.med-box{margin-top:.75rem;padding:.875rem;border-radius:.75rem;background:#f8fafc;border:1px solid #e2e8f0}
-.med-box-title{font-size:.75rem;font-weight:700;color:#334155;margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between}
-.med-tags{display:flex;flex-wrap:wrap;gap:.375rem;margin-bottom:.5rem;min-height:1.75rem}
-.med-pill{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .55rem;background:#f0fdfa;color:#0f766e;border:1px solid #99f6e4;border-radius:9999px;font-size:.6875rem;font-weight:600}
-.med-pill .del{cursor:pointer;font-weight:bold;color:#f43f5e;margin-left:.125rem}
-.med-add-row{display:flex;gap:.375rem}
-.med-add-row input{flex:1;padding:.375rem .625rem;font-size:.75rem;border-radius:.5rem}
-.med-add-row button{padding:.375rem .75rem;font-size:.75rem;font-weight:600;background:#0d9488;color:#fff;border:none;border-radius:.5rem}
-.quick-med-row{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.5rem}
-.quick-chip{font-size:10px;background:#e2e8f0;color:#475569;border:none;border-radius:.25rem;padding:.125rem .375rem;cursor:pointer}
+/* MEDICINE VERIFIER BOX */
+.med-box{margin-top:0.75rem;padding:0.875rem;border-radius:0.75rem;background:#f8fafc;border:1px solid #e2e8f0}
+.med-box-title{font-size:0.75rem;font-weight:700;color:#334155;margin-bottom:0.5rem;display:flex;align-items:center;justify-content:space-between}
+.med-tags{display:flex;flex-wrap:wrap;gap:0.375rem;margin-bottom:0.5rem;min-height:1.75rem}
+.med-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:0.35rem;
+  padding:0.25rem 0.55rem;
+  background:#f0fdfa;
+  color:#0f766e;
+  border:1px solid #99f6e4;
+  border-radius:9999px;
+  font-size:0.6875rem;
+  font-weight:600;
+}
+.med-pill .del{cursor:pointer;font-weight:bold;color:#f43f5e;margin-left:0.125rem}
+.med-add-row{display:flex;gap:0.375rem}
+.med-add-row input{flex:1;padding:0.375rem 0.625rem;font-size:0.75rem;border-radius:0.5rem;min-height:38px}
+.med-add-row button{padding:0.375rem 0.75rem;font-size:0.75rem;font-weight:600;background:#0d9488;color:#fff;border:none;border-radius:0.5rem;min-height:38px}
+.quick-med-row{display:flex;flex-wrap:wrap;gap:0.25rem;margin-top:0.5rem}
+.quick-chip{font-size:10px;background:#e2e8f0;color:#475569;border:none;border-radius:0.25rem;padding:0.2rem 0.45rem;min-height:24px;cursor:pointer}
 .quick-chip:hover{background:#cbd5e1;color:#1e293b}
 
-.gen-btn{width:100%;padding:.875rem 1.5rem;border-radius:.75rem;background:linear-gradient(90deg,#0d9488,#059669);color:#fff;font-weight:700;font-size:.95rem;border:none;box-shadow:0 10px 15px -3px rgba(13,148,136,.3);display:flex;align-items:center;justify-content:center;gap:.5rem;transition:transform .1s,box-shadow .2s;margin-top:1rem}
+.gen-btn{
+  width:100%;
+  min-height:48px;
+  padding:0.875rem 1.5rem;
+  border-radius:0.75rem;
+  background:linear-gradient(90deg,#0d9488,#059669);
+  color:#fff;
+  font-weight:700;
+  font-size:clamp(0.875rem,2.5vw,0.95rem);
+  border:none;
+  box-shadow:0 10px 15px -3px rgba(13,148,136,.3);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:0.5rem;
+  transition:transform .1s,box-shadow .2s;
+  margin-top:1rem;
+}
 .gen-btn:active{transform:scale(.98)}
 .gen-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
-.hint{margin-top:1rem;padding:.875rem;border-radius:.75rem;background:rgba(240,253,250,.7);border:1px solid #ccfbf1;display:flex;gap:.625rem;align-items:flex-start;font-size:.75rem;color:#475569;line-height:1.6}
-.hint-icon{font-size:1.125rem;line-height:1}
-.hint strong{color:#134e4a}
 
+/* RESULTS PANEL */
 .result-shell{display:flex;flex-direction:column;min-height:34rem}
-.result-head{padding:1rem 1.25rem;border-bottom:1px solid #f1f5f9;background:rgba(248,250,252,.6);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.75rem}
-.result-head .title-block{min-width:0}
-.result-head .subtitle{font-size:.75rem;color:#64748b;margin-top:.125rem}
-.toolbar{display:none;align-items:center;gap:.375rem}
+.result-head{
+  padding:1rem clamp(0.75rem,3vw,1.25rem);
+  border-bottom:1px solid #f1f5f9;
+  background:rgba(248,250,252,.6);
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:0.75rem;
+}
+.result-head .title-block{min-width:0;flex:1}
+.result-head .subtitle{font-size:0.75rem;color:#64748b;margin-top:0.125rem}
+.toolbar{display:none;align-items:center;gap:0.375rem}
 .toolbar.active{display:flex}
-.tool-btn{display:inline-flex;align-items:center;gap:.25rem;padding:.375rem .625rem;border-radius:.5rem;border:1px solid #e2e8f0;background:#fff;color:#334155;font-size:.75rem;font-weight:500;transition:all .15s}
+.tool-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:0.25rem;
+  padding:0.4rem 0.65rem;
+  min-height:36px;
+  border-radius:0.5rem;
+  border:1px solid #e2e8f0;
+  background:#fff;
+  color:#334155;
+  font-size:0.75rem;
+  font-weight:500;
+  transition:all .15s;
+}
 .tool-btn:hover{background:#f8fafc;border-color:#99f6e4;color:#0f766e}
 .tool-btn.accent{background:#0d9488;color:#fff;border-color:#0d9488}
 .tool-btn.accent:hover{background:#0f766e;border-color:#0f766e;color:#fff}
-@media (max-width:480px){.tool-btn .lbl{display:none}.tool-btn{padding:.5rem .55rem}}
 
-.result-body{flex:1;padding:1.25rem;overflow-y:auto}
-@media (min-width:640px){.result-body{padding:1.5rem}}
-.panel-center{text-align:center;padding:3rem 1rem;max-width:28rem;margin:3rem auto}
-.panel-icon{width:4rem;height:4rem;border-radius:1rem;background:#f0fdfa;color:#0d9488;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
+.result-body{flex:1;padding:clamp(1rem,3vw,1.5rem);overflow-y:auto}
+.panel-center{text-align:center;padding:clamp(2rem,5vw,3.5rem) 1rem;max-width:28rem;margin:2rem auto}
+.panel-icon{
+  width:4rem;
+  height:4rem;
+  border-radius:1rem;
+  background:#f0fdfa;
+  color:#0d9488;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:2rem;
+  margin:0 auto 1rem;
+}
 .panel-icon.err{background:#fef2f2;color:#dc2626}
-.panel-center h4{font-weight:700;margin-bottom:.5rem;font-size:1rem}
-.panel-center p{font-size:.8125rem;color:#64748b;line-height:1.6}
-.panel-tip{display:inline-flex;align-items:center;gap:.5rem;padding:.375rem .75rem;background:#f1f5f9;border-radius:9999px;font-size:11px;color:#475569;margin-top:1rem}
+.panel-center h4{font-weight:700;margin-bottom:0.5rem;font-size:clamp(0.95rem,2.5vw,1.1rem)}
+.panel-center p{font-size:0.8125rem;color:#64748b;line-height:1.6}
+.panel-tip{
+  display:inline-flex;
+  align-items:center;
+  gap:0.5rem;
+  padding:0.375rem 0.75rem;
+  background:#f1f5f9;
+  border-radius:9999px;
+  font-size:11px;
+  color:#475569;
+  margin-top:1rem;
+}
 .spinner{width:3.5rem;height:3.5rem;margin:0 auto 1.25rem;border:4px solid #ccfbf1;border-top-color:#0d9488;border-radius:9999px;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.source-strip{display:flex;align-items:center;gap:.75rem;padding:.625rem .75rem;margin-bottom:1rem;background:linear-gradient(135deg,#f0fdfa,#fff);border:1px solid #99f6e4;border-radius:.75rem}
-.source-strip-thumb{width:2.75rem;height:2.75rem;border-radius:.5rem;overflow:hidden;background:#f1f5f9;flex-shrink:0;border:1px solid #e2e8f0;cursor:zoom-in;display:flex;align-items:center;justify-content:center}
-.source-strip-thumb img,.source-strip-thumb canvas{width:100%;height:100%;object-fit:cover}
-.source-strip-text{flex:1;min-width:0}
-.source-strip-title{font-size:.75rem;font-weight:700;color:#115e59;display:flex;align-items:center;gap:.375rem}
-.source-strip-sub{font-size:.6875rem;color:#64748b;margin-top:.125rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.badge-row{display:flex;flex-wrap:wrap;gap:.5rem;padding-bottom:1rem;border-bottom:1px solid #f1f5f9;margin-bottom:1rem}
-.chip{display:inline-flex;align-items:center;gap:.25rem;padding:.25rem .625rem;border-radius:.375rem;font-size:.75rem;font-weight:600}
+.badge-row{display:flex;flex-wrap:wrap;gap:0.5rem;padding-bottom:1rem;border-bottom:1px solid #f1f5f9;margin-bottom:1rem}
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:0.25rem;
+  padding:0.25rem 0.625rem;
+  border-radius:0.375rem;
+  font-size:clamp(0.6875rem,2vw,0.75rem);
+  font-weight:600;
+  flex-wrap:wrap;
+}
 .chip.teal{background:#f0fdfa;color:#115e59;border:1px solid #99f6e4}
 .chip.blue{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
 .chip.green{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
 .chip.amber{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
 .chip.purple{background:#faf5ff;color:#6b21a8;border:1px solid #e9d5ff}
 
-.output-body{line-height:1.7;font-size:.875rem;color:#334155}
-.output-body h1{font-size:1.35rem;color:#0f766e;font-weight:800;margin:1.25rem 0 .5rem;border-bottom:2px solid #ccfbf1;padding-bottom:.35rem}
-.output-body h2{font-size:1.15rem;color:#0f766e;font-weight:700;margin:1.25rem 0 .5rem}
-.output-body h3{font-size:1rem;color:#115e59;font-weight:700;margin:1rem 0 .4rem}
-.output-body p{margin:.5rem 0}
-.output-body ul,.output-body ol{margin:.5rem 0 .5rem 1.25rem}
-.output-body li{margin:.25rem 0}
-.output-body table{width:100%;border-collapse:collapse;margin:.75rem 0 1.25rem;font-size:.8125rem}
-.output-body th,.output-body td{border:1px solid #e2e8f0;padding:.6rem .75rem;text-align:left;vertical-align:top}
-.output-body th{background:#f0fdfa;color:#115e59;font-weight:700}
+/* OUTPUT TYPOGRAPHY & OVERFLOW-SAFE TABLES */
+.output-body{line-height:1.7;font-size:clamp(0.8125rem,2.2vw,0.875rem);color:#334155}
+.output-body h1{font-size:clamp(1.15rem,3vw,1.35rem);color:#0f766e;font-weight:800;margin:1.25rem 0 0.5rem;border-bottom:2px solid #ccfbf1;padding-bottom:0.35rem}
+.output-body h2{font-size:clamp(1rem,2.6vw,1.15rem);color:#0f766e;font-weight:700;margin:1.25rem 0 0.5rem}
+.output-body h3{font-size:clamp(0.9rem,2.3vw,1rem);color:#115e59;font-weight:700;margin:1rem 0 0.4rem}
+.output-body p{margin:0.5rem 0}
+.output-body ul,.output-body ol{margin:0.5rem 0 0.5rem 1.25rem}
+.output-body li{margin:0.25rem 0}
+
+/* RESPONSIVE SCROLL-SAFE TABLE WRAPPER */
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  margin:0.75rem 0 1.25rem;
+  border:1px solid #e2e8f0;
+  border-radius:0.75rem;
+  background:#fff;
+}
+.output-body table{width:100%;border-collapse:collapse;font-size:clamp(0.75rem,2.1vw,0.8125rem);min-width:480px}
+.output-body th,.output-body td{border-bottom:1px solid #e2e8f0;padding:0.65rem 0.75rem;text-align:left;vertical-align:top}
+.output-body th{background:#f0fdfa;color:#115e59;font-weight:700;white-space:nowrap}
 .output-body tr:nth-child(even){background:#f8fafc}
 .output-body strong{color:#0f172a;font-weight:600}
 
-.lab-status{display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .45rem;border-radius:.25rem;font-size:11px;font-weight:700}
+.lab-status{
+  display:inline-flex;
+  align-items:center;
+  gap:0.25rem;
+  padding:0.15rem 0.45rem;
+  border-radius:0.25rem;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
 .lab-status.high{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
 .lab-status.normal{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
 .lab-status.borderline{background:#fffbeb;color:#b45309;border:1px solid #fde68a}
 .lab-status.low{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
 
-.pref-box{background:#fcfaf8;border:1px solid #fed7aa;border-radius:.75rem;padding:.875rem 1rem;margin:1rem 0}
-.pref-box-title{font-size:.8125rem;font-weight:700;color:#9a3412;margin-bottom:.35rem;display:flex;align-items:center;gap:.35rem}
+.diag-card{
+  background:#f8fafc;
+  border:1px solid #cbd5e1;
+  border-left:4px solid #0d9488;
+  border-radius:0.5rem;
+  padding:0.6rem 0.85rem;
+  margin-bottom:0.5rem;
+}
+.diag-title{font-size:0.8125rem;font-weight:700;color:#0f172a;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.35rem}
+.diag-meta{font-size:11px;color:#64748b;margin-top:0.2rem}
+.diag-proof{display:inline-block;padding:0.1rem 0.4rem;border-radius:0.25rem;font-size:10px;font-weight:600;background:#ccfbf1;color:#0f766e}
+
+.pref-box{background:#fcfaf8;border:1px solid #fed7aa;border-radius:0.75rem;padding:0.875rem 1rem;margin:1rem 0}
+.pref-box-title{font-size:0.8125rem;font-weight:700;color:#9a3412;margin-bottom:0.35rem;display:flex;align-items:center;gap:0.35rem}
 .pref-box ul{margin:0 0 0 1.1rem;font-size:12px;color:#7c2d12}
 
-.disclaimer{margin-top:1.5rem;padding:1rem;border-radius:.75rem;background:rgba(255,251,235,.8);border:1px solid #fde68a;color:#78350f;font-size:.75rem;display:flex;gap:.75rem;line-height:1.6}
+.disclaimer{
+  margin-top:1.5rem;
+  padding:1rem;
+  border-radius:0.75rem;
+  background:rgba(255,251,235,.8);
+  border:1px solid #fde68a;
+  color:#78350f;
+  font-size:0.75rem;
+  display:flex;
+  gap:0.75rem;
+  line-height:1.6;
+}
 .disclaimer strong{color:#78350f}
-.dietitian-credit{text-align:center;font-size:11px;color:#94a3b8;margin-top:1.5rem;padding-top:.75rem;border-top:1px dashed #e2e8f0;letter-spacing:.02em}
+.dietitian-credit{text-align:center;font-size:11px;color:#94a3b8;margin-top:1.5rem;padding-top:0.75rem;border-top:1px dashed #e2e8f0;letter-spacing:0.02em}
 
-.features{display:grid;grid-template-columns:1fr;gap:1rem;margin-top:.5rem}
+.features{display:grid;grid-template-columns:1fr;gap:1rem;margin-top:0.5rem}
 @media (min-width:768px){.features{grid-template-columns:repeat(3,1fr)}}
-.feature{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;display:flex;gap:.75rem;align-items:flex-start}
-.feature-icon{width:2.25rem;height:2.25rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem}
-.feature h4{font-size:.75rem;font-weight:700;margin-bottom:.125rem;color:#1e293b}
+.feature{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;display:flex;gap:0.75rem;align-items:flex-start}
+.feature-icon{width:2.25rem;height:2.25rem;border-radius:0.5rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem}
+.feature h4{font-size:0.75rem;font-weight:700;margin-bottom:0.125rem;color:#1e293b}
 .feature p{font-size:11px;color:#64748b;line-height:1.5}
 
-footer{background:#fff;border-top:1px solid #e2e8f0;padding:1.5rem 1rem;text-align:center;font-size:.75rem;color:#64748b;margin-top:3rem}
-footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem}
+footer{
+  background:#fff;
+  border-top:1px solid #e2e8f0;
+  padding:1.5rem 1rem;
+  text-align:center;
+  font-size:0.75rem;
+  color:#64748b;
+  margin-top:3rem;
+}
+footer .inner{
+  max-width:1200px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:0.75rem;
+}
 @media (min-width:768px){footer .inner{flex-direction:row;justify-content:space-between}}
 
-.visitor-pill{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .75rem;background:#f0fdfa;border:1px solid #99f6e4;border-radius:9999px;font-size:11px;color:#0f766e;font-weight:600}
+.visitor-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:0.35rem;
+  padding:0.25rem 0.75rem;
+  background:#f0fdfa;
+  border:1px solid #99f6e4;
+  border-radius:9999px;
+  font-size:11px;
+  color:#0f766e;
+  font-weight:600;
+}
 .visitor-pill strong{color:#0d9488}
 
-#toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:50;background:#0f172a;color:#fff;padding:.75rem 1rem;border-radius:.75rem;display:flex;align-items:center;gap:.75rem;box-shadow:0 20px 25px -5px rgba(0,0,0,.3);transform:translateY(5rem);opacity:0;transition:all .3s;pointer-events:none;max-width:24rem;font-size:.75rem;font-weight:500;left:1.5rem}
+/* PWA INSTALL MODAL */
+.pwa-modal{
+  position:fixed;
+  inset:0;
+  z-index:110;
+  background:rgba(15,23,42,.85);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:1rem;
+}
+.pwa-modal.open{display:flex}
+.pwa-modal-card{
+  background:#fff;
+  border-radius:1rem;
+  max-width:26rem;
+  width:100%;
+  padding:1.5rem;
+  box-shadow:0 25px 50px -12px rgba(0,0,0,.35);
+  text-align:center;
+}
+.pwa-modal-icon{
+  width:3.5rem;
+  height:3.5rem;
+  border-radius:1rem;
+  background:linear-gradient(135deg,#0d9488,#34d399);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.75rem;
+  margin:0 auto 1rem;
+}
+.pwa-modal-card h3{font-size:1.15rem;font-weight:800;color:#0f172a;margin-bottom:0.5rem}
+.pwa-modal-card p{font-size:0.8125rem;color:#64748b;line-height:1.55;margin-bottom:1.25rem}
+.pwa-steps{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:0.75rem;
+  padding:0.75rem 1rem;
+  text-align:left;
+  font-size:0.75rem;
+  color:#334155;
+  margin-bottom:1.25rem;
+}
+.pwa-steps ol{margin-left:1.25rem}
+.pwa-steps li{margin:0.35rem 0}
+
+#toast{
+  position:fixed;
+  bottom:1.5rem;
+  right:1.5rem;
+  z-index:50;
+  background:#0f172a;
+  color:#fff;
+  padding:0.75rem 1rem;
+  border-radius:0.75rem;
+  display:flex;
+  align-items:center;
+  gap:0.75rem;
+  box-shadow:0 20px 25px -5px rgba(0,0,0,.3);
+  transform:translateY(5rem);
+  opacity:0;
+  transition:all .3s;
+  pointer-events:none;
+  max-width:24rem;
+  font-size:0.75rem;
+  font-weight:500;
+  left:1.5rem;
+}
 @media (min-width:640px){#toast{left:auto}}
 #toast.show{transform:translateY(0);opacity:1}
 
-.lightbox{position:fixed;inset:0;z-index:100;background:rgba(15,23,42,.92);display:none;align-items:center;justify-content:center;padding:1rem}
+.lightbox{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  background:rgba(15,23,42,.92);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:1rem;
+}
 .lightbox.open{display:flex}
-.lightbox-inner{position:relative;max-width:100%;max-height:100%;display:flex;flex-direction:column;align-items:center;gap:.75rem}
-.lightbox-inner img,.lightbox-inner canvas{max-width:100%;max-height:calc(100vh - 6rem);border-radius:.75rem;background:#fff;box-shadow:0 25px 50px -12px rgba(0,0,0,.5);object-fit:contain}
-.lightbox-close{position:absolute;top:-2.75rem;right:0;width:2.25rem;height:2.25rem;border-radius:9999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.lightbox-inner{
+  position:relative;
+  max-width:100%;
+  max-height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0.75rem;
+}
+.lightbox-inner img,.lightbox-inner canvas{
+  max-width:100%;
+  max-height:calc(100dvh - 6rem);
+  border-radius:0.75rem;
+  background:#fff;
+  box-shadow:0 25px 50px -12px rgba(0,0,0,.5);
+  object-fit:contain;
+}
+.lightbox-close{
+  position:absolute;
+  top:-2.75rem;
+  right:0;
+  width:2.25rem;
+  height:2.25rem;
+  border-radius:9999px;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff;
+  font-size:1.25rem;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 
-@media print{body *{visibility:hidden}#printableOutput,#printableOutput *{visibility:visible}#printableOutput{position:absolute;left:0;top:0;width:100%;padding:1rem}.no-print,.no-print *{display:none!important}}
+@media print{
+  body *{visibility:hidden}
+  #printableOutput,#printableOutput *{visibility:visible}
+  #printableOutput{position:absolute;left:0;top:0;width:100%;padding:1rem}
+  .table-wrap{border:none;overflow:visible}
+  .no-print,.no-print *{display:none!important}
+}
 </style>
 </head>
 
@@ -219,6 +737,10 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
       </div>
     </div>
     <div class="header-actions">
+      <!-- 1-Tap PWA Install Button -->
+      <button id="pwaBtn" class="btn install" type="button" title="Install ArogyaDiet AI on your phone or PC">
+        ⬇ <span class="lbl">Install</span>
+      </button>
       <div id="status" class="status-pill" role="status" aria-live="polite">
         <span class="dot" aria-hidden="true"></span>
         <span class="lbl">Ready</span>
@@ -233,13 +755,14 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
 <main>
 
   <section class="hero">
-    <div class="hero-badge">✓ 100% Free • Custom Preferences &amp; Allergies • All Indian Labs • Native Language</div>
+    <div class="hero-badge">✓ 100% Free • Medical Dictionary Engine • Responsive PWA • Native Indian Cuisines</div>
     <h2>Prescription &amp; Diagnostic Lab Report to Clinical Diet Chart</h2>
-    <p>Scans doctor handwriting, diagnostic impressions, and Indian clinical lab panels (Sugar, BP, Lipid, KFT/RFT, LFT, Thyroid, CBC). Fully tailors authentic regional kitchen meals to your personal food preferences, allergies, and lifestyle in your mother tongue.</p>
+    <p>Scans doctor handwriting, diagnostic impressions, and Indian clinical lab panels (Sugar, BP, Lipid, KFT/RFT, LFT, Thyroid, CBC). Automatically references a medical dictionary to identify exact diseases and tailors 7-day authentic regional kitchen meals in your mother tongue.</p>
   </section>
 
   <div class="grid">
 
+    <!-- STEP 1: INPUT CONTROLS -->
     <section class="card card-pad">
       <div class="card-head">
         <h3><span class="step-num">1</span> Prescription, Labs &amp; Patient Setup</h3>
@@ -252,7 +775,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
           <input type="file" id="file" accept="image/*,application/pdf" aria-label="Choose prescription file">
           <div id="dropPrompt" class="drop-inner">
             <div class="drop-icon" aria-hidden="true">📋</div>
-            <div class="drop-text"><strong>Click to upload prescription/lab photo</strong> or drag &amp; drop</div>
+            <div class="drop-text"><strong>Click to upload photo/PDF</strong> or drag &amp; drop</div>
             <div class="drop-hint">JPEG, PNG, WebP, or PDF reports up to 10MB</div>
           </div>
         </div>
@@ -299,7 +822,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
             <button type="button" id="addMedBtn">+ Add</button>
           </div>
           <div class="quick-med-row">
-            <span style="font-size:10px;color:#64748b;margin-right:.25rem;">Quick Select:</span>
+            <span style="font-size:10px;color:#64748b;margin-right:0.25rem;">Quick Select:</span>
             <button type="button" class="quick-chip" data-med="Metformin 500mg">Metformin</button>
             <button type="button" class="quick-chip" data-med="Telmisartan 40mg">Telmisartan</button>
             <button type="button" class="quick-chip" data-med="Atorvastatin 10mg">Atorvastatin</button>
@@ -368,16 +891,9 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
         </svg>
         <span>Analyze Labs &amp; Generate Diet Chart</span>
       </button>
-
-      <div class="hint">
-        <span class="hint-icon" aria-hidden="true">🌾</span>
-        <div>
-          <strong id="hintTitle">Local Staple Focus:</strong>
-          <span id="hintDesc"> Parboiled rice, Macher jhol (stew), Shukto, Patol, Lau, Moong dal, Chhena.</span>
-        </div>
-      </div>
     </section>
 
+    <!-- STEP 2: OUTPUT VIEW -->
     <section class="card result-shell">
       <div class="result-head">
         <div class="title-block">
@@ -408,14 +924,14 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
         <div id="idle" class="panel-center">
           <div class="panel-icon" aria-hidden="true">📊</div>
           <h4>No Prescription Scanned Yet</h4>
-          <p>Upload a doctor's prescription or clinical lab report. The engine cross-analyzes all diagnostics, identifies confirmed diseases, factors in your personal food preferences, and formulates your custom regional meal plan.</p>
+          <p>Upload a doctor's prescription or clinical lab report. The engine cross-analyzes all diagnostics against the clinical medical dictionary, identifies confirmed diseases, factors in your food preferences, and formulates your custom regional meal plan.</p>
           <div class="panel-tip">💡 Tip: Tap "Try Sample" above to see a live clinical analysis</div>
         </div>
 
         <div id="loading" class="panel-center" style="display:none;">
           <div class="spinner" aria-hidden="true"></div>
           <h4 id="loadTitle">Scanning Lab Reports &amp; Prescription...</h4>
-          <p id="loadDesc">Analyzing diagnostic values, liver/renal markers, blood sugar, and active health conditions.</p>
+          <p id="loadDesc">Querying background medical dictionary and analyzing diagnostic markers...</p>
         </div>
 
         <div id="error" class="panel-center" style="display:none;">
@@ -426,17 +942,6 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
         </div>
 
         <div id="result" style="display:none;">
-          <div id="sourceStrip" class="source-strip">
-            <div class="source-strip-thumb" id="sourceThumbClick" title="Click to zoom">
-              <img id="sourceImgPreview" style="display:none;" alt="Source prescription">
-              <canvas id="sourcePdfCanvas" style="display:none;"></canvas>
-            </div>
-            <div class="source-strip-text">
-              <div class="source-strip-title">📄 Source Document Analyzed</div>
-              <div class="source-strip-sub" id="sourceFileName">document.jpg</div>
-            </div>
-          </div>
-
           <div id="badges" class="badge-row"></div>
 
           <div id="printableOutput">
@@ -444,7 +949,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
             
             <div class="disclaimer">
               <span aria-hidden="true">⚠️</span>
-              <p><strong>Medical Disclaimer:</strong> This clinical regional diet plan is generated based on identified laboratory diagnostic parameters, optical prescription extraction, and Indian therapeutic nutritional guidelines. Patients should always consult their treating physician or clinical dietitian before altering medical treatment regimens.</p>
+              <p><strong>Medical Disclaimer:</strong> This clinical regional diet plan is generated based on identified laboratory diagnostic parameters, medical dictionary matching, optical prescription extraction, and Indian therapeutic nutritional guidelines. Patients should always consult their treating physician or clinical dietitian before altering medical treatment regimens.</p>
             </div>
 
             <div id="dietitianSignature" class="dietitian-credit" style="display:none;"></div>
@@ -457,17 +962,17 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
 
   <div class="features">
     <div class="feature">
-      <div class="feature-icon" style="background:#f0fdfa;color:#0d9488;" aria-hidden="true">🧪</div>
+      <div class="feature-icon" style="background:#f0fdfa;color:#0d9488;" aria-hidden="true">📖</div>
       <div>
-        <h4>Pan-India Diagnostic Lab OCR</h4>
-        <p>Parses FBS, PPBS, HbA1c, Lipid Profiles, Kidney (Creatinine/Uric Acid), Liver (SGPT), Thyroid (TSH), and CBC markers.</p>
+        <h4>Medical Dictionary Ontology</h4>
+        <p>Searches and resolves diagnostic shorthand (T2DM, HTN, NAFLD, CKD, GERD, PCOD) using a clinical knowledge base.</p>
       </div>
     </div>
     <div class="feature">
-      <div class="feature-icon" style="background:#ecfdf5;color:#059669;" aria-hidden="true">🥑</div>
+      <div class="feature-icon" style="background:#ecfdf5;color:#059669;" aria-hidden="true">📱</div>
       <div>
-        <h4>Dietary Notes &amp; Allergies</h4>
-        <p>Dynamically customizes every meal for Vegetarians, Vegans, Fish-eaters, and those with Acid Reflux or food allergies.</p>
+        <h4>Installable PWA Application</h4>
+        <p>Installs directly on Android, iPhone, Windows, and Mac with zero app store fees and instant home screen launching.</p>
       </div>
     </div>
     <div class="feature">
@@ -491,6 +996,25 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
   </div>
 </footer>
 
+<!-- PWA INSTALL INSTRUCTION MODAL -->
+<div id="pwaModal" class="pwa-modal" role="dialog" aria-modal="true" aria-label="Install ArogyaDiet AI">
+  <div class="pwa-modal-card">
+    <div class="pwa-modal-icon">📲</div>
+    <h3>Install ArogyaDiet AI</h3>
+    <p>Install this clinical application on your device for lightning-fast offline loading and full-screen experience.</p>
+    <div class="pwa-steps" id="pwaModalSteps">
+      <ol>
+        <li>Tap the <strong>browser menu (⋮ or Share ⎋)</strong>.</li>
+        <li>Select <strong>"Add to Home Screen"</strong> or <strong>"Install app"</strong>.</li>
+      </ol>
+    </div>
+    <div style="display:flex;gap:0.5rem;justify-content:center;">
+      <button type="button" id="pwaModalInstallBtn" class="btn install" style="min-width:120px;">Install Now</button>
+      <button type="button" id="pwaModalClose" class="btn ghost">Close</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" role="status" aria-live="polite">
   <span id="toastIcon" aria-hidden="true">ℹ️</span>
   <span id="toastText">Notification</span>
@@ -508,91 +1032,202 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
 (function () {
   'use strict';
 
+  /* -------------------------------------------------------------
+     1. COMPREHENSIVE CLINICAL MEDICAL DICTIONARY & ONTOLOGY
+  ------------------------------------------------------------- */
+  var MEDICAL_DISEASE_DICTIONARY = [
+    {
+      id: "t2dm",
+      name: "Type 2 Diabetes Mellitus (T2DM)",
+      category: "Endocrine & Metabolic",
+      icd: "ICD-10: E11",
+      synonyms: [
+        "t2dm", "t2d", "diabetes", "type 2 diabetes", "niddm", "dm2", "uncontrolled fbs", 
+        "hyperglycemia", "diabetic", "glycated hemoglobin", "hba1c high", "high sugar", "raised sugar"
+      ],
+      associatedMeds: ["metformin", "glycomet", "gluformin", "glimepiride", "amaryl", "zoryl", "teneligliptin", "tendia", "dapagliflozin", "forxiga", "vildagliptin", "galvus", "sitagliptin", "januvia", "insulin"],
+      labTriggers: ["fbs", "ppbs", "hba1c"],
+      dietaryProtocol: "Strict low-glycemic index (GI < 55), high soluble fiber, carbohydrate restricted (50%), zero refined sugar."
+    },
+    {
+      id: "htn",
+      name: "Essential Hypertension (Stage 1 / 2)",
+      category: "Cardiovascular",
+      icd: "ICD-10: I10",
+      synonyms: [
+        "htn", "hypertension", "high blood pressure", "high bp", "essential hypertension", 
+        "systolic hypertension", "stage 1 htn", "stage 2 htn", "elevated bp"
+      ],
+      associatedMeds: ["telmisartan", "telma", "amlodipine", "stamlo", "amlong", "losartan", "losacar", "olmesartan", "cilnidipine", "cilacar", "ramipril", "cardace", "metoprolol", "betaloc"],
+      labTriggers: ["bp_sys", "bp_dia"],
+      dietaryProtocol: "DASH nutritional protocol: strict sodium reduction (< 2.5g salt/day), high dietary potassium & magnesium, eliminate pickles/papad/chanachur."
+    },
+    {
+      id: "dyslipidemia",
+      name: "Mixed Dyslipidemia & Hypercholesterolemia",
+      category: "Metabolic & Lipid",
+      icd: "ICD-10: E78",
+      synonyms: [
+        "dyslipidemia", "hyperlipidemia", "hypercholesterolemia", "high cholesterol", "elevated ldl", 
+        "hypertriglyceridemia", "high tg", "lipid disorder", "atherogenic lipid profile"
+      ],
+      associatedMeds: ["atorvastatin", "atorva", "atorlip", "rosuvastatin", "rosuvas", "rozavel", "fenofibrate", "lipicard", "saroglitazar", "lipaglyn"],
+      labTriggers: ["chol", "tg", "ldl"],
+      dietaryProtocol: "Saturated fats < 7% of total energy, zero trans-fats/vanaspati, daily oil restricted to < 15ml (3 tsp), omega-3 rich fish."
+    },
+    {
+      id: "nafld",
+      name: "Non-Alcoholic Fatty Liver Disease (Grade 1 / 2 NAFLD)",
+      category: "Gastroenterology & Hepatology",
+      icd: "ICD-10: K76.0",
+      synonyms: [
+        "nafld", "fatty liver", "grade 1 fatty liver", "hepatic steatosis", "fatty hepatomegaly", 
+        "elevated sgpt", "elevated alt", "mash", "liver steatosis"
+      ],
+      associatedMeds: ["saroglitazar", "lipaglyn", "ursodeoxycholic", "udiliv", "ursochol", "vitamin e", "evion"],
+      labTriggers: ["sgpt"],
+      dietaryProtocol: "Strict elimination of deep-fried food and refined fructose; emphasis on antioxidant-dense steamed local stews (shukto/jhol)."
+    },
+    {
+      id: "gout",
+      name: "Hyperuricemia & Gouty Arthritis",
+      category: "Rheumatology & Metabolic",
+      icd: "ICD-10: M10",
+      synonyms: [
+        "hyperuricemia", "gout", "gouty arthritis", "high uric acid", "elevated uric acid", 
+        "uric acid diathesis", "joint pain with uric acid"
+      ],
+      associatedMeds: ["febuxostat", "feburic", "febugood", "allopurinol", "zyloric", "colchicine"],
+      labTriggers: ["uric"],
+      dietaryProtocol: "Low-purine protocol: strict prohibition of red meat, organ meats, prawns/shrimp, masoor dal, and spinach; minimum 3 liters hydration."
+    },
+    {
+      id: "hypothyroid",
+      name: "Primary Hypothyroidism",
+      category: "Endocrine",
+      icd: "ICD-10: E03.9",
+      synonyms: [
+        "hypothyroid", "hypothyroidism", "elevated tsh", "thyroid disorder", "hashimoto", "underactive thyroid"
+      ],
+      associatedMeds: ["thyronorm", "eltroxin", "levothyroxine", "thyrox"],
+      labTriggers: ["tsh"],
+      dietaryProtocol: "Avoid raw cruciferous vegetables (raw cabbage, cauliflower, radish); ensure iodine and selenium balance; morning medicine fasting gap."
+    },
+    {
+      id: "gerd",
+      name: "Gastroesophageal Reflux Disease (GERD) & Acid Peptic Disease",
+      category: "Gastroenterology",
+      icd: "ICD-10: K21.9",
+      synonyms: [
+        "gerd", "acid reflux", "gastritis", "acid peptic disease", "apd", "dyspepsia", 
+        "heartburn", "hyperacidity", "esophagitis"
+      ],
+      associatedMeds: ["pantoprazole", "pan 40", "pan-d", "pantocid", "rabeprazole", "rabeloc", "omeprazole", "ocid", "esomeprazole", "nexpro"],
+      labTriggers: [],
+      dietaryProtocol: "Non-acidic alkaline hydration (warm cumin/fennel seed water); zero chili, strong tea, coffee, or deep-fried snacks; early dinner."
+    },
+    {
+      id: "ckd",
+      name: "Renal Impairment / Early Chronic Kidney Disease (CKD)",
+      category: "Nephrology",
+      icd: "ICD-10: N18",
+      synonyms: [
+        "ckd", "renal impairment", "elevated creatinine", "high s. creatinine", "diabetic nephropathy", 
+        "crf", "chronic renal failure", "decreased egfr"
+      ],
+      associatedMeds: ["torsemide", "dytor", "ketoanalogues", "alpostin", "febuxostat"],
+      labTriggers: ["creat"],
+      dietaryProtocol: "Controlled protein diet (0.6 - 0.8g/kg/day); restriction of high-potassium vegetables and excess phosphorus; monitored fluids."
+    },
+    {
+      id: "anemia",
+      name: "Iron Deficiency Anemia",
+      category: "Hematology",
+      icd: "ICD-10: D50",
+      synonyms: [
+        "anemia", "anaemia", "iron deficiency", "low hemoglobin", "low hb", "microcytic hypochromic"
+      ],
+      associatedMeds: ["orofer", "autrin", "dexorange", "livogen", "ferrous ascorbate", "ferium"],
+      labTriggers: ["hb"],
+      dietaryProtocol: "Bioavailable iron enhancement: moringa leaves (sojne data/saag), dates, pomegranate, paired with Vitamin C (amla/lemon)."
+    },
+    {
+      id: "pcod",
+      name: "Polycystic Ovarian Syndrome / Disease (PCOS / PCOD)",
+      category: "Gynecological & Metabolic",
+      icd: "ICD-10: E28.2",
+      synonyms: ["pcod", "pcos", "polycystic ovary", "polycystic ovarian syndrome", "insulin resistance in pcos"],
+      associatedMeds: ["metformin", "myo-inositol", "d-chiro-inositol"],
+      labTriggers: ["fbs", "hba1c"],
+      dietaryProtocol: "Anti-inflammatory, low-insulinemic diet with complex seeds (flax, chia, pumpkin), zinc-dense legumes, and unrefined grains."
+    },
+    {
+      id: "cad",
+      name: "Coronary Artery Disease / Ischemic Heart Disease (CAD / IHD)",
+      category: "Cardiovascular",
+      icd: "ICD-10: I25",
+      synonyms: ["cad", "ihd", "coronary artery disease", "ischemic heart disease", "angina", "post ptca", "post cabg", "myocardial infarction"],
+      associatedMeds: ["ecosprin", "aspirin", "clopidogrel", "clopilet", "atorvastatin", "metoprolol", "monotrate"],
+      labTriggers: ["chol", "ldl", "bp_sys"],
+      dietaryProtocol: "Strict cardiac cardioprotective diet: zero saturated animal fats, sodium < 2g/day, fiber > 35g/day from local millets & vegetables."
+    },
+    {
+      id: "osteoarthritis",
+      name: "Osteoarthritis & Osteopenia",
+      category: "Musculoskeletal",
+      icd: "ICD-10: M19",
+      synonyms: ["osteoarthritis", "oa knees", "osteopenia", "osteoporosis", "joint degeneration", "calcium deficiency"],
+      associatedMeds: ["shelcal", "cipcal", "gemcal", "calcimax", "cholecalciferol", "calcirol"],
+      labTriggers: [],
+      dietaryProtocol: "Calcium and vitamin D synergy: fresh homemade low-fat chhena/curd, ragi (finger millet), sesame seeds, anti-inflammatory turmeric."
+    }
+  ];
+
+  /* -------------------------------------------------------------
+     2. INDIAN REGIONAL STAPLE CUISINE DATA
+  ------------------------------------------------------------- */
   var REGIONAL_DATA = {
     "Eastern India": [
-      { n: "West Bengal", s: "ঢেঁকিছাঁটা চালের ভাত, রুই/কাতলা মাছের পাতলা ঝোল, শুক্তো, পটল, লাউ ঘণ্ট, মুগ ডাল, ছানা" },
-      { n: "Odisha", s: "ଡାଲମା, ଉଷୁନା ଭାତ, ଶାଗ ଭଜା, ସନ୍ତୁଳା, ରୋହି ମାଛ ତରକାରୀ, ମୁଗ ଡାଲି" },
-      { n: "Bihar", s: "सत्तू ड्रिंक, चना दाल, लौकी का भर्ता, खिचड़ी, चोखा, जौ-गेहूं की रोटी" },
-      { n: "Jharkhand", s: "कुर्थी दाल, मड़ुआ रोटी, हरा साग, अरहर दाल, उबले चावल" }
+      { n: "West Bengal" }, { n: "Odisha" }, { n: "Bihar" }, { n: "Jharkhand" }
     ],
     "Northern India": [
-      { n: "Punjab", s: "ਮੂੰਗ ਦਾਲ, ਮਲਟੀਗ੍ਰੇਨ ਫੁਲਕਾ, ਤਾਜ਼ਾ ਦਹੀਂ, ਪਾਲਕ ਸਾਗ, ਸਪ੍ਰਾਉਟਸ ਚਨਾ, ਛਾਛ" },
-      { n: "Uttar Pradesh", s: "अरहर दाल, तोरी-लौकी की सब्जी, टिंडा, पतली चपाती, दलिया, छाछ" },
-      { n: "Haryana", s: "बाजरा रोटी, ताजा दही, मूंग दाल खिचड़ी, मिक्स वेज, नमकीन लस्सी" },
-      { n: "Rajasthan", s: "जौ-चने की रोटी, पंचमेल दाल, गट्टे की उबली सब्जी, सांगरी, मूंग चीला" },
-      { n: "Himachal Pradesh", s: "माह दाल, सेपू बड़ी (कम तेल), लाल चावल, पालक का साग, छाछ" },
-      { n: "Jammu & Kashmir", s: "हाख साग, नदरू, मूंग दाल, उबले चावल, बिना चीनी का कहवा" }
+      { n: "Punjab" }, { n: "Uttar Pradesh" }, { n: "Haryana" }, { n: "Rajasthan" }, { n: "Himachal Pradesh" }, { n: "Jammu & Kashmir" }
     ],
     "Western India": [
-      { n: "Maharashtra", s: "ज्वारीची भाकरी, मटकी उसळ, आमटी, वरण-भात, मेथीची भाजी, ताक" },
-      { n: "Gujarat", s: "રોટલી, બાફેલી ખીચડી, મગની દાળ, મેથી થેપલા, ભીંડા સંભારો, છાશ" },
-      { n: "Goa", s: "ઉકડા ચોખા, કોકમ સાથે તાજી માછલી, તામડી ભાજી, પાતળી દાળ" }
+      { n: "Maharashtra" }, { n: "Gujarat" }, { n: "Goa" }
     ],
     "Southern India": [
-      { n: "Tamil Nadu", s: "சாம்பார், கைக்குத்தல் அரிசி சாதம், ரசம், கீரை பொரியல், கூட்டு, மோர்" },
-      { n: "Kerala", s: "മട്ട അരി ചോറ്, അവിയൽ, തോരൻ, മോരുകറി, ചെറുപയർ പരിപ്പ്, മീൻ കറി" },
-      { n: "Karnataka", s: "ರಾಗಿ ಮುದ್ದೆ, ಬಿಸಿಬೇಳೆ ಬಾತ್ (ಹೆಚ್ಚು ತರಕಾರಿ), ಸಾರು, ಮಜ್ಜಿಗೆ ಹುಳಿ, ಕೋಸಂಬರಿ" },
-      { n: "Andhra Pradesh / Telangana", s: "ముడి బియ్యం అన్నം, తోటకూర పప్పు, చారు, పెసరట్టు, మజ్జిగ" }
+      { n: "Tamil Nadu" }, { n: "Kerala" }, { n: "Karnataka" }, { n: "Andhra Pradesh / Telangana" }
     ],
     "Central India": [
-      { n: "Madhya Pradesh", s: "ज्वार-गेहूं रोटी, अंकुरित पोहा, दाल, लौकी की सब्जी, छाछ" },
-      { n: "Chhattisgarh", s: "लाल भाजी, दाल, उबले चावल, दुबकी कढ़ी, परवल की सब्जी" }
+      { n: "Madhya Pradesh" }, { n: "Chhattisgarh" }
     ],
     "North-Eastern India": [
-      { n: "Assam", s: "জোহা ভাত, মাছৰ টেঙা, লাই শাক, মাটি মাহৰ ডালি" },
-      { n: "Tripura", s: "সেদ্ধ ভাত, মাছৰ ঝোল, বাঁহৰ গাজৰ তৰকাৰী, শাক ভাজি" },
-      { n: "Meghalaya & Nagaland", s: "Boiled wild greens, steamed rice, local fish stew, lentils" }
+      { n: "Assam" }, { n: "Tripura" }, { n: "Meghalaya & Nagaland" }
     ]
   };
 
   /* -------------------------------------------------------------
-     INDIAN PHARMACOPEIA DATABASE (120+ Brands & Generics)
-  ------------------------------------------------------------- */
-  var PHARMA_DB = [
-    { name: "Metformin 500mg", syn: ["metformin", "glycomet", "gluformin", "glyciphage", "formine", "cetapin"], condition: "Type 2 Diabetes Mellitus" },
-    { name: "Metformin 850mg/1000mg", syn: ["glycomet sr", "glyciphage sr", "metformin 1000"], condition: "Type 2 Diabetes Mellitus" },
-    { name: "Glimepiride 1mg/2mg", syn: ["glimepiride", "amaryl", "zoryl", "glypride", "gemer"], condition: "Type 2 Diabetes Mellitus" },
-    { name: "Teneligliptin 20mg", syn: ["teneligliptin", "tendia", "tenalim", "dynaglipt"], condition: "Type 2 Diabetes Mellitus" },
-    { name: "Dapagliflozin 10mg", syn: ["dapagliflozin", "forxiga", "dapa", "oxra"], condition: "Type 2 Diabetes Mellitus" },
-    { name: "Telmisartan 40mg", syn: ["telmisartan", "telma", "telpres", "telsar", "telmikem"], condition: "Essential Hypertension" },
-    { name: "Amlodipine 5mg", syn: ["amlodipine", "stamlo", "amlong", "amlovas", "amlocab"], condition: "Essential Hypertension" },
-    { name: "Losartan 50mg", syn: ["losartan", "losacar", "repace", "tozaar"], condition: "Essential Hypertension" },
-    { name: "Atorvastatin 10mg/20mg", syn: ["atorvastatin", "atorva", "atorlip", "atocor", "storvas", "tonact"], condition: "Dyslipidemia & High Cholesterol" },
-    { name: "Rosuvastatin 10mg", syn: ["rosuvastatin", "rosuvas", "rozavel", "rosave"], condition: "Dyslipidemia & High Cholesterol" },
-    { name: "Fenofibrate 145mg/160mg", syn: ["fenofibrate", "lipicard", "fibator", "fenolip"], condition: "Hypertriglyceridemia" },
-    { name: "Febuxostat 40mg", syn: ["febuxostat", "feburic", "febugood", "febutaz", "fabulas"], condition: "Hyperuricemia & Gout" },
-    { name: "Allopurinol 100mg", syn: ["allopurinol", "zyloric"], condition: "Hyperuricemia & Gout" },
-    { name: "Thyronorm 25/50/75mcg", syn: ["thyronorm", "eltroxin", "levothyroxine", "thyrox"], condition: "Hypothyroidism" },
-    { name: "Pantoprazole 40mg", syn: ["pantoprazole", "pan 40", "pantocid", "pan-d", "pantodac"], condition: "GERD & Gastritis" },
-    { name: "Rabeprazole 20mg", syn: ["rabeprazole", "rabeloc", "rabicip", "happi"], condition: "GERD & Gastritis" },
-    { name: "Orofer-XT / Iron", syn: ["orofer", "autrin", "dexorange", "ferrous ascorbate", "livogen"], condition: "Iron Deficiency Anemia" },
-    { name: "Shelcal 500 / Calcium", syn: ["shelcal", "cipcal", "gemcal", "calcimax"], condition: "Osteopenia & Calcium Deficiency" },
-    { name: "Saroglitazar 4mg", syn: ["saroglitazar", "lipaglyn"], condition: "NAFLD & Diabetic Dyslipidemia" },
-    { name: "Ursodeoxycholic Acid 300mg", syn: ["udiliv", "ursochol", "ursokem"], condition: "Fatty Liver & Cholestasis" },
-    { name: "Torsemide 10mg", syn: ["torsemide", "dytor", "tide"], condition: "Hypertension & Fluid Retention" }
-  ];
-
-  /* -------------------------------------------------------------
-     INDIAN STANDARD LAB PANELS & NORMAL RANGES
+     3. INDIAN STANDARD LAB PANELS & NORMAL RANGES
   ------------------------------------------------------------- */
   var LAB_PANELS_REF = {
-    fbs: { name: "Fasting Blood Sugar (FBS)", unit: "mg/dL", normal: "< 100", border: "100 - 125", high: "≥ 126", cond: "Type 2 Diabetes Mellitus" },
-    ppbs: { name: "Post-Prandial Sugar (PPBS)", unit: "mg/dL", normal: "< 140", border: "140 - 199", high: "≥ 200", cond: "Type 2 Diabetes Mellitus" },
-    hba1c: { name: "Glycated Hemoglobin (HbA1c)", unit: "%", normal: "< 5.7", border: "5.7 - 6.4", high: "≥ 6.5", cond: "Type 2 Diabetes Mellitus" },
-    bp_sys: { name: "Systolic Blood Pressure", unit: "mmHg", normal: "< 120", border: "120 - 139", high: "≥ 140", cond: "Essential Hypertension" },
-    bp_dia: { name: "Diastolic Blood Pressure", unit: "mmHg", normal: "< 80", border: "80 - 89", high: "≥ 90", cond: "Essential Hypertension" },
-    chol: { name: "Total Cholesterol", unit: "mg/dL", normal: "< 200", border: "200 - 239", high: "≥ 240", cond: "Dyslipidemia & High Cholesterol" },
-    tg: { name: "Triglycerides (TG)", unit: "mg/dL", normal: "< 150", border: "150 - 199", high: "≥ 200", cond: "Hypertriglyceridemia" },
-    ldl: { name: "LDL Bad Cholesterol", unit: "mg/dL", normal: "< 100", border: "100 - 159", high: "≥ 160", cond: "Dyslipidemia & High Cholesterol" },
-    creat: { name: "Serum Creatinine", unit: "mg/dL", normal: "0.6 - 1.2", border: "1.2 - 1.4", high: "> 1.4", cond: "Renal Impairment / CKD" },
-    uric: { name: "Serum Uric Acid", unit: "mg/dL", normal: "3.5 - 7.0", border: "7.0 - 7.4", high: "> 7.5", cond: "Hyperuricemia & Gout" },
-    sgpt: { name: "SGPT (ALT) - Liver", unit: "U/L", normal: "7 - 55", border: "55 - 65", high: "> 65", cond: "NAFLD & Grade 1 Fatty Liver" },
-    tsh: { name: "Thyroid Stimulating Hormone (TSH)", unit: "µIU/mL", normal: "0.4 - 4.5", border: "4.5 - 5.5", high: "> 5.5", cond: "Hypothyroidism" },
+    fbs: { name: "Fasting Blood Sugar (FBS)", unit: "mg/dL", normal: "< 100", border: "100 - 125", high: "≥ 126", cond: "Type 2 Diabetes Mellitus (T2DM)" },
+    ppbs: { name: "Post-Prandial Sugar (PPBS)", unit: "mg/dL", normal: "< 140", border: "140 - 199", high: "≥ 200", cond: "Type 2 Diabetes Mellitus (T2DM)" },
+    hba1c: { name: "Glycated Hemoglobin (HbA1c)", unit: "%", normal: "< 5.7", border: "5.7 - 6.4", high: "≥ 6.5", cond: "Type 2 Diabetes Mellitus (T2DM)" },
+    bp_sys: { name: "Systolic Blood Pressure", unit: "mmHg", normal: "< 120", border: "120 - 139", high: "≥ 140", cond: "Essential Hypertension (Stage 1 / 2)" },
+    bp_dia: { name: "Diastolic Blood Pressure", unit: "mmHg", normal: "< 80", border: "80 - 89", high: "≥ 90", cond: "Essential Hypertension (Stage 1 / 2)" },
+    chol: { name: "Total Cholesterol", unit: "mg/dL", normal: "< 200", border: "200 - 239", high: "≥ 240", cond: "Mixed Dyslipidemia & Hypercholesterolemia" },
+    tg: { name: "Triglycerides (TG)", unit: "mg/dL", normal: "< 150", border: "150 - 199", high: "≥ 200", cond: "Mixed Dyslipidemia & Hypercholesterolemia" },
+    ldl: { name: "LDL Bad Cholesterol", unit: "mg/dL", normal: "< 100", border: "100 - 159", high: "≥ 160", cond: "Mixed Dyslipidemia & Hypercholesterolemia" },
+    creat: { name: "Serum Creatinine", unit: "mg/dL", normal: "0.6 - 1.2", border: "1.2 - 1.4", high: "> 1.4", cond: "Renal Impairment / Early Chronic Kidney Disease (CKD)" },
+    uric: { name: "Serum Uric Acid", unit: "mg/dL", normal: "3.5 - 7.0", border: "7.0 - 7.4", high: "> 7.5", cond: "Hyperuricemia & Gouty Arthritis" },
+    sgpt: { name: "SGPT (ALT) - Liver", unit: "U/L", normal: "7 - 55", border: "55 - 65", high: "> 65", cond: "Non-Alcoholic Fatty Liver Disease (Grade 1 / 2 NAFLD)" },
+    tsh: { name: "Thyroid Stimulating Hormone (TSH)", unit: "µIU/mL", normal: "0.4 - 4.5", border: "4.5 - 5.5", high: "> 5.5", cond: "Primary Hypothyroidism" },
     hb: { name: "Hemoglobin (Hb)", unit: "g/dL", normal: "12.5 - 16.0", low: "< 12.0", cond: "Iron Deficiency Anemia" }
   };
 
   /* -------------------------------------------------------------
-     NATIVE LANGUAGE DICTIONARIES FOR FOODS, MEALS & DAYS
+     4. TRANSLATION HEADERS FOR OUTPUT CHARTS
   ------------------------------------------------------------- */
   var TRANSLATIONS = {
     "Bengali (বাংলা)": {
@@ -607,14 +1242,14 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
         bedtime: "শয়নকালীন হালকা পানীয় (রাত ১০:০০)"
       },
       headers: {
-        reportSummary: "প্রেসক্রিপশন ও ল্যাব টেস্ট রিপোর্ট বিশ্লেষণ (Clinical Diagnostic Summary)",
-        labTable: "শনাক্তকৃত ল্যাব টেস্ট ও ক্লিনিক্যাল অবস্থা (Lab Diagnostics & Markers)",
+        reportSummary: "প্রেসক্রিপশন ও ক্লিনিক্যাল ডায়াগনস্টিক বিশ্লেষণ (Clinical Diagnostic Summary)",
+        labTable: "শনাক্তকৃত ল্যাব টেস্ট ও স্বাস্থ্যগত মানদণ্ড (Lab Diagnostics & Markers)",
         testCol: "পরীক্ষার নাম (Test Name)",
         valCol: "রিপোর্টের মান (Detected Value)",
         normCol: "স্বাভাবিক মাত্রা (Standard Range)",
         statusCol: "অবস্থা (Status)",
         actionCol: "পথ্যজনিত সিদ্ধান্ত (Nutritional Action Taken)",
-        activeCond: "শনাক্তকৃত রোগ ও স্বাস্থ্যগত অবস্থা (Active Health Conditions)",
+        activeCond: "মেডিকেল ডিকশনারি দ্বারা চিহ্নিত নিশ্চিত রোগ (Diagnosed Diseases)",
         prefCard: "রোগীর ব্যক্তিস্বার্থ, খাদ্য পছন্দ ও বিশেষ নির্দেশনা (Factored Patient Preferences)",
         calorieCard: "দৈনিক নির্ধারিত শক্তির মাত্রা (Prescribed Daily Energy Target)",
         dailyPlan: "সময়ভিত্তিক সম্পূর্ণ ১-দিনের আঞ্চলিক থেরাপিউটিক ডায়েট চার্ট",
@@ -648,14 +1283,14 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
         bedtime: "सोने से पहले (रात 10:00 बजे)"
       },
       headers: {
-        reportSummary: "प्रिस्क्रिप्शन एवं लैब टेस्ट रिपोर्ट विश्लेषण (Clinical Diagnostic Summary)",
+        reportSummary: "प्रिस्क्रिप्शन एवं मेडिकल डायग्नोस्टिक विश्लेषण (Clinical Diagnostic Summary)",
         labTable: "जांचे गए लैब टेस्ट एवं स्वास्थ्य स्थिति (Lab Diagnostics & Markers)",
         testCol: "टेस्ट का नाम (Test Name)",
         valCol: "जांच का परिणाम (Detected Value)",
         normCol: "सामान्य स्तर (Standard Range)",
         statusCol: "स्थिति (Status)",
         actionCol: "आहार संबंधी निर्णय (Nutritional Action Taken)",
-        activeCond: "सक्रिय चिकित्सीय स्थितियां एवं रोग (Active Health Conditions)",
+        activeCond: "मेडिकल डिक्शनरी द्वारा पुष्ट रोग एवं निदान (Diagnosed Diseases)",
         prefCard: "मरीज की व्यक्तिगत प्राथमिकताएं व खानपान आदतें (Factored Patient Preferences)",
         calorieCard: "दैनिक निर्धारित ऊर्जा का स्तर (Prescribed Daily Energy Target)",
         dailyPlan: "समय अनुसार 1-दिवसीय सम्पूर्ण क्षेत्रीय डाइट चार्ट",
@@ -689,14 +1324,14 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
         bedtime: "Bedtime (10:00 PM)"
       },
       headers: {
-        reportSummary: "Clinical Prescription & Lab Diagnostics Analysis",
+        reportSummary: "Clinical Prescription & Medical Diagnostic Analysis",
         labTable: "Detected Lab Reports & Diagnostic Health Markers",
         testCol: "Test Parameter",
         valCol: "Detected Value",
         normCol: "Normal Reference Range",
         statusCol: "Clinical Status",
         actionCol: "Nutritional Action Taken",
-        activeCond: "Diagnosed Clinical Health Conditions",
+        activeCond: "Medical Dictionary Verified Diseases (Diagnosed Dx)",
         prefCard: "Patient Preferences & Dietary Adaptations (Factored Notes)",
         calorieCard: "Prescribed Total Daily Energy Target",
         dailyPlan: "Time-Wise 1-Day Comprehensive Regional Diet Plan",
@@ -729,6 +1364,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
   }
   function extOf(name) { var m = /\.([a-z0-9]+)$/i.exec(name || ''); return m ? m[1].toUpperCase() : 'FILE'; }
 
+  // DOM Elements
   var fileInput = $('file'), drop = $('drop');
   var dropPrompt = $('dropPrompt'), previewCard = $('previewCard');
   var imgPreview = $('imgPreview'), pdfCanvas = $('pdfCanvas');
@@ -737,25 +1373,23 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
   var regionSel = $('region'), stateSel = $('state'), langSel = $('lang');
   var dietitianNameInput = $('dietitianName'), extra = $('extra');
   var genBtn = $('genBtn'), demoBtn = $('demoBtn');
-  var hintTitle = $('hintTitle'), hintDesc = $('hintDesc');
   var idle = $('idle'), loading = $('loading'), error = $('error'), result = $('result');
-  var loadTitle = $('loadTitle'), loadDesc = $('loadDesc');
   var errMsg = $('errMsg'), output = $('output'), badges = $('badges');
   var retryBtn = $('retryBtn');
   var subtitle = $('subtitle'), toolbar = $('toolbar');
   var copyBtn = $('copyBtn'), printBtn = $('printBtn');
-  var sourceStrip = $('sourceStrip'), dietitianSignature = $('dietitianSignature');
-  var sourceImgPreview = $('sourceImgPreview'), sourcePdfCanvas = $('sourcePdfCanvas');
-  var sourceThumbClick = $('sourceThumbClick'), sourceFileName = $('sourceFileName');
+  var dietitianSignature = $('dietitianSignature');
   var lightbox = $('lightbox'), lightboxImg = $('lightboxImg');
   var lightboxCanvas = $('lightboxCanvas'), lightboxClose = $('lightboxClose');
   var medTags = $('medTags'), manualMedInput = $('manualMedInput'), addMedBtn = $('addMedBtn'), medCountTag = $('medCountTag');
+  var pwaBtn = $('pwaBtn'), pwaModal = $('pwaModal'), pwaModalClose = $('pwaModalClose'), pwaModalInstallBtn = $('pwaModalInstallBtn');
 
   var currentImage = null, currentMime = null;
   var currentFileName = '', currentFileSize = 0;
   var currentPreviewDataUrl = null, currentIsPdf = false;
   var toastTimer = null, extractedOcrText = '';
   var verifiedMedicines = [];
+  var deferredPrompt = null;
 
   function toast(msg, icon, ms) {
     var t = $('toast');
@@ -774,20 +1408,8 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
       o.value = st.n; o.textContent = st.n;
       stateSel.appendChild(o);
     });
-    updateHint();
-  }
-  function updateHint() {
-    var list = REGIONAL_DATA[regionSel.value] || [];
-    for (var i = 0; i < list.length; i++) {
-      if (list[i].n === stateSel.value) {
-        hintTitle.textContent = list[i].n + ' Staple Focus:';
-        hintDesc.textContent = ' ' + list[i].s;
-        return;
-      }
-    }
   }
   on(regionSel, 'change', updateStates);
-  on(stateSel, 'change', updateHint);
   updateStates();
 
   function renderMedPills() {
@@ -854,33 +1476,16 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     previewCard.style.display = 'none';
     imgPreview.style.display = 'none'; imgPreview.src = '';
     pdfCanvas.style.display = 'none';
-    sourceImgPreview.style.display = 'none'; sourceImgPreview.src = '';
-    sourcePdfCanvas.style.display = 'none';
-    sourceFileName.textContent = '—';
-    sourceStrip.style.display = 'none';
   }
 
   function showPreviewCard() {
     dropPrompt.style.display = 'none';
     previewCard.style.display = 'block';
-    if (currentIsPdf) {
-      var srcCtx = sourcePdfCanvas.getContext('2d');
-      sourcePdfCanvas.width = pdfCanvas.width;
-      sourcePdfCanvas.height = pdfCanvas.height;
-      srcCtx.drawImage(pdfCanvas, 0, 0);
-      sourcePdfCanvas.style.display = 'block';
-      sourceImgPreview.style.display = 'none';
-    } else if (currentPreviewDataUrl) {
-      sourceImgPreview.src = currentPreviewDataUrl;
-      sourceImgPreview.style.display = 'block';
-      sourcePdfCanvas.style.display = 'none';
-    }
-    sourceFileName.textContent = currentFileName || 'Prescription';
   }
 
   function runOCR(imageDataUri) {
     if (!window.Tesseract) return;
-    toast('Scanning text, medicines & lab reports...', '🔍');
+    toast('Scanning prescription & consulting medical dictionary...', '🔍');
     window.Tesseract.recognize(imageDataUri, 'eng')
       .then(function (res) {
         if (res && res.data && res.data.text) {
@@ -890,20 +1495,20 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
         }
       })
       .catch(function (e) {
-        console.warn('OCR error:', e);
+        console.warn('OCR notice:', e);
       });
   }
 
   function detectMedicinesFromText(txt) {
     var lower = txt.toLowerCase();
-    PHARMA_DB.forEach(function (drug) {
-      for (var i = 0; i < drug.syn.length; i++) {
-        var pattern = new RegExp('\\b' + drug.syn[i] + '\\b', 'i');
+    MEDICAL_DISEASE_DICTIONARY.forEach(function (dis) {
+      dis.associatedMeds.forEach(function (medTerm) {
+        var pattern = new RegExp('\\b' + medTerm + '\\b', 'i');
         if (pattern.test(lower)) {
-          addMedicine(drug.name);
-          break;
+          var formattedName = medTerm.charAt(0).toUpperCase() + medTerm.slice(1);
+          addMedicine(formattedName);
         }
-      }
+      });
     });
   }
 
@@ -998,7 +1603,6 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     document.body.style.overflow = '';
   }
   on(thumbClick, 'click', openLightbox);
-  on(sourceThumbClick, 'click', openLightbox);
   on(lightboxClose, 'click', closeLightbox);
   on(lightbox, 'click', function (e) { if (e.target === lightbox) closeLightbox(); });
 
@@ -1039,12 +1643,12 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     ctx.fillText('• SGPT (ALT): 58 U/L (Mild elevation / NAFLD)', 440, 330);
 
     ctx.fillStyle = '#0f766e'; ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('CLINICAL IMPRESSION / ACTIVE DIAGNOSIS:', 40, 385);
+    ctx.fillText('CLINICAL IMPRESSION / ACTIVE DIAGNOSIS (Dx):', 40, 385);
     ctx.fillStyle = '#334155'; ctx.font = '14px sans-serif';
-    ctx.fillText('1. Type 2 Diabetes Mellitus with uncontrolled glycemic index', 55, 415);
-    ctx.fillText('2. Essential Hypertension (Stage 1)', 55, 440);
-    ctx.fillText('3. Mixed Dyslipidemia & Grade 1 Fatty Liver (NAFLD)', 55, 465);
-    ctx.fillText('4. Asymptomatic Hyperuricemia with high uric acid', 55, 490);
+    ctx.fillText('1. Type 2 Diabetes Mellitus (T2DM) - Poorly controlled', 55, 415);
+    ctx.fillText('2. Essential Hypertension (Stage 1 HTN)', 55, 440);
+    ctx.fillText('3. Grade 1 Fatty Liver (NAFLD) with mixed Dyslipidemia', 55, 465);
+    ctx.fillText('4. Asymptomatic Hyperuricemia with Gout risk', 55, 490);
 
     ctx.fillStyle = '#0d9488'; ctx.font = 'bold 36px serif';
     ctx.fillText('\u211E', 40, 550);
@@ -1085,10 +1689,10 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     verifiedMedicines = ["Metformin 500mg", "Telmisartan 40mg", "Atorvastatin 10mg", "Febuxostat 40mg"];
     renderMedPills();
 
-    extractedOcrText = 'Amitava Ghosh 54 Yrs BP: 142/90 mmHg Fasting Blood Sugar FBS: 168 mg/dL HbA1c: 7.9% Total Cholesterol: 232 mg/dL Triglycerides: 210 mg/dL Serum Uric Acid: 7.6 mg/dL S. Creatinine: 1.0 mg/dL SGPT: 58 U/L Type 2 Diabetes Mellitus Essential Hypertension Dyslipidemia Grade 1 Fatty Liver Hyperuricemia Tab Metformin 500mg Tab Telmisartan 40mg Tab Atorvastatin 10mg Tab Febuxostat 40mg';
+    extractedOcrText = 'Amitava Ghosh 54 Yrs BP: 142/90 mmHg Fasting Blood Sugar FBS: 168 mg/dL HbA1c: 7.9% Total Cholesterol: 232 mg/dL Triglycerides: 210 mg/dL Serum Uric Acid: 7.6 mg/dL S. Creatinine: 1.0 mg/dL SGPT: 58 U/L Dx: Type 2 Diabetes Mellitus T2DM, Essential Hypertension Stage 1 HTN, Grade 1 Fatty Liver NAFLD, Dyslipidemia, Hyperuricemia Tab Metformin 500mg Tab Telmisartan 40mg Tab Atorvastatin 10mg Tab Febuxostat 40mg';
 
     regionSel.value = 'Eastern India'; updateStates();
-    stateSel.value = 'West Bengal'; updateHint();
+    stateSel.value = 'West Bengal';
     langSel.value = 'Bengali (বাংলা)';
     dietitianNameInput.value = 'Dr. R. Sharma, Chief Clinical Nutritionist, Kolkata';
     extra.value = 'Pure Vegetarian (No fish/eggs), Age 54, mild acid reflux, allergic to peanuts';
@@ -1111,6 +1715,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     if (fbs) {
       var st = fbs >= 126 ? 'high' : (fbs >= 100 ? 'borderline' : 'normal');
       labs.push({
+        id: "fbs",
         name: LAB_PANELS_REF.fbs.name,
         val: fbs + ' mg/dL',
         normal: LAB_PANELS_REF.fbs.normal + ' mg/dL',
@@ -1123,6 +1728,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     if (ppbs) {
       var stPp = ppbs >= 200 ? 'high' : (ppbs >= 140 ? 'borderline' : 'normal');
       labs.push({
+        id: "ppbs",
         name: LAB_PANELS_REF.ppbs.name,
         val: ppbs + ' mg/dL',
         normal: LAB_PANELS_REF.ppbs.normal + ' mg/dL',
@@ -1135,6 +1741,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     if (a1c) {
       var stA1c = a1c >= 6.5 ? 'high' : (a1c >= 5.7 ? 'borderline' : 'normal');
       labs.push({
+        id: "hba1c",
         name: LAB_PANELS_REF.hba1c.name,
         val: a1c + '%',
         normal: '< 5.7%',
@@ -1148,6 +1755,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
       var sys = parseInt(bpM[1], 10), dia = parseInt(bpM[2], 10);
       var stBp = (sys >= 140 || dia >= 90) ? 'high' : ((sys >= 120 || dia >= 80) ? 'borderline' : 'normal');
       labs.push({
+        id: "bp",
         name: 'Blood Pressure (BP)',
         val: sys + '/' + dia + ' mmHg',
         normal: '< 120/80 mmHg',
@@ -1160,11 +1768,12 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     if (chol) {
       var stChol = chol >= 240 ? 'high' : (chol >= 200 ? 'borderline' : 'normal');
       labs.push({
+        id: "chol",
         name: LAB_PANELS_REF.chol.name,
         val: chol + ' mg/dL',
         normal: '< 200 mg/dL',
         status: stChol,
-        action: stChol !== 'normal' ? 'Cooking oil restricted to 15 ml (3 tsp) per day; prioritize steamed or boiled food; zero ghee/butter.' : 'Desirable lipid level.'
+        action: stChol !== 'normal' ? 'Cooking oil restricted to 15 ml (3 tsp) per day; zero ghee/butter.' : 'Desirable lipid level.'
       });
     }
 
@@ -1172,6 +1781,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     if (tg) {
       var stTg = tg >= 200 ? 'high' : (tg >= 150 ? 'borderline' : 'normal');
       labs.push({
+        id: "tg",
         name: LAB_PANELS_REF.tg.name,
         val: tg + ' mg/dL',
         normal: '< 150 mg/dL',
@@ -1184,6 +1794,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     if (uric) {
       var stUric = uric >= 7.5 ? 'high' : (uric >= 7.0 ? 'borderline' : 'normal');
       labs.push({
+        id: "uric",
         name: LAB_PANELS_REF.uric.name,
         val: uric + ' mg/dL',
         normal: '3.5 - 7.0 mg/dL',
@@ -1196,6 +1807,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     if (creat) {
       var stCreat = creat > 1.4 ? 'high' : (creat > 1.2 ? 'borderline' : 'normal');
       labs.push({
+        id: "creat",
         name: LAB_PANELS_REF.creat.name,
         val: creat + ' mg/dL',
         normal: '0.6 - 1.2 mg/dL',
@@ -1208,6 +1820,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     if (sgpt) {
       var stSgpt = sgpt > 65 ? 'high' : (sgpt > 55 ? 'borderline' : 'normal');
       labs.push({
+        id: "sgpt",
         name: LAB_PANELS_REF.sgpt.name,
         val: sgpt + ' U/L',
         normal: '7 - 55 U/L',
@@ -1220,6 +1833,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     if (tsh) {
       var stTsh = tsh > 5.5 ? 'high' : (tsh < 0.4 ? 'low' : 'normal');
       labs.push({
+        id: "tsh",
         name: LAB_PANELS_REF.tsh.name,
         val: tsh + ' µIU/mL',
         normal: '0.4 - 4.5 µIU/mL',
@@ -1232,65 +1846,110 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     if (hb) {
       var stHb = hb < 12.0 ? 'low' : 'normal';
       labs.push({
+        id: "hb",
         name: LAB_PANELS_REF.hb.name,
         val: hb + ' g/dL',
         normal: '12.5 - 16.0 g/dL',
         status: stHb,
-        action: stHb === 'low' ? 'Anemia corrective protocol: iron-dense moringa (sojne) leaves, pomegranate, dates paired with vitamin C (amla/lemon).' : 'Optimal blood oxygenation.'
+        action: stHb === 'low' ? 'Anemia corrective protocol: iron-dense moringa leaves, pomegranate, dates paired with vitamin C (amla/lemon).' : 'Optimal blood oxygenation.'
       });
     }
 
     return labs;
   }
 
-  function detectActiveDiseases(ocrText, verifiedMeds, labs) {
-    var diseases = [];
-    var raw = (ocrText + ' ' + extra.value).toLowerCase();
+  /* -------------------------------------------------------------
+     5. ADVANCED MEDICAL DICTIONARY SEARCH & MATCHER ENGINE
+  ------------------------------------------------------------- */
+  function detectExactDiseasesViaDictionary(ocrText, verifiedMeds, labs) {
+    var detected = [];
+    var rawText = (ocrText + ' ' + (extra.value || '')).toLowerCase();
 
-    function addDis(d) {
-      if (diseases.indexOf(d) === -1) diseases.push(d);
+    var dxSectionText = "";
+    var dxRegex = /(?:diagnosis|dx|impression|imp|k\/c\/o|known\s*case\s*of|clinical\s*assessment)[:\s\-]+([^Rx\n\r]{5,200})/gi;
+    var match;
+    while ((match = dxRegex.exec(rawText)) !== null) {
+      if (match[1]) dxSectionText += " " + match[1];
     }
 
-    labs.forEach(function (l) {
-      if (l.status === 'high' || l.status === 'borderline') {
-        if (l.name.indexOf('Sugar') !== -1 || l.name.indexOf('HbA1c') !== -1) addDis("Type 2 Diabetes Mellitus");
-        if (l.name.indexOf('Pressure') !== -1) addDis("Essential Hypertension (Stage 1)");
-        if (l.name.indexOf('Cholesterol') !== -1) addDis("Dyslipidemia & High Cholesterol");
-        if (l.name.indexOf('Triglycerides') !== -1) addDis("Hypertriglyceridemia");
-        if (l.name.indexOf('Uric') !== -1) addDis("Hyperuricemia & Gout");
-        if (l.name.indexOf('SGPT') !== -1) addDis("Grade 1 Fatty Liver (NAFLD)");
-        if (l.name.indexOf('TSH') !== -1) addDis("Hypothyroidism");
-        if (l.name.indexOf('Creatinine') !== -1) addDis("Renal Impairment (CKD Stage 2)");
-      }
-      if (l.status === 'low' && l.name.indexOf('Hemoglobin') !== -1) addDis("Iron Deficiency Anemia");
-    });
+    MEDICAL_DISEASE_DICTIONARY.forEach(function (disease) {
+      var score = 0;
+      var evidence = [];
 
-    verifiedMeds.forEach(function (m) {
-      var mLower = m.toLowerCase();
-      PHARMA_DB.forEach(function (item) {
-        for (var i = 0; i < item.syn.length; i++) {
-          if (mLower.indexOf(item.syn[i]) !== -1) {
-            addDis(item.condition);
+      if (dxSectionText) {
+        for (var i = 0; i < disease.synonyms.length; i++) {
+          var syn = disease.synonyms[i];
+          var pattern = new RegExp('\\b' + syn + '\\b', 'i');
+          if (pattern.test(dxSectionText)) {
+            score += 10;
+            evidence.push("Doctor Dx: " + syn.toUpperCase());
+            break;
+          }
+        }
+      }
+
+      if (score === 0) {
+        for (var j = 0; j < disease.synonyms.length; j++) {
+          var s = disease.synonyms[j];
+          var pat = new RegExp('\\b' + s + '\\b', 'i');
+          if (pat.test(rawText)) {
+            score += 5;
+            evidence.push("Transcript keyword: " + s);
+            break;
+          }
+        }
+      }
+
+      verifiedMeds.forEach(function (med) {
+        var mLower = med.toLowerCase();
+        for (var k = 0; k < disease.associatedMeds.length; k++) {
+          if (mLower.indexOf(disease.associatedMeds[k]) !== -1) {
+            score += 4;
+            evidence.push("Rx Indication: " + med);
             break;
           }
         }
       });
+
+      labs.forEach(function (lb) {
+        if (lb.status === 'high' || lb.status === 'borderline' || lb.status === 'low') {
+          if (disease.labTriggers.indexOf(lb.id) !== -1) {
+            score += 5;
+            evidence.push("Lab Test: " + lb.name + " (" + lb.val + ")");
+          }
+        }
+      });
+
+      if (score >= 4) {
+        var proofLabel = evidence.length > 0 ? evidence[0] : "Clinical Correlation";
+        detected.push({
+          id: disease.id,
+          name: disease.name,
+          category: disease.category,
+          icd: disease.icd,
+          proof: proofLabel,
+          dietaryProtocol: disease.dietaryProtocol,
+          score: score
+        });
+      }
     });
 
-    if (raw.indexOf('diabet') !== -1 || raw.indexOf('t2dm') !== -1) addDis("Type 2 Diabetes Mellitus");
-    if (raw.indexOf('hypertens') !== -1 || raw.indexOf('htn') !== -1) addDis("Essential Hypertension");
-    if (raw.indexOf('fatty liver') !== -1 || raw.indexOf('nafld') !== -1) addDis("Grade 1 Fatty Liver (NAFLD)");
-    if (raw.indexOf('uric') !== -1 || raw.indexOf('gout') !== -1) addDis("Hyperuricemia & Gout");
-    if (raw.indexOf('thyroid') !== -1 || raw.indexOf('hypothyroid') !== -1) addDis("Hypothyroidism");
-    if (raw.indexOf('reflux') !== -1 || raw.indexOf('gerd') !== -1 || raw.indexOf('gastritis') !== -1) addDis("Acid Reflux (GERD) & Gastritis");
+    if (detected.length === 0) {
+      detected.push({
+        id: "prophylactic",
+        name: "General Cardiometabolic Health Maintenance",
+        category: "Preventive Care",
+        icd: "ICD-10: Z71.3",
+        proof: "Prophylactic Health Protocol",
+        dietaryProtocol: "Balanced low-glycemic, low-sodium, nutrient-dense regional meals.",
+        score: 1
+      });
+    }
 
-    if (diseases.length === 0) diseases.push("General Cardiometabolic Health Maintenance");
-    return diseases;
+    detected.sort(function (a, b) { return b.score - a.score; });
+    return detected;
   }
 
-  /* -------------------------------------------------------------
-     PARSE PATIENT PREFERENCES & NOTES (ACTIVE PARSING)
-  ------------------------------------------------------------- */
   function parsePatientPreferences(text) {
     var raw = (text || '').trim();
     var lower = raw.toLowerCase();
@@ -1310,7 +1969,6 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
 
     if (!raw) return prefs;
 
-    // Detect Diet Type
     if (/(pure\s*veg|vegetarian|shakahari|niramish|নিরামিষ|शाकाहारी)/i.test(lower) && !/(non[- ]?veg|mach|fish)/i.test(lower)) {
       prefs.isVeg = true;
       prefs.customDirectives.push("100% Pure Vegetarian menu applied (all animal meats & fish removed)");
@@ -1323,7 +1981,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
       prefs.isVegan = true;
       prefs.noDairy = true;
       prefs.isVeg = true;
-      prefs.customDirectives.push("Strict Vegan: All dairy (milk, curd, chhena, paneer) replaced with soy/plant bases");
+      prefs.customDirectives.push("Strict Vegan: All dairy replaced with plant-based alternatives");
     }
 
     if (/(no\s*egg|egg\s*allergy|ডিম\s*না|ডিম\s*অ্যালার্জি)/i.test(lower) || (prefs.isVeg && !/eggitarian/i.test(lower))) {
@@ -1333,12 +1991,12 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
 
     if (/(no\s*dairy|lactose|milk\s*allergy|দুধ\s*না)/i.test(lower)) {
       prefs.noDairy = true;
-      prefs.customDirectives.push("Dairy-free: replaced milk/buttermilk with herbal infusions or lemon-cumin water");
+      prefs.customDirectives.push("Dairy-free: replaced milk with herbal infusions or lemon-cumin water");
     }
 
     if (/(reflux|gerd|acid|heartburn|গ্যাস|অম্বল|এসিডিটি)/i.test(lower)) {
       prefs.hasReflux = true;
-      prefs.customDirectives.push("GERD/Acid Reflux Protocol: Alkaline warm cumin/fennel water instead of citrus, zero chili/fried items");
+      prefs.customDirectives.push("Acid Reflux / GERD Protocol: Alkaline warm cumin/fennel water; zero irritating chili/deep-fried snacks");
     }
 
     if (/(peanut|nut\s*allergy|চীনাবাদাম)/i.test(lower)) {
@@ -1351,7 +2009,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
       prefs.statedAge = parseInt(ageMatch[1], 10);
       if (prefs.statedAge >= 60) {
         prefs.elderly = true;
-        prefs.customDirectives.push("Geriatric Nutrition Consideration: Soft-cooked easily digestible grains and lighter fiber");
+        prefs.customDirectives.push("Geriatric Adaptation: Soft-cooked easily digestible grains and lighter roughage");
       }
     }
 
@@ -1361,11 +2019,10 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
   function calculateKcalTarget(diseases, labs, prefs) {
     var hasDiabetes = false, hasHTN = false, hasFattyLiver = false, hasCKD = false;
     diseases.forEach(function (d) {
-      var dl = d.toLowerCase();
-      if (dl.indexOf('diabet') !== -1) hasDiabetes = true;
-      if (dl.indexOf('hypertens') !== -1) hasHTN = true;
-      if (dl.indexOf('fatty liver') !== -1) hasFattyLiver = true;
-      if (dl.indexOf('renal') !== -1 || dl.indexOf('ckd') !== -1) hasCKD = true;
+      if (d.id === 't2dm') hasDiabetes = true;
+      if (d.id === 'htn') hasHTN = true;
+      if (d.id === 'nafld') hasFattyLiver = true;
+      if (d.id === 'ckd') hasCKD = true;
     });
 
     var baseKcal = 1600;
@@ -1382,12 +2039,9 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
       note = "Renal Protection & Glomerular Shielding";
     }
 
-    // Age adjustment if specified in notes
-    if (prefs && prefs.statedAge) {
-      if (prefs.statedAge >= 65 && baseKcal > 1400) {
-        baseKcal -= 50;
-        note += " (Adjusted for age " + prefs.statedAge + ")";
-      }
+    if (prefs && prefs.statedAge && prefs.statedAge >= 65 && baseKcal > 1400) {
+      baseKcal -= 50;
+      note += " (Adjusted for age " + prefs.statedAge + ")";
     }
 
     return {
@@ -1405,8 +2059,8 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     var isBengali = lang.indexOf('Bengali') !== -1;
     var isHindi = lang.indexOf('Hindi') !== -1;
 
-    var isDiabetic = diseases.some(function(d){ return d.toLowerCase().indexOf('diabet') !== -1; });
-    var isGout = diseases.some(function(d){ return d.toLowerCase().indexOf('uric') !== -1 || d.toLowerCase().indexOf('gout') !== -1; });
+    var isDiabetic = diseases.some(function(d){ return d.id === 't2dm'; });
+    var isGout = diseases.some(function(d){ return d.id === 'gout'; });
 
     var isVeg = prefs.isVeg;
     var hasReflux = prefs.hasReflux;
@@ -1425,7 +2079,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
         "১ বাটি সুস্বাদু কম তেলের ছানার ডালনা অথবা সোয়াবিন ও পটলের পাতলা রসা (১০০% নিরামিষ প্রোটিন)" : 
         "১ টুকরো হালকা রুই বা কাতলা মাছের জিরে-বাটা পাতলা ঝোল";
 
-      var bedtimeDrink = noDairy ? "১ কাপ হালকা গরম ক্যামোমাইল চা বা ইসবগুলের ভুসি সহ কুসুম গরম জল" : "১ কাপ হালকা গরম মাখন-তোলা জল মেশানো গরুর দুধ অথবা ১ গ্লাস গরম জল ও ১ চামচ ইসবগুল";
+      var bedtimeDrink = noDairy ? "১ কাপ হালকা গরম ক্যামোমাইল চা বা ইসবগুলের ভুসি সহ কুসুম গরম জল" : "১ কাপ হালকা গরম মাখন-তোলা গরুর দুধ অথবা ১ গ্লাস গরম জল ও ১ চামচ ইসবগুল";
 
       dailyMeals = [
         { time: tr.meals.early, menu: morningDrink + " + " + morningNuts, kcal: "80 kcal" },
@@ -1638,10 +2292,12 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
       html += '</div>';
     }
 
+    // 1. LAB TESTS TABLE (Overflow-Safe Wrapper)
     html += '<h2>' + escapeHtml(h.labTable) + '</h2>';
     if (labs.length === 0) {
-      html += '<p style="color:#64748b;font-style:italic;">No abnormal numeric lab test markers detected. General prophylactic clinical parameters applied.</p>';
+      html += '<p style="color:#64748b;font-style:italic;">No abnormal numeric lab test markers detected. Standard physiological prophylactic parameters applied.</p>';
     } else {
+      html += '<div class="table-wrap">';
       html += '<table>';
       html += '<thead><tr>';
       html += '<th>' + escapeHtml(h.testCol) + '</th>';
@@ -1666,20 +2322,30 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
         html += '<td style="font-size:12px;">' + escapeHtml(lb.action) + '</td>';
         html += '</tr>';
       });
-      html += '</tbody></table>';
+      html += '</tbody></table></div>';
     }
 
+    // 2. MEDICAL DICTIONARY VERIFIED ACTIVE DISEASES
     html += '<h3>' + escapeHtml(h.activeCond) + '</h3>';
-    html += '<div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:1rem;">';
+    html += '<div style="margin-bottom:1rem;">';
     diseases.forEach(function (d) {
-      html += '<span class="chip teal">🩺 ' + escapeHtml(d) + '</span>';
+      html += '<div class="diag-card">';
+      html += '<div class="diag-title">';
+      html += '<span>🩺 ' + escapeHtml(d.name) + '</span>';
+      html += '<span class="diag-proof">✓ ' + escapeHtml(d.proof) + '</span>';
+      html += '</div>';
+      html += '<div class="diag-meta">';
+      html += '<strong>Classification:</strong> ' + escapeHtml(d.category) + ' &bull; <em>' + escapeHtml(d.icd) + '</em>';
+      html += '<br><strong>Clinical Nutrition Protocol:</strong> ' + escapeHtml(d.dietaryProtocol);
+      html += '</div></div>';
     });
     html += '</div>';
 
-    if (verifiedMeds.length > 0) {
-      html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications:</strong> ' + escapeHtml(verifiedMeds.join(', ')) + '</p>';
+    if (verifiedMedicines.length > 0) {
+      html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications:</strong> ' + escapeHtml(verifiedMedicines.join(', ')) + '</p>';
     }
 
+    // 3. CALORIE TARGET CARD
     html += '<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:.75rem;padding:1rem;margin:1rem 0;">';
     html += '<h3 style="margin:0 0 .25rem;color:#0f766e;">⚡ ' + escapeHtml(h.calorieCard) + ': ' + escapeHtml(kcalProfile.label) + '</h3>';
     html += '<p style="margin:0 0 .5rem;font-size:12px;color:#134e4a;"><strong>Clinical Protocol:</strong> ' + escapeHtml(kcalProfile.note) + '</p>';
@@ -1689,7 +2355,9 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
     html += '<span>🥑 Healthy Fats: ' + escapeHtml(kcalProfile.fat) + '</span>';
     html += '</div></div>';
 
+    // 4. DAILY TIME-WISE MEAL PLAN (Overflow-Safe Wrapper)
     html += '<h2>' + escapeHtml(h.dailyPlan) + '</h2>';
+    html += '<div class="table-wrap">';
     html += '<table>';
     html += '<thead><tr>';
     html += '<th style="width:25%;">' + escapeHtml(h.mealCol) + '</th>';
@@ -1704,9 +2372,11 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
       html += '<td style="font-weight:600;color:#0d9488;">' + escapeHtml(m.kcal) + '</td>';
       html += '</tr>';
     });
-    html += '</tbody></table>';
+    html += '</tbody></table></div>';
 
+    // 5. 7-DAY WEEKLY ROTATION PLAN (Overflow-Safe Wrapper)
     html += '<h2>' + escapeHtml(h.weeklyPlan) + '</h2>';
+    html += '<div class="table-wrap">';
     html += '<table>';
     html += '<thead><tr>';
     html += '<th>' + escapeHtml(h.dayCol) + '</th>';
@@ -1727,9 +2397,11 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
       html += '<td style="font-size:12px;">' + escapeHtml(row.dinner) + '</td>';
       html += '</tr>';
     });
-    html += '</tbody></table>';
+    html += '</tbody></table></div>';
 
+    // 6. WHAT TO EAT VS AVOID TABLE (Overflow-Safe Wrapper)
     html += '<h2>' + escapeHtml(h.eatTitle) + '</h2>';
+    html += '<div class="table-wrap">';
     html += '<table>';
     html += '<thead><tr>';
     html += '<th style="width:22%;">' + escapeHtml(h.catCol) + '</th>';
@@ -1744,7 +2416,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
       html += '<td style="font-size:12px;color:#991b1b;">' + escapeHtml(c.avoid) + '</td>';
       html += '</tr>';
     });
-    html += '</tbody></table>';
+    html += '</tbody></table></div>';
 
     return html;
   }
@@ -1771,7 +2443,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
       try {
         var patientPrefs = parsePatientPreferences(extra.value);
         var parsedLabs = parseAllLabReports(extractedOcrText);
-        var activeDiseases = detectActiveDiseases(extractedOcrText, verifiedMedicines, parsedLabs);
+        var activeDiseases = detectExactDiseasesViaDictionary(extractedOcrText, verifiedMedicines, parsedLabs);
         var kcalProfile = calculateKcalTarget(activeDiseases, parsedLabs, patientPrefs);
         var planData = buildRegionalNutritionPlan(sv, lv, activeDiseases, parsedLabs, kcalProfile, patientPrefs);
 
@@ -1782,7 +2454,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
           '<span class="chip teal">📍 ' + escapeHtml(sv) + ' (' + escapeHtml(rv) + ')</span>' +
           '<span class="chip blue">🗣️ ' + escapeHtml(lv) + '</span>' +
           '<span class="chip amber">⚡ ' + escapeHtml(kcalProfile.label) + '</span>' +
-          '<span class="chip purple">🥑 ' + (patientPrefs.isVeg ? 'Pure Vegetarian' : (patientPrefs.isFishEater ? 'Fish Eater' : 'Personal Diet')) + '</span>' +
+          '<span class="chip purple">🩺 ' + activeDiseases.length + ' Diseases Verified</span>' +
           '<span class="chip green">🧪 ' + parsedLabs.length + ' Lab Markers Analyzed</span>';
 
         if (dietitianName) {
@@ -1796,7 +2468,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
         loading.style.display = 'none';
         result.style.display = 'block';
         toolbar.classList.add('active');
-        toast('Clinical diet chart formulated with preferences!', '🎉');
+        toast('Clinical diet chart formulated with medical dictionary!', '🎉');
 
         if (window.innerWidth < 1024) {
           try { result.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
@@ -1809,7 +2481,7 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
       } finally {
         genBtn.disabled = false;
       }
-    }, 600);
+    }, 550);
   }
 
   function escapeHtml(s) {
@@ -1837,10 +2509,127 @@ footer .inner{max-width:1152px;margin:0 auto;display:flex;flex-direction:column;
 
   on(printBtn, 'click', function () { window.print(); });
 
-  console.log('[ArogyaDiet AI] Clinical Diagnostic, Lab & Preference Parser Ready ✓');
+  /* -------------------------------------------------------------
+     6. PWA INSTALLATION LOGIC & SERVICE WORKER
+  ------------------------------------------------------------- */
+  // Auto-generate inline Web App Manifest
+  (function setupManifest() {
+    try {
+      var svgIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">' +
+        '<rect width="512" height="512" rx="100" fill="#0d9488"/>' +
+        '<text x="50%" y="54%" font-size="280" font-family="system-ui" text-anchor="middle" dominant-baseline="central">🌱</text>' +
+        '</svg>';
+      var iconUri = 'data:image/svg+xml;base64,' + btoa(svgIcon);
+
+      var manifest = {
+        name: "ArogyaDiet AI - Clinical Diet Planner",
+        short_name: "ArogyaDiet",
+        description: "Clinical Prescription & Lab-Based Regional Diet Planner",
+        start_url: "./index.html",
+        display: "standalone",
+        orientation: "portrait-primary",
+        background_color: "#f8fafc",
+        theme_color: "#0d9488",
+        icons: [
+          { src: iconUri, sizes: "192x192 512x512", type: "image/svg+xml", purpose: "any maskable" }
+        ]
+      };
+      var blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+      var manifestUrl = URL.createObjectURL(blob);
+      var link = document.getElementById('manifestLink');
+      if (link) link.setAttribute('href', manifestUrl);
+    } catch (e) {
+      console.warn('Manifest initialization:', e);
+    }
+  })();
+
+  // Register Lightweight Service Worker for PWA Criteria
+  if ('serviceWorker' in navigator) {
+    try {
+      var swScript = "const C='arogya-v1';self.addEventListener('install',e=>self.skipWaiting());" +
+        "self.addEventListener('activate',e=>e.waitUntil(clients.claim()));" +
+        "self.addEventListener('fetch',e=>{});";
+      var swBlob = new Blob([swScript], { type: 'application/javascript' });
+      var swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl).catch(function () {
+        navigator.serviceWorker.register('./sw.js').catch(function () {});
+      });
+    } catch (e) {}
+  }
+
+  // Handle BeforeInstallPrompt for Android Chrome & PC
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    pwaBtn.style.display = 'inline-flex';
+  });
+
+  window.addEventListener('appinstalled', function () {
+    toast('ArogyaDiet AI installed successfully!', '🎉');
+    pwaBtn.style.display = 'none';
+    deferredPrompt = null;
+  });
+
+  // Check if already in standalone app mode
+  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+    pwaBtn.style.display = 'none';
+  }
+
+  function openPwaModal() {
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    var stepsEl = $('pwaModalSteps');
+    if (isIOS) {
+      stepsEl.innerHTML = '<ol>' +
+        '<li>Tap the <strong>Share button (⎋)</strong> at the bottom of Safari.</li>' +
+        '<li>Scroll down and tap <strong>"Add to Home Screen" (➕)</strong>.</li>' +
+        '<li>Tap <strong>Add</strong> at top right to install ArogyaDiet AI.</li>' +
+        '</ol>';
+      pwaModalInstallBtn.style.display = 'none';
+    } else {
+      stepsEl.innerHTML = '<ol>' +
+        '<li>Tap the <strong>three dots menu (⋮)</strong> in your browser.</li>' +
+        '<li>Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.</li>' +
+        '</ol>';
+      pwaModalInstallBtn.style.display = 'inline-flex';
+    }
+    pwaModal.classList.add('open');
+  }
+
+  on(pwaBtn, 'click', function () {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function (choice) {
+        if (choice.outcome === 'accepted') {
+          toast('Installing ArogyaDiet AI...', '🚀');
+        }
+        deferredPrompt = null;
+      });
+    } else {
+      openPwaModal();
+    }
+  });
+
+  on(pwaModalInstallBtn, 'click', function () {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      pwaModal.classList.remove('open');
+    } else {
+      toast('Please follow the steps above to add to your Home Screen.', 'ℹ️');
+    }
+  });
+
+  on(pwaModalClose, 'click', function () {
+    pwaModal.classList.remove('open');
+  });
+  on(pwaModal, 'click', function (e) {
+    if (e.target === pwaModal) pwaModal.classList.remove('open');
+  });
+
+  console.log('[ArogyaDiet AI] Medical Dictionary Engine & PWA Installer Ready ✓');
 })();
 </script>
 
+<!-- Global Visitor Counter -->
 <script>
   (function () {
     const siteKey = 'arogyadiet-ai-official';
