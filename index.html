@@ -4,12 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0d9488">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="ArogyaDiet AI">
 <title>ArogyaDiet AI - Clinical Prescription &amp; Medical Diagnostic Diet Planner</title>
 
-<!-- Manifest Link for PWA Installation -->
+<!-- Dynamic Manifest Link -->
 <link rel="manifest" id="manifestLink">
 
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -2510,28 +2511,59 @@ footer .inner{
   on(printBtn, 'click', function () { window.print(); });
 
   /* -------------------------------------------------------------
-     6. PWA INSTALLATION LOGIC & SERVICE WORKER
+     6. PWA INSTALLATION LOGIC (TRUE PNG ICONS & UNIQUE ID)
   ------------------------------------------------------------- */
-  // Auto-generate inline Web App Manifest
+  function createPngIcon(size) {
+    var cvs = document.createElement('canvas');
+    cvs.width = size;
+    cvs.height = size;
+    var ctx = cvs.getContext('2d');
+    
+    // Teal background with rounded corners
+    ctx.fillStyle = '#0d9488';
+    ctx.beginPath();
+    var r = Math.round(size * 0.2);
+    ctx.moveTo(r, 0);
+    ctx.lineTo(size - r, 0);
+    ctx.quadraticCurveTo(size, 0, size, r);
+    ctx.lineTo(size, size - r);
+    ctx.quadraticCurveTo(size, size, size - r, size);
+    ctx.lineTo(r, size);
+    ctx.quadraticCurveTo(0, size, 0, size - r);
+    ctx.lineTo(0, r);
+    ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Leaf emoji in center
+    ctx.font = Math.round(size * 0.55) + 'px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🌱', size / 2, size / 2);
+
+    return cvs.toDataURL('image/png');
+  }
+
   (function setupManifest() {
     try {
-      var svgIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">' +
-        '<rect width="512" height="512" rx="100" fill="#0d9488"/>' +
-        '<text x="50%" y="54%" font-size="280" font-family="system-ui" text-anchor="middle" dominant-baseline="central">🌱</text>' +
-        '</svg>';
-      var iconUri = 'data:image/svg+xml;base64,' + btoa(svgIcon);
+      var icon192 = createPngIcon(192);
+      var icon512 = createPngIcon(512);
+      var currentUrl = window.location.href.split('?')[0];
 
       var manifest = {
+        id: "arogyadiet-pwa-v2",
         name: "ArogyaDiet AI - Clinical Diet Planner",
         short_name: "ArogyaDiet",
         description: "Clinical Prescription & Lab-Based Regional Diet Planner",
-        start_url: "./index.html",
+        start_url: currentUrl,
+        scope: currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1),
         display: "standalone",
         orientation: "portrait-primary",
         background_color: "#f8fafc",
         theme_color: "#0d9488",
         icons: [
-          { src: iconUri, sizes: "192x192 512x512", type: "image/svg+xml", purpose: "any maskable" }
+          { src: icon192, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+          { src: icon512, sizes: "512x512", type: "image/png", purpose: "any maskable" }
         ]
       };
       var blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
@@ -2543,21 +2575,19 @@ footer .inner{
     }
   })();
 
-  // Register Lightweight Service Worker for PWA Criteria
+  // Lightweight Service Worker
   if ('serviceWorker' in navigator) {
     try {
-      var swScript = "const C='arogya-v1';self.addEventListener('install',e=>self.skipWaiting());" +
+      var swScript = "const C='arogya-v2';self.addEventListener('install',e=>self.skipWaiting());" +
         "self.addEventListener('activate',e=>e.waitUntil(clients.claim()));" +
         "self.addEventListener('fetch',e=>{});";
       var swBlob = new Blob([swScript], { type: 'application/javascript' });
       var swUrl = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swUrl).catch(function () {
-        navigator.serviceWorker.register('./sw.js').catch(function () {});
-      });
+      navigator.serviceWorker.register(swUrl).catch(function () {});
     } catch (e) {}
   }
 
-  // Handle BeforeInstallPrompt for Android Chrome & PC
+  // BeforeInstallPrompt Handler
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();
     deferredPrompt = e;
@@ -2570,7 +2600,6 @@ footer .inner{
     deferredPrompt = null;
   });
 
-  // Check if already in standalone app mode
   if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
     pwaBtn.style.display = 'none';
   }
@@ -2625,7 +2654,7 @@ footer .inner{
     if (e.target === pwaModal) pwaModal.classList.remove('open');
   });
 
-  console.log('[ArogyaDiet AI] Medical Dictionary Engine & PWA Installer Ready ✓');
+  console.log('[ArogyaDiet AI] Medical Dictionary Engine & Real PNG PWA Ready ✓');
 })();
 </script>
 
