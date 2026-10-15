@@ -307,6 +307,25 @@ textarea{resize:none;min-height:70px}
   cursor:zoom-in;
 }
 .preview-thumb img,.preview-thumb canvas{max-width:100%;max-height:13rem;width:auto;height:auto;object-fit:contain;display:block}
+
+/* SCANNING LASER ANIMATION */
+.scan-laser{
+  position:absolute;
+  left:0;
+  right:0;
+  height:3px;
+  background:linear-gradient(90deg,transparent,#0d9488 20%,#34d399 50%,#0d9488 80%,transparent);
+  box-shadow:0 0 14px 3px rgba(13,148,136,0.9);
+  animation:scanSweep 1.6s ease-in-out infinite alternate;
+  z-index:10;
+  display:none;
+  pointer-events:none;
+}
+@keyframes scanSweep{
+  0%{top:2%}
+  100%{top:96%}
+}
+
 .preview-zoom-hint{
   position:absolute;
   bottom:0.5rem;
@@ -398,11 +417,17 @@ textarea{resize:none;min-height:70px}
   align-items:center;
   justify-content:center;
   gap:0.5rem;
-  transition:transform .1s,box-shadow .2s;
+  transition:all .2s;
   margin-top:1rem;
 }
 .gen-btn:active{transform:scale(.98)}
-.gen-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.gen-btn:disabled{
+  opacity:0.65;
+  cursor:not-allowed;
+  transform:none;
+  background:#64748b;
+  box-shadow:none;
+}
 
 /* RESULTS PANEL */
 .result-shell{display:flex;flex-direction:column;min-height:34rem}
@@ -520,11 +545,6 @@ textarea{resize:none;min-height:70px}
   color:#881337;
   margin:0.25rem 0;
   line-height:1.55;
-}
-.contra-banner ul{
-  margin:0.35rem 0 0.35rem 1.2rem;
-  font-size:0.8125rem;
-  color:#9f1239;
 }
 
 /* RESPONSIVE SCROLL-SAFE TABLE WRAPPER */
@@ -820,6 +840,8 @@ footer .inner{
           </div>
           <div class="preview-thumb">
             <div class="preview-thumb-inner" id="thumbClick" title="Click to zoom">
+              <!-- Animated Scan Laser Beam -->
+              <div id="scanLaser" class="scan-laser"></div>
               <img id="imgPreview" alt="Prescription preview" style="display:none;">
               <canvas id="pdfCanvas" style="display:none;"></canvas>
               <span class="preview-zoom-hint">🔍 Tap to inspect</span>
@@ -930,7 +952,7 @@ footer .inner{
 
       <button id="genBtn" class="gen-btn" type="button">
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 022 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
         </svg>
         <span>Analyze Contraindications &amp; Generate Diet Chart</span>
       </button>
@@ -1389,754 +1411,14 @@ footer .inner{
     }
   };
 
-  function $(id) { return document.getElementById(id); }
-  function on(el, ev, fn) { if (el) el.addEventListener(ev, fn); }
-  function fmtBytes(b) {
-    if (b < 1024) return b + ' B';
-    if (b < 1024 * 1024) return (b / 1024).toFixed(0) + ' KB';
-    return (b / 1024 / 1024).toFixed(1) + ' MB';
-  }
-  function extOf(name) { var m = /\.([a-z0-9]+)$/i.exec(name || ''); return m ? m[1].toUpperCase() : 'FILE'; }
-
-  // DOM Elements
-  var fileInput = $('file'), drop = $('drop');
-  var dropPrompt = $('dropPrompt'), previewCard = $('previewCard');
-  var imgPreview = $('imgPreview'), pdfCanvas = $('pdfCanvas');
-  var fname = $('fname'), ftype = $('ftype'), fsize = $('fsize');
-  var changeBtn = $('changeBtn'), removeBtn = $('removeBtn'), thumbClick = $('thumbClick');
-  var regionSel = $('region'), stateSel = $('state'), langSel = $('lang');
-  var dietitianNameInput = $('dietitianName'), targetCaloriesInput = $('targetCalories'), extra = $('extra');
-  var genBtn = $('genBtn'), demoBtn = $('demoBtn');
-  var idle = $('idle'), loading = $('loading'), error = $('error'), result = $('result');
-  var errMsg = $('errMsg'), output = $('output'), badges = $('badges');
-  var retryBtn = $('retryBtn');
-  var subtitle = $('subtitle'), toolbar = $('toolbar');
-  var copyBtn = $('copyBtn'), printBtn = $('printBtn');
-  var dietitianSignature = $('dietitianSignature');
-  var lightbox = $('lightbox'), lightboxImg = $('lightboxImg');
-  var lightboxCanvas = $('lightboxCanvas'), lightboxClose = $('lightboxClose');
-  var medTags = $('medTags'), manualMedInput = $('manualMedInput'), addMedBtn = $('addMedBtn'), medCountTag = $('medCountTag');
-  var pwaBtn = $('pwaBtn'), pwaModal = $('pwaModal'), pwaModalClose = $('pwaModalClose'), pwaModalInstallBtn = $('pwaModalInstallBtn');
-
-  var currentImage = null, currentMime = null;
-  var currentFileName = '', currentFileSize = 0;
-  var currentPreviewDataUrl = null, currentIsPdf = false;
-  var toastTimer = null, extractedOcrText = '';
-  var verifiedMedicines = [];
-  var deferredPrompt = null;
-
-  function toast(msg, icon, ms) {
-    var t = $('toast');
-    $('toastIcon').textContent = icon || 'ℹ️';
-    $('toastText').textContent = msg;
-    t.classList.add('show');
-    if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.classList.remove('show'); }, ms || 3500);
-  }
-
-  function updateStates() {
-    var list = REGIONAL_DATA[regionSel.value] || [];
-    stateSel.innerHTML = '';
-    list.forEach(function (st) {
-      var o = document.createElement('option');
-      o.value = st.n; o.textContent = st.n;
-      stateSel.appendChild(o);
-    });
-  }
-  on(regionSel, 'change', updateStates);
-  updateStates();
-
-  function renderMedPills() {
-    medTags.innerHTML = '';
-    if (verifiedMedicines.length === 0) {
-      medTags.innerHTML = '<span style="font-size:11px;color:#94a3b8;align-self:center;">Upload a prescription or add medicines manually</span>';
-      medCountTag.textContent = '0 Verified';
-      return;
-    }
-    medCountTag.textContent = verifiedMedicines.length + ' Verified';
-    verifiedMedicines.forEach(function (med, idx) {
-      var p = document.createElement('span');
-      p.className = 'med-pill';
-      p.innerHTML = '💊 ' + escapeHtml(med) + ' <span class="del" title="Remove" data-idx="' + idx + '">&times;</span>';
-      medTags.appendChild(p);
-    });
-    var dels = medTags.querySelectorAll('.del');
-    dels.forEach(function (btn) {
-      btn.onclick = function () {
-        var id = parseInt(this.getAttribute('data-idx'), 10);
-        verifiedMedicines.splice(id, 1);
-        renderMedPills();
-      };
-    });
-  }
-
-  function addMedicine(name) {
-    name = (name || '').trim();
-    if (!name) return;
-    for (var i = 0; i < verifiedMedicines.length; i++) {
-      if (verifiedMedicines[i].toLowerCase() === name.toLowerCase()) return;
-    }
-    verifiedMedicines.push(name);
-    renderMedPills();
-  }
-
-  on(addMedBtn, 'click', function () {
-    addMedicine(manualMedInput.value);
-    manualMedInput.value = '';
-  });
-  on(manualMedInput, 'keydown', function (e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addMedicine(manualMedInput.value);
-      manualMedInput.value = '';
-    }
-  });
-
-  document.querySelectorAll('.quick-chip').forEach(function (chip) {
-    on(chip, 'click', function () {
-      addMedicine(this.getAttribute('data-med'));
-    });
-  });
-
-  function clearFile() {
-    fileInput.value = '';
-    currentImage = null; currentMime = null;
-    currentFileName = ''; currentFileSize = 0;
-    currentPreviewDataUrl = null; currentIsPdf = false;
-    extractedOcrText = '';
-    verifiedMedicines = [];
-    renderMedPills();
-    dropPrompt.style.display = 'flex';
-    previewCard.style.display = 'none';
-    imgPreview.style.display = 'none'; imgPreview.src = '';
-    pdfCanvas.style.display = 'none';
-  }
-
-  function showPreviewCard() {
-    dropPrompt.style.display = 'none';
-    previewCard.style.display = 'block';
-  }
-
-  function runOCR(imageDataUri) {
-    if (!window.Tesseract) return;
-    toast('Scanning prescription & consulting medical dictionary...', '🔍');
-    window.Tesseract.recognize(imageDataUri, 'eng')
-      .then(function (res) {
-        if (res && res.data && res.data.text) {
-          extractedOcrText = res.data.text;
-          detectMedicinesFromText(extractedOcrText);
-          toast('Prescription & labs analyzed!', '✅');
-        }
-      })
-      .catch(function (e) {
-        console.warn('OCR notice:', e);
-      });
-  }
-
-  function detectMedicinesFromText(txt) {
-    var lower = txt.toLowerCase();
-    MEDICAL_DISEASE_DICTIONARY.forEach(function (dis) {
-      dis.associatedMeds.forEach(function (medTerm) {
-        var pattern = new RegExp('\\b' + medTerm + '\\b', 'i');
-        if (pattern.test(lower)) {
-          var formattedName = medTerm.charAt(0).toUpperCase() + medTerm.slice(1);
-          addMedicine(formattedName);
-        }
-      });
-    });
-  }
-
-  function handleFile(f) {
-    if (!f) return;
-    if (f.size > 10 * 1024 * 1024) { toast('File too large (max 10 MB)', '⚠️'); clearFile(); return; }
-    var isPdf = f.type === 'application/pdf';
-    var isImg = f.type.indexOf('image/') === 0;
-    if (!isPdf && !isImg) { toast('Please upload an image or PDF', '⚠️'); clearFile(); return; }
-
-    currentFileName = f.name;
-    currentFileSize = f.size;
-    fname.textContent = f.name;
-    ftype.textContent = extOf(f.name);
-    fsize.textContent = fmtBytes(f.size);
-
-    if (isPdf) {
-      if (!window.pdfjsLib) { toast('PDF engine loading, please wait...', '⚠️'); clearFile(); return; }
-      currentIsPdf = true;
-      var reader = new FileReader();
-      reader.onload = function () {
-        window.pdfjsLib.getDocument({ data: new Uint8Array(reader.result) }).promise
-          .then(function (pdf) { return pdf.getPage(1); })
-          .then(function (page) {
-            var vp = page.getViewport({ scale: 1.5 });
-            pdfCanvas.width = vp.width; pdfCanvas.height = vp.height;
-            return page.render({ canvasContext: pdfCanvas.getContext('2d'), viewport: vp }).promise;
-          })
-          .then(function () {
-            pdfCanvas.style.display = 'block';
-            imgPreview.style.display = 'none';
-            currentPreviewDataUrl = pdfCanvas.toDataURL('image/jpeg', 0.9);
-            currentImage = currentPreviewDataUrl.split(',')[1];
-            currentMime = 'image/jpeg';
-            showPreviewCard();
-            runOCR(currentPreviewDataUrl);
-          })
-          .catch(function (e) {
-            console.error(e);
-            toast('Failed to parse PDF', '❌');
-            clearFile();
-          });
-      };
-      reader.readAsArrayBuffer(f);
-    } else {
-      currentIsPdf = false;
-      var r = new FileReader();
-      r.onload = function (e) {
-        imgPreview.src = e.target.result;
-        imgPreview.style.display = 'block';
-        pdfCanvas.style.display = 'none';
-        currentPreviewDataUrl = e.target.result;
-        currentImage = e.target.result.split(',')[1];
-        currentMime = f.type;
-        showPreviewCard();
-        runOCR(currentPreviewDataUrl);
-      };
-      r.readAsDataURL(f);
-    }
-  }
-
-  on(fileInput, 'change', function (e) { if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]); });
-  on(removeBtn, 'click', function (e) { e.stopPropagation(); clearFile(); });
-  on(changeBtn, 'click', function (e) { e.stopPropagation(); fileInput.click(); });
-
-  ['dragenter','dragover'].forEach(function (ev) {
-    on(drop, ev, function (e) { e.preventDefault(); drop.classList.add('dragging'); });
-  });
-  ['dragleave','drop'].forEach(function (ev) {
-    on(drop, ev, function (e) { e.preventDefault(); drop.classList.remove('dragging'); });
-  });
-  on(drop, 'drop', function (e) { if (e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
-
-  function openLightbox() {
-    if (!currentPreviewDataUrl) return;
-    lightboxImg.style.display = 'none';
-    lightboxCanvas.style.display = 'none';
-    if (currentIsPdf) {
-      lightboxCanvas.width = pdfCanvas.width;
-      lightboxCanvas.height = pdfCanvas.height;
-      lightboxCanvas.getContext('2d').drawImage(pdfCanvas, 0, 0);
-      lightboxCanvas.style.display = 'block';
-    } else {
-      lightboxImg.src = currentPreviewDataUrl;
-      lightboxImg.style.display = 'block';
-    }
-    lightbox.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeLightbox() {
-    lightbox.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  on(thumbClick, 'click', openLightbox);
-  on(lightboxClose, 'click', closeLightbox);
-  on(lightbox, 'click', function (e) { if (e.target === lightbox) closeLightbox(); });
-
-  /* SAMPLE WITH CHRONIC KIDNEY DISEASE (CKD Stage 3) & DIABETES */
-  on(demoBtn, 'click', function () {
-    toast('Generating CKD Stage 3 clinical prescription with elevated creatinine...', '📝');
-    var c = document.createElement('canvas');
-    c.width = 850; c.height = 1150;
-    var ctx = c.getContext('2d');
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 850, 1150);
-    
-    ctx.fillStyle = '#0f766e'; ctx.fillRect(0, 0, 850, 105);
-    ctx.fillStyle = '#ffffff'; ctx.font = 'bold 24px sans-serif';
-    ctx.fillText('APEX NEPHROLOGY & METABOLIC CARE CLINIC', 40, 48);
-    ctx.font = '13px sans-serif';
-    ctx.fillText('Dr. P. Sen, MBBS, MD (Med), DM (Nephrology) | Kolkata | Reg: WB-91823', 40, 78);
-    
-    ctx.fillStyle = '#1e293b'; ctx.font = '14px sans-serif';
-    ctx.fillText('Patient Name: Ramesh Chandra Pal        Age: 58 Yrs        Gender: Male', 40, 140);
-    ctx.fillText('Date: 15-Oct-2026', 40, 165);
-    
-    ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(40, 185); ctx.lineTo(810, 185); ctx.stroke();
-
-    ctx.fillStyle = '#f0fdfa'; ctx.fillRect(40, 200, 770, 150);
-    ctx.strokeStyle = '#99f6e4'; ctx.strokeRect(40, 200, 770, 150);
-    ctx.fillStyle = '#0f766e'; ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('CLINICAL VITALS & LAB DIAGNOSTIC REPORT (RENAL PANEL):', 55, 225);
-
-    ctx.fillStyle = '#1e293b'; ctx.font = '13px sans-serif';
-    ctx.fillText('• Serum Creatinine: 2.1 mg/dL (Elevated / CKD Stage 3)', 55, 255);
-    ctx.fillText('• Blood Pressure (BP): 146/92 mmHg (Stage 2 HTN)', 55, 280);
-    ctx.fillText('• Fasting Blood Sugar (FBS): 142 mg/dL (High / Diabetic)', 55, 305);
-    ctx.fillText('• Serum Uric Acid: 7.8 mg/dL (High / Hyperuricemia)', 55, 330);
-
-    ctx.fillText('• Serum Potassium (K+): 5.1 mEq/L (Upper Normal - Monitor)', 440, 255);
-    ctx.fillText('• Serum Phosphorus: 4.9 mg/dL (Borderline High)', 440, 280);
-    ctx.fillText('• Total Cholesterol: 215 mg/dL (Borderline)', 440, 305);
-    ctx.fillText('• Estimated GFR: 34 mL/min/1.73m² (Impaired Filtration)', 440, 330);
-
-    ctx.fillStyle = '#0f766e'; ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('CLINICAL IMPRESSION / ACTIVE DIAGNOSIS (Dx):', 40, 385);
-    ctx.fillStyle = '#334155'; ctx.font = '14px sans-serif';
-    ctx.fillText('1. Chronic Kidney Disease (CKD Stage 3 - Diabetic Nephropathy)', 55, 415);
-    ctx.fillText('2. Essential Hypertension with fluid retention risk', 55, 440);
-    ctx.fillText('3. Type 2 Diabetes Mellitus with high glycemic variability', 55, 465);
-    ctx.fillText('4. Asymptomatic Hyperuricemia', 55, 490);
-
-    ctx.fillStyle = '#0d9488'; ctx.font = 'bold 36px serif';
-    ctx.fillText('\u211E', 40, 550);
-    ctx.fillStyle = '#1e293b'; ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('1. Tab. Torsemide 10 mg - Morning after breakfast', 65, 590);
-    ctx.fillText('2. Tab. Telmisartan 40 mg - Morning after breakfast', 65, 630);
-    ctx.fillText('3. Tab. Febuxostat 40 mg - Once daily afternoon', 65, 670);
-    ctx.fillText('4. Tab. Metformin 500 mg - Twice daily after meals', 65, 710);
-
-    ctx.fillStyle = '#9f1239'; ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('CRITICAL RENAL DIETARY DIRECTIVES:', 40, 770);
-    ctx.fillStyle = '#334155'; ctx.font = '14px sans-serif';
-    ctx.fillText('- STRICT FLUID RESTRICTION: Maximum 1000 mL (1 Litre) TOTAL fluid in 24 hours.', 55, 800);
-    ctx.fillText('- NO MILK or dairy overload (excess phosphorus causes renal vascular calcification).', 55, 825);
-    ctx.fillText('- NO soaked seeds (methi/flax) or green coconut water (dangerous potassium surge).', 55, 850);
-    ctx.fillText('- Protein restricted to 0.6 - 0.8g/kg (High-biological value egg whites preferred).', 55, 875);
-
-    ctx.fillStyle = '#64748b'; ctx.font = 'italic 18px cursive';
-    ctx.fillText('Dr. P. Sen, DM (Nephro)', 590, 1020);
-    ctx.strokeStyle = '#cbd5e1'; ctx.strokeRect(560, 980, 240, 70);
-
-    var url = c.toDataURL('image/jpeg', 0.92);
-    currentImage = url.split(',')[1];
-    currentMime = 'image/jpeg';
-    currentPreviewDataUrl = url;
-    currentIsPdf = false;
-    currentFileName = 'CKD_Renal_Prescription_DrSen.jpg';
-    currentFileSize = Math.round(url.length * 0.75);
-
-    imgPreview.src = url;
-    imgPreview.style.display = 'block';
-    pdfCanvas.style.display = 'none';
-    fname.textContent = currentFileName;
-    ftype.textContent = 'JPG';
-    fsize.textContent = fmtBytes(currentFileSize);
-    showPreviewCard();
-
-    verifiedMedicines = ["Torsemide 10mg", "Telmisartan 40mg", "Febuxostat 40mg", "Metformin 500mg"];
-    renderMedPills();
-
-    extractedOcrText = 'Ramesh Chandra Pal 58 Yrs Serum Creatinine: 2.1 mg/dL BP: 146/92 mmHg Fasting Blood Sugar FBS: 142 mg/dL Serum Uric Acid: 7.8 mg/dL eGFR 34 mL/min Dx: Chronic Kidney Disease CKD Stage 3, Diabetic Nephropathy, Essential Hypertension, Hyperuricemia Tab Torsemide 10mg Tab Telmisartan 40mg Tab Febuxostat 40mg Tab Metformin 500mg Strict fluid restriction 1000 mL/day No milk No coconut water';
-
-    regionSel.value = 'Eastern India'; updateStates();
-    stateSel.value = 'West Bengal';
-    langSel.value = 'Bengali (বাংলা)';
-    dietitianNameInput.value = 'Dr. R. Sharma, Chief Clinical Nutritionist, Kolkata';
-    targetCaloriesInput.value = '1550';
-    extra.value = 'Diagnosed with CKD Stage 3, swelling in feet (edema), vegetarian, no milk';
-    toast('Sample loaded: CKD Stage 3 with strict fluid & electrolyte restriction! Click Generate.', '✨', 4500);
-  });
-
-  function parseAllLabReports(text) {
-    var labs = [];
-    var t = (text || '') + ' ' + (extra.value || '');
-
-    function matchNum(patterns) {
-      for (var i = 0; i < patterns.length; i++) {
-        var m = patterns[i].exec(t);
-        if (m && m[1]) return parseFloat(m[1]);
-      }
-      return null;
-    }
-
-    var fbs = matchNum([/fbs[:\s=]+([0-9]{2,3}(?:\.[0-9]+)?)/i, /fasting\s*(?:blood\s*)?sugar[:\s=]+([0-9]{2,3}(?:\.[0-9]+)?)/i]);
-    if (fbs) {
-      var st = fbs >= 126 ? 'high' : (fbs >= 100 ? 'borderline' : 'normal');
-      labs.push({
-        id: "fbs",
-        name: LAB_PANELS_REF.fbs.name,
-        val: fbs + ' mg/dL',
-        normal: LAB_PANELS_REF.fbs.normal + ' mg/dL',
-        status: st,
-        action: st === 'high' ? 'Low glycemic index meals; eliminate table sugar and refined grains; unpolished rice with fibrous greens.' : 'Standard glycemic balance maintained.'
-      });
-    }
-
-    var ppbs = matchNum([/ppbs[:\s=]+([0-9]{2,3}(?:\.[0-9]+)?)/i, /post\s*prandial[:\s=]+([0-9]{2,3}(?:\.[0-9]+)?)/i]);
-    if (ppbs) {
-      var stPp = ppbs >= 200 ? 'high' : (ppbs >= 140 ? 'borderline' : 'normal');
-      labs.push({
-        id: "ppbs",
-        name: LAB_PANELS_REF.ppbs.name,
-        val: ppbs + ' mg/dL',
-        normal: LAB_PANELS_REF.ppbs.normal + ' mg/dL',
-        status: stPp,
-        action: stPp === 'high' ? 'Portion controlled carbohydrates; split lunches and dinners; pair meals with fiber (Lau, Patol, Methi).' : 'Normal post-meal tolerance.'
-      });
-    }
-
-    var a1c = matchNum([/hba1c[:\s=]+([0-9]+(?:\.[0-9]+)?)/i, /glycated\s*h(?:a?e?moglobin)?[:\s=]+([0-9]+(?:\.[0-9]+)?)/i]);
-    if (a1c) {
-      var stA1c = a1c >= 6.5 ? 'high' : (a1c >= 5.7 ? 'borderline' : 'normal');
-      labs.push({
-        id: "hba1c",
-        name: LAB_PANELS_REF.hba1c.name,
-        val: a1c + '%',
-        normal: '< 5.7%',
-        status: stA1c,
-        action: stA1c === 'high' ? 'Caloric cap at 1,450 kcal/day; zero high-GI fruits (mango/banana); introduce methi seeds and bitter gourd.' : 'Good 3-month glycemic control.'
-      });
-    }
-
-    var bpM = /(?:bp|blood\s*pressure)[:\s=]+([0-9]{2,3})\s*[\/|\\]\s*([0-9]{2,3})/i.exec(t);
-    if (bpM) {
-      var sys = parseInt(bpM[1], 10), dia = parseInt(bpM[2], 10);
-      var stBp = (sys >= 140 || dia >= 90) ? 'high' : ((sys >= 120 || dia >= 80) ? 'borderline' : 'normal');
-      labs.push({
-        id: "bp",
-        name: 'Blood Pressure (BP)',
-        val: sys + '/' + dia + ' mmHg',
-        normal: '< 120/80 mmHg',
-        status: stBp,
-        action: stBp === 'high' ? 'DASH nutrition protocol: sodium restricted (< 2.5g salt/day); strictly avoid pickles, papad, chanachur; strictly eliminate baking soda.' : 'Normotensive status.'
-      });
-    }
-
-    var chol = matchNum([/(?:total\s*cholesterol|s\.?\s*cholesterol)[:\s=]+([0-9]{2,3})/i]);
-    if (chol) {
-      var stChol = chol >= 240 ? 'high' : (chol >= 200 ? 'borderline' : 'normal');
-      labs.push({
-        id: "chol",
-        name: LAB_PANELS_REF.chol.name,
-        val: chol + ' mg/dL',
-        normal: '< 200 mg/dL',
-        status: stChol,
-        action: stChol !== 'normal' ? 'Cooking oil restricted to 15 ml (3 tsp) per day; zero ghee/butter.' : 'Desirable lipid level.'
-      });
-    }
-
-    var tg = matchNum([/(?:triglycerides|tgl|tg)[:\s=]+([0-9]{2,3})/i]);
-    if (tg) {
-      var stTg = tg >= 200 ? 'high' : (tg >= 150 ? 'borderline' : 'normal');
-      labs.push({
-        id: "tg",
-        name: LAB_PANELS_REF.tg.name,
-        val: tg + ' mg/dL',
-        normal: '< 150 mg/dL',
-        status: stTg,
-        action: stTg !== 'normal' ? 'Strictly eliminate refined sugar, sweets, bakeries, and sweetened fruit juices.' : 'Normal triglyceride level.'
-      });
-    }
-
-    var uric = matchNum([/(?:uric\s*acid|s\.?\s*uric\s*acid)[:\s=]+([0-9]+(?:\.[0-9]+)?)/i]);
-    if (uric) {
-      var stUric = uric >= 7.5 ? 'high' : (uric >= 7.0 ? 'borderline' : 'normal');
-      labs.push({
-        id: "uric",
-        name: LAB_PANELS_REF.uric.name,
-        val: uric + ' mg/dL',
-        normal: '3.5 - 7.0 mg/dL',
-        status: stUric,
-        action: stUric !== 'normal' ? 'Low-purine diet: avoid red meat, organ meats, masoor dal, spinach, and alcohol; hydrate with 3 liters of water daily (unless CKD co-exists).' : 'Uric acid within safe threshold.'
-      });
-    }
-
-    var creat = matchNum([/(?:s\.?\s*creatinine|serum\s*creatinine|creatinine)[:\s=]+([0-9]+(?:\.[0-9]+)?)/i]);
-    if (creat) {
-      var stCreat = creat > 1.4 ? 'high' : (creat > 1.2 ? 'borderline' : 'normal');
-      labs.push({
-        id: "creat",
-        name: LAB_PANELS_REF.creat.name,
-        val: creat + ' mg/dL',
-        normal: '0.6 - 1.2 mg/dL',
-        status: stCreat,
-        action: stCreat === 'high' ? 'CRITICAL RENAL PROTOCOL: Moderate to low protein (0.6-0.8g/kg); STRICT FLUID BUDGET (1000-1200 mL/day); eliminate milk/dairy & soaked seeds.' : 'Normal renal filtration.'
-      });
-    }
-
-    var sgpt = matchNum([/(?:sgpt|alt)[:\s=]+([0-9]{1,3})/i]);
-    if (sgpt) {
-      var stSgpt = sgpt > 65 ? 'high' : (sgpt > 55 ? 'borderline' : 'normal');
-      labs.push({
-        id: "sgpt",
-        name: LAB_PANELS_REF.sgpt.name,
-        val: sgpt + ' U/L',
-        normal: '7 - 55 U/L',
-        status: stSgpt,
-        action: stSgpt !== 'normal' ? 'NAFLD protocol: zero fried meals; light stews (jhol/shukto); antioxidants from turmeric and green leafy vegetables.' : 'Healthy liver enzyme activity.'
-      });
-    }
-
-    var tsh = matchNum([/tsh[:\s=]+([0-9]+(?:\.[0-9]+)?)/i]);
-    if (tsh) {
-      var stTsh = tsh > 5.5 ? 'high' : (tsh < 0.4 ? 'low' : 'normal');
-      labs.push({
-        id: "tsh",
-        name: LAB_PANELS_REF.tsh.name,
-        val: tsh + ' µIU/mL',
-        normal: '0.4 - 4.5 µIU/mL',
-        status: stTsh,
-        action: stTsh === 'high' ? 'Avoid raw goitrogenic vegetables (cabbage, cauliflower, radish); ensure adequate iodine and selenium.' : 'Euthyroid state.'
-      });
-    }
-
-    var hb = matchNum([/(?:hemoglobin|haemoglobin|hb)[:\s=]+([0-9]+(?:\.[0-9]+)?)/i]);
-    if (hb) {
-      var stHb = hb < 12.0 ? 'low' : 'normal';
-      labs.push({
-        id: "hb",
-        name: LAB_PANELS_REF.hb.name,
-        val: hb + ' g/dL',
-        normal: '12.5 - 16.0 g/dL',
-        status: stHb,
-        action: stHb === 'low' ? 'Anemia corrective protocol: iron-dense moringa leaves, pomegranate, dates paired with vitamin C (amla/lemon).' : 'Optimal blood oxygenation.'
-      });
-    }
-
-    return labs;
-  }
-
   /* -------------------------------------------------------------
-     5. ADVANCED MEDICAL DICTIONARY SEARCH & MATCHER ENGINE
-  ------------------------------------------------------------- */
-  function detectExactDiseasesViaDictionary(ocrText, verifiedMeds, labs) {
-    var detected = [];
-    var rawText = (ocrText + ' ' + (extra.value || '')).toLowerCase();
-
-    var dxSectionText = "";
-    var dxRegex = /(?:diagnosis|dx|impression|imp|k\/c\/o|known\s*case\s*of|clinical\s*assessment)[:\s\-]+([^Rx\n\r]{5,200})/gi;
-    var match;
-    while ((match = dxRegex.exec(rawText)) !== null) {
-      if (match[1]) dxSectionText += " " + match[1];
-    }
-
-    MEDICAL_DISEASE_DICTIONARY.forEach(function (disease) {
-      var score = 0;
-      var evidence = [];
-
-      if (dxSectionText) {
-        for (var i = 0; i < disease.synonyms.length; i++) {
-          var syn = disease.synonyms[i];
-          var pattern = new RegExp('\\b' + syn + '\\b', 'i');
-          if (pattern.test(dxSectionText)) {
-            score += 10;
-            evidence.push("Doctor Dx: " + syn.toUpperCase());
-            break;
-          }
-        }
-      }
-
-      if (score === 0) {
-        for (var j = 0; j < disease.synonyms.length; j++) {
-          var s = disease.synonyms[j];
-          var pat = new RegExp('\\b' + s + '\\b', 'i');
-          if (pat.test(rawText)) {
-            score += 5;
-            evidence.push("Transcript keyword: " + s);
-            break;
-          }
-        }
-      }
-
-      verifiedMeds.forEach(function (med) {
-        var mLower = med.toLowerCase();
-        for (var k = 0; k < disease.associatedMeds.length; k++) {
-          if (mLower.indexOf(disease.associatedMeds[k]) !== -1) {
-            score += 6;
-            evidence.push("Rx Indication: " + med);
-            break;
-          }
-        }
-      });
-
-      labs.forEach(function (lb) {
-        if (lb.status === 'high' || lb.status === 'borderline' || lb.status === 'low') {
-          if (disease.labTriggers.indexOf(lb.id) !== -1) {
-            score += 5;
-            evidence.push("Lab Test: " + lb.name + " (" + lb.val + ")");
-          }
-        }
-      });
-
-      if (score >= 4) {
-        var proofLabel = evidence.length > 0 ? evidence[0] : "Clinical Correlation";
-        detected.push({
-          id: disease.id,
-          name: disease.name,
-          category: disease.category,
-          icd: disease.icd,
-          proof: proofLabel,
-          dietaryProtocol: disease.dietaryProtocol,
-          score: score
-        });
-      }
-    });
-
-    if (detected.length === 0) {
-      detected.push({
-        id: "prophylactic",
-        name: "General Cardiometabolic Health Maintenance",
-        category: "Preventive Care",
-        icd: "ICD-10: Z71.3",
-        proof: "Prophylactic Health Protocol",
-        dietaryProtocol: "Balanced low-glycemic, low-sodium, nutrient-dense regional meals.",
-        score: 1
-      });
-    }
-
-    detected.sort(function (a, b) { return b.score - a.score; });
-    return detected;
-  }
-
-  function parsePatientPreferences(text) {
-    var raw = (text || '').trim();
-    var lower = raw.toLowerCase();
-    var prefs = {
-      raw: raw,
-      isVeg: false,
-      isVegan: false,
-      isFishEater: false,
-      noEgg: false,
-      noDairy: false,
-      hasReflux: false,
-      peanutAllergy: false,
-      elderly: false,
-      statedAge: null,
-      customDirectives: []
-    };
-
-    if (!raw) return prefs;
-
-    if (/(pure\s*veg|vegetarian|shakahari|niramish|নিরামিষ|शाकाहारी)/i.test(lower) && !/(non[- ]?veg|mach|fish)/i.test(lower)) {
-      prefs.isVeg = true;
-      prefs.customDirectives.push("100% Pure Vegetarian menu applied (all animal meats & fish removed)");
-    } else if (/(fish|macher|mach|মাছ|non[- ]?veg)/i.test(lower)) {
-      prefs.isFishEater = true;
-      prefs.customDirectives.push("Freshwater fish stew allowed in moderate portions");
-    }
-
-    if (/vegan/i.test(lower)) {
-      prefs.isVegan = true;
-      prefs.noDairy = true;
-      prefs.isVeg = true;
-      prefs.customDirectives.push("Strict Vegan: All dairy replaced with plant-based alternatives");
-    }
-
-    if (/(no\s*egg|egg\s*allergy|ডিম\s*না|ডিম\s*অ্যালার্জি)/i.test(lower) || (prefs.isVeg && !/eggitarian/i.test(lower))) {
-      prefs.noEgg = true;
-      prefs.customDirectives.push("Egg-free protein sources prioritized (fresh chhena, sprouts, pulses)");
-    }
-
-    if (/(no\s*dairy|lactose|milk\s*allergy|দুধ\s*না)/i.test(lower)) {
-      prefs.noDairy = true;
-      prefs.customDirectives.push("Dairy-free: replaced milk with herbal infusions or lemon-cumin water");
-    }
-
-    if (/(reflux|gerd|acid|heartburn|গ্যাস|অম্বল|এসিডিটি)/i.test(lower)) {
-      prefs.hasReflux = true;
-      prefs.customDirectives.push("Acid Reflux / GERD Protocol: Alkaline warm cumin/fennel water; zero irritating chili/deep-fried snacks");
-    }
-
-    if (/(peanut|nut\s*allergy|চীনাবাদাম)/i.test(lower)) {
-      prefs.peanutAllergy = true;
-      prefs.customDirectives.push("Peanut Allergy Alert: strictly excluded peanuts and peanut oil");
-    }
-
-    var ageMatch = /(?:age|বছর|বয়স)[:\s=]+([0-9]{2})/i.exec(lower) || /([0-9]{2})\s*(?:yrs|years|yr|বছর)/i.exec(lower);
-    if (ageMatch && ageMatch[1]) {
-      prefs.statedAge = parseInt(ageMatch[1], 10);
-      if (prefs.statedAge >= 60) {
-        prefs.elderly = true;
-        prefs.customDirectives.push("Geriatric Adaptation: Soft-cooked easily digestible grains and lighter roughage");
-      }
-    }
-
-    return prefs;
-  }
-
-  /* -------------------------------------------------------------
-     CALORIE CALCULATION WITH OPTIONAL DOCTOR TARGET OVERRIDE
-  ------------------------------------------------------------- */
-  function calculateKcalTarget(diseases, labs, prefs, doctorCalories) {
-    if (doctorCalories && !isNaN(doctorCalories) && doctorCalories >= 700 && doctorCalories <= 4000) {
-      var dKcal = Math.round(doctorCalories);
-      var cRatio = 0.50, pRatio = 0.22, fRatio = 0.28;
-      
-      var isCKD = diseases.some(function(d){ return d.id === 'ckd'; });
-      var hasObesityOrT2D = diseases.some(function(d){ return d.id === 'obesity' || d.id === 't2dm'; });
-
-      if (isCKD) {
-        pRatio = 0.12; // strictly protein-restricted in renal failure
-        cRatio = 0.60;
-        fRatio = 0.28;
-      } else if (hasObesityOrT2D) {
-        pRatio = 0.25;
-        cRatio = 0.48;
-        fRatio = 0.27;
-      }
-
-      return {
-        total: dKcal,
-        label: dKcal.toLocaleString() + " kcal / day (Doctor Prescribed)",
-        carbs: Math.round(cRatio * 100) + "% (" + Math.round((dKcal * cRatio) / 4) + "g)",
-        protein: Math.round(pRatio * 100) + "% (" + Math.round((dKcal * pRatio) / 4) + "g)",
-        fat: Math.round(fRatio * 100) + "% (" + Math.round((dKcal * fRatio) / 9) + "g)",
-        note: "Direct Doctor Directive: Diet formulated strictly to match prescribed " + dKcal + " kcal/day target."
-      };
-    }
-
-    var hasCKD = false, hasObesity = false, hasDiabetes = false, hasHTN = false, hasFattyLiver = false;
-    diseases.forEach(function (d) {
-      if (d.id === 'ckd') hasCKD = true;
-      if (d.id === 'obesity') hasObesity = true;
-      if (d.id === 't2dm') hasDiabetes = true;
-      if (d.id === 'htn') hasHTN = true;
-      if (d.id === 'nafld') hasFattyLiver = true;
-    });
-
-    var baseKcal = 1600;
-    var note = "Balanced Cardiometabolic Energy Target";
-
-    if (hasCKD) {
-      baseKcal = 1550;
-      note = "Renal Protective Caloric Target (Strict Protein Limitation & Fluid Restriction)";
-    } else if (hasObesity) {
-      baseKcal = hasDiabetes ? 1350 : 1300;
-      note = "Therapeutic Hypocaloric Weight Management & Satiety Protocol";
-    } else if (hasDiabetes && (hasHTN || hasFattyLiver)) {
-      baseKcal = 1450;
-      note = "Therapeutic Caloric Restriction for Glycemic & Lipid Normalization";
-    } else if (hasDiabetes) {
-      baseKcal = 1500;
-      note = "Moderate Low Glycemic Target";
-    }
-
-    if (prefs && prefs.statedAge && prefs.statedAge >= 65 && baseKcal > 1400) {
-      baseKcal -= 50;
-      note += " (Adjusted for age " + prefs.statedAge + ")";
-    }
-
-    var proteinPct = hasCKD ? 0.12 : ((hasObesity || hasDiabetes) ? 0.24 : 0.20);
-    var carbPct = hasCKD ? 0.60 : 0.50;
-    var fatPct = 1 - (proteinPct + carbPct);
-
-    return {
-      total: baseKcal,
-      label: baseKcal.toLocaleString() + " kcal / day (Automated Clinical Estimate)",
-      carbs: Math.round(carbPct * 100) + "% (" + Math.round((baseKcal * carbPct) / 4) + "g)",
-      protein: Math.round(proteinPct * 100) + "% (" + Math.round((baseKcal * proteinPct) / 4) + "g)",
-      fat: Math.round(fatPct * 100) + "% (" + Math.round((baseKcal * fatPct) / 9) + "g)",
-      note: note
-    };
-  }
-
-  /* -------------------------------------------------------------
-     CLINICAL CONTRAINDICATION & MEAL GENERATOR ENGINE
+     5. CORE CLINICAL REGIONAL NUTRITION ENGINE
   ------------------------------------------------------------- */
   function buildRegionalNutritionPlan(stName, lang, diseases, labs, kcalProfile, prefs) {
     var tr = TRANSLATIONS[lang] || TRANSLATIONS["English"];
     var isBengali = lang.indexOf('Bengali') !== -1;
     var isHindi = lang.indexOf('Hindi') !== -1;
 
-    // Check specific clinical condition flags
     var isCKD = diseases.some(function(d){ return d.id === 'ckd'; });
     var isDiabetic = diseases.some(function(d){ return d.id === 't2dm'; });
     var isObesity = diseases.some(function(d){ return d.id === 'obesity'; });
@@ -2148,7 +1430,6 @@ footer .inner{
     var noEgg = prefs.noEgg;
     var noDairy = prefs.noDairy;
 
-    // Mathematically scale meal-by-meal calories
     var totalKcal = kcalProfile.total;
     var kEarly = Math.round(totalKcal * 0.05);
     var kBrk = Math.round(totalKcal * 0.22);
@@ -2160,7 +1441,6 @@ footer .inner{
 
     var dailyMeals = [];
     if (isBengali) {
-      // 1. EARLY MORNING CONTRAINDICATION FILTER
       var morningDrink = "";
       if (isCKD) {
         morningDrink = "৫০ মিলি কুসুম গরম ধনে ও আদা সেদ্ধ জল (বা জল দিয়ে হালকা মুখ ভিজিয়ে নেওয়া) [দৈনিক ১০০০ মিলি মোট তরল সীমার অংশ]";
@@ -2179,7 +1459,6 @@ footer .inner{
         morningNuts = "৪টি ভেজানো খোসা ছাড়ানো কাঠবাদাম (Almonds)";
       }
 
-      // 2. BREAKFAST CONTRAINDICATION FILTER
       var breakfastProt = "";
       if (isCKD) {
         breakfastProt = "১টি সেদ্ধ ডিমের সাদা অংশ (উচ্চ ফসফরাস ছানা ও ডাল এড়িয়ে কিডনি-বান্ধব নিরাপদ প্রোটিন)";
@@ -2189,7 +1468,6 @@ footer .inner{
         breakfastProt = "১টি সেদ্ধ ডিমের সাদা অংশ (অথবা ৫০ গ্রাম ঘরে তৈরি ছানা)";
       }
 
-      // 3. MID-MORNING CONTRAINDICATION FILTER
       var midItem = "";
       if (isCKD) {
         midItem = "খোসা ছাড়ানো অর্ধেক আপেল বা ৫০ গ্রাম পাকা পেঁপে (ডাবের জল, কলা ও কমলালেবু মারাত্মক পটাশিয়ামের জন্য সম্পূর্ণ নিষিদ্ধ)";
@@ -2199,7 +1477,6 @@ footer .inner{
         midItem = "১টি কচি ডাঁসা পেয়ারা বা ১ বাটি শসা ও পাকা পেঁপে + ১ গ্লাস চিনি ও লবণ ছাড়া পাতলা ঘোল";
       }
 
-      // 4. LUNCH CONTRAINDICATION FILTER
       var lunchItem = "";
       if (isCKD) {
         lunchItem = "১ ছোট বাটি সিদ্ধ ভাত (পটাশিয়াম বার করার জন্য ডাবল-বয়েল্ড/মাড় গালা) + জল ফেলে রান্না করা লাউ/ঝিঙের হালকা তরকারি + ১টি ডিমের সাদা অংশ বা ৪০ গ্রাম হালকা মৌরলা/রুই মাছ (অতিরিক্ত ঝোল বা ডাল নিষেধ, শুকনো পদ)";
@@ -2209,7 +1486,6 @@ footer .inner{
         lunchItem = "১ ছোট বাটি সিদ্ধ চালের ভাত + ১ বাটি পাতলা মুগ ডাল + ১ বাটি শুক্তো/লাউ ঘণ্ট + ১ টুকরো হালকা রুই বা কাতলা মাছের জিরে-বাটা পাতলা ঝোল";
       }
 
-      // 5. SNACK FILTER
       var snackItem = "";
       if (isCKD) {
         snackItem = "১ ছোট বাটি শুকনো চালভাজা বা রোস্টেড মাখানা + ৫০ মিলি লিকার লাল চা (তরল সীমার মধ্যে)";
@@ -2217,7 +1493,6 @@ footer .inner{
         snackItem = "১ কাপ চিনি ছাড়া লাল চা (বা গ্রিন টি) + ১ ছোট বাটি শুকনো খোলায় ভাজা চালভাঙা মুড়ি ও সেদ্ধ ছোলা";
       }
 
-      // 6. DINNER FILTER
       var dinnerItem = "";
       if (isCKD) {
         dinnerItem = "২টি লাল আটার নরম ফুলকো রুটি + জল ফেলে সেদ্ধ করা পটলের তরকারি বা চালকুমড়োর শুকনো ঘণ্ট (অতিরিক্ত ডাল বা তরল নিষিদ্ধ)";
@@ -2225,7 +1500,6 @@ footer .inner{
         dinnerItem = "২টি পাতলা লাল আটার ফুলকো রুটি + ১ বাটি কম তেলের পটল বা সজনে ডাঁটার তরকারি + ১ ছোট বাটি পাতলা মুগ ডাল বা ৫০ গ্রাম ছানার তরকারি";
       }
 
-      // 7. BEDTIME CONTRAINDICATION FILTER (CRITICAL RENAL CHECK)
       var bedtimeItem = "";
       if (isCKD) {
         bedtimeItem = "সামান্য ৫০ মিলি কুসুম গরম জল অথবা শুকনো মাখানা (কিডনির রোগীদের দুধ ও বেশি তরল সম্পূর্ণ নিষিদ্ধ)";
@@ -2280,7 +1554,6 @@ footer .inner{
       ];
     }
 
-    // 7-DAY ROTATION (DISEASE SENSITIVE)
     var weeklyPlan = [];
     if (isBengali) {
       var monL = isCKD ? "সিদ্ধ ভাত + সেদ্ধ লাউ তরকারি + ডিমের সাদা অংশ" : (isVeg ? "ভাত + মুগ ডাল + শুক্তো + ছানার ডালনা" : "ভাত + মুগ ডাল + শুক্তো + রুই মাছের ঝোল");
@@ -2312,7 +1585,6 @@ footer .inner{
       ];
     }
 
-    // STRICT WHAT TO EAT VS WHAT TO AVOID MATRIX
     var eatAvoidTable = [];
     if (isBengali) {
       eatAvoidTable = [
@@ -2549,7 +1821,15 @@ footer .inner{
     return html;
   }
 
+  /* -------------------------------------------------------------
+     MAIN GENERATION HANDLER
+  ------------------------------------------------------------- */
   function generateDietChart() {
+    if (isScanning) {
+      toast('Prescription scanning in progress. Please wait...', '⏳');
+      return;
+    }
+
     if (!currentImage && verifiedMedicines.length === 0) {
       toast('Please upload a prescription or add a medicine first!', '⚠️');
       drop.style.borderColor = '#f43f5e';
@@ -2612,11 +1892,6 @@ footer .inner{
         genBtn.disabled = false;
       }
     }, 550);
-  }
-
-  function escapeHtml(s) {
-    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   on(genBtn, 'click', generateDietChart);
@@ -2779,7 +2054,7 @@ footer .inner{
     if (e.target === pwaModal) pwaModal.classList.remove('open');
   });
 
-  console.log('[ArogyaDiet AI] Clinical Contraindication & Renal Precision Engine Ready ✓');
+  console.log('[ArogyaDiet AI] Clinical Formulation Engine & UI Ready ✓');
 })();
 </script>
 
