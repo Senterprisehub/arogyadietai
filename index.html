@@ -164,7 +164,7 @@ main{
   flex-wrap:wrap;
 }
 .hero h2{font-size:clamp(1.25rem,3.5vw,1.75rem);font-weight:800;line-height:1.25;margin-bottom:0.5rem}
-.hero p{color:#ccfbf1;font-size:clamp(0.8125rem,2.2vw,0.925rem);font-weight:300;max-width:46rem;line-height:1.55}
+.hero p{color:#ccfbf1;font-size:clamp(0.8125rem,2.2vw,0.925rem);font-weight:300;max-width:48rem;line-height:1.55}
 
 /* ADAPTIVE DUAL COLUMN GRID */
 .grid{
@@ -486,6 +486,7 @@ textarea{resize:none;min-height:70px}
 .chip.green{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
 .chip.amber{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
 .chip.purple{background:#faf5ff;color:#6b21a8;border:1px solid #e9d5ff}
+.chip.red{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}
 
 /* OUTPUT TYPOGRAPHY & OVERFLOW-SAFE TABLES */
 .output-body{line-height:1.7;font-size:clamp(0.8125rem,2.2vw,0.875rem);color:#334155}
@@ -495,6 +496,36 @@ textarea{resize:none;min-height:70px}
 .output-body p{margin:0.5rem 0}
 .output-body ul,.output-body ol{margin:0.5rem 0 0.5rem 1.25rem}
 .output-body li{margin:0.25rem 0}
+
+/* CLINICAL FLUID RESTRICTION & CONTRAINDICATION ALERT CARD */
+.contra-banner{
+  background:#fff1f2;
+  border:2px solid #f43f5e;
+  border-radius:0.75rem;
+  padding:1rem 1.25rem;
+  margin:1rem 0 1.25rem;
+  box-shadow:0 4px 6px -1px rgba(244,63,94,0.1);
+}
+.contra-banner-title{
+  color:#9f1239;
+  font-weight:800;
+  font-size:0.925rem;
+  display:flex;
+  align-items:center;
+  gap:0.4rem;
+  margin-bottom:0.5rem;
+}
+.contra-banner p{
+  font-size:0.8125rem;
+  color:#881337;
+  margin:0.25rem 0;
+  line-height:1.55;
+}
+.contra-banner ul{
+  margin:0.35rem 0 0.35rem 1.2rem;
+  font-size:0.8125rem;
+  color:#9f1239;
+}
 
 /* RESPONSIVE SCROLL-SAFE TABLE WRAPPER */
 .table-wrap{
@@ -757,9 +788,9 @@ footer .inner{
 <main>
 
   <section class="hero">
-    <div class="hero-badge">✓ 100% Free • Obesity &amp; Weight Drugs Included • Doctor-Prescribed Calorie Override • Responsive PWA</div>
+    <div class="hero-badge">✓ 100% Free • Multi-Disease Contraindication Engine • Renal &amp; Obesity Precision • PWA Enabled</div>
     <h2>Prescription &amp; Diagnostic Lab Report to Clinical Diet Chart</h2>
-    <p>Scans doctor handwriting, diagnostic impressions, and Indian clinical lab panels (Sugar, BP, Lipid, KFT/RFT, LFT, Thyroid, CBC). References an Indian pharmacopeia (including anti-obesity medications) to calculate exact kilocalories and formulate 7-day regional meals in your mother tongue.</p>
+    <p>Scans doctor handwriting, diagnostic impressions, and Indian clinical lab panels (Sugar, BP, Lipid, KFT/RFT, LFT, Thyroid, CBC). Employs an intelligent contraindication engine to automatically detect and eliminate harmful foods (e.g. strict fluid, dairy &amp; potassium elimination in CKD) in your mother tongue.</p>
   </section>
 
   <div class="grid">
@@ -820,18 +851,17 @@ footer .inner{
             <span style="font-size:11px;color:#94a3b8;align-self:center;">Upload a prescription or click sample to auto-detect</span>
           </div>
           <div class="med-add-row">
-            <input type="text" id="manualMedInput" placeholder="Add or correct medicine (e.g. Metformin 500, Wegovy, Orlistat, Telma 40)...">
+            <input type="text" id="manualMedInput" placeholder="Add or correct medicine (e.g. Torsemide, Metformin 500, Wegovy, Telma 40)...">
             <button type="button" id="addMedBtn">+ Add</button>
           </div>
           <div class="quick-med-row">
             <span style="font-size:10px;color:#64748b;margin-right:0.25rem;">Quick Select:</span>
+            <button type="button" class="quick-chip" data-med="Torsemide 10mg">Kidney: Torsemide</button>
             <button type="button" class="quick-chip" data-med="Metformin 500mg">Metformin</button>
             <button type="button" class="quick-chip" data-med="Telmisartan 40mg">Telmisartan</button>
-            <button type="button" class="quick-chip" data-med="Atorvastatin 10mg">Atorvastatin</button>
-            <button type="button" class="quick-chip" data-med="Thyronorm 50mcg">Thyronorm</button>
             <button type="button" class="quick-chip weight" data-med="Orlistat 120mg">⚖️ Orlistat</button>
-            <button type="button" class="quick-chip weight" data-med="Semaglutide (Wegovy / Rybelsus)">⚖️ Semaglutide</button>
-            <button type="button" class="quick-chip weight" data-med="Tirzepatide (Mounjaro)">⚖️ Tirzepatide</button>
+            <button type="button" class="quick-chip weight" data-med="Semaglutide (Wegovy)">⚖️ Wegovy</button>
+            <button type="button" class="quick-chip" data-med="Febuxostat 40mg">Febuxostat</button>
             <button type="button" class="quick-chip" data-med="Pan 40">Pan-40</button>
           </div>
         </div>
@@ -895,14 +925,14 @@ footer .inner{
           <label class="lbl" for="extra">Patient Preferences / Notes <span class="req">*</span></label>
           <span class="opt-tag" style="background:#e0f2fe;color:#0369a1;font-weight:600;">Active in Nutrition Math</span>
         </div>
-        <textarea id="extra" rows="3" placeholder="e.g. Pure Vegetarian (no fish/eggs), Age 54, mild acid reflux, allergic to peanuts, no dairy..."></textarea>
+        <textarea id="extra" rows="3" placeholder="e.g. CKD Stage 3, Pure Vegetarian, Age 58, mild acid reflux, allergic to peanuts, no dairy..."></textarea>
       </div>
 
       <button id="genBtn" class="gen-btn" type="button">
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
         </svg>
-        <span>Analyze Labs &amp; Generate Diet Chart</span>
+        <span>Analyze Contraindications &amp; Generate Diet Chart</span>
       </button>
     </section>
 
@@ -937,14 +967,14 @@ footer .inner{
         <div id="idle" class="panel-center">
           <div class="panel-icon" aria-hidden="true">📊</div>
           <h4>No Prescription Scanned Yet</h4>
-          <p>Upload a doctor's prescription or clinical lab report. The engine cross-analyzes all diagnostics against the clinical medical dictionary, identifies confirmed diseases (including obesity management protocols), factors in your food preferences, and formulates your custom regional meal plan.</p>
+          <p>Upload a doctor's prescription or clinical lab report. The engine cross-analyzes all diagnostics against the clinical medical dictionary, identifies confirmed diseases, factors in your food preferences, and formulates your custom regional meal plan.</p>
           <div class="panel-tip">💡 Tip: Tap "Try Sample" above to see a live clinical analysis</div>
         </div>
 
         <div id="loading" class="panel-center" style="display:none;">
           <div class="spinner" aria-hidden="true"></div>
           <h4 id="loadTitle">Scanning Lab Reports &amp; Prescription...</h4>
-          <p id="loadDesc">Querying background medical dictionary and analyzing diagnostic markers...</p>
+          <p id="loadDesc">Cross-verifying clinical contraindications, renal fluid limits, and drug-nutrient exclusions...</p>
         </div>
 
         <div id="error" class="panel-center" style="display:none;">
@@ -975,17 +1005,17 @@ footer .inner{
 
   <div class="features">
     <div class="feature">
-      <div class="feature-icon" style="background:#f0fdfa;color:#0d9488;" aria-hidden="true">📖</div>
+      <div class="feature-icon" style="background:#f0fdfa;color:#0d9488;" aria-hidden="true">🛡️</div>
       <div>
-        <h4>Medical Dictionary Ontology</h4>
-        <p>Searches and resolves diagnostic shorthand (T2DM, HTN, NAFLD, Obesity, CKD, GERD, PCOD) using a clinical knowledge base.</p>
+        <h4>Rigorous Clinical Safety</h4>
+        <p>Restricts high-potassium/phosphorus items and sets exact 24-hour fluid budgets for CKD; eliminates purines for gout.</p>
       </div>
     </div>
     <div class="feature">
       <div class="feature-icon" style="background:#ecfdf5;color:#059669;" aria-hidden="true">⚖️</div>
       <div>
-        <h4>Obesity &amp; Calorie Precision</h4>
-        <p>Supports all Indian obesity medications and scales meal slots to doctor-prescribed daily calorie targets.</p>
+        <h4>Doctor Calorie &amp; Drug Scaling</h4>
+        <p>Supports obesity pharmacopeia (Wegovy, Mounjaro, Orlistat) and scales every meal slot to prescribed calories.</p>
       </div>
     </div>
     <div class="feature">
@@ -1047,9 +1077,22 @@ footer .inner{
 
   /* -------------------------------------------------------------
      1. COMPREHENSIVE CLINICAL MEDICAL DICTIONARY & ONTOLOGY
-        (Includes All Indian CDSCO-Approved Obesity Medications)
   ------------------------------------------------------------- */
   var MEDICAL_DISEASE_DICTIONARY = [
+    {
+      id: "ckd",
+      name: "Chronic Kidney Disease (CKD) / Renal Impairment",
+      category: "Nephrology & Renal Medicine",
+      icd: "ICD-10: N18",
+      synonyms: [
+        "ckd", "renal impairment", "elevated creatinine", "high s. creatinine", "diabetic nephropathy", 
+        "crf", "chronic renal failure", "decreased egfr", "kidney dysfunction", "nephritis", "renal disease",
+        "high urea", "high bun", "kidney damage"
+      ],
+      associatedMeds: ["torsemide", "dytor", "ketoanalogues", "alpostin", "febuxostat", "arkamin", "sevelamer"],
+      labTriggers: ["creat"],
+      dietaryProtocol: "STRICT RENAL PROTOCOL: Fluid restriction (max 1000 - 1200 mL/day total fluid budget); low potassium (<2000mg); low phosphorus (<800mg - STRICTLY NO MILK or soaked seeds); controlled high-biological value protein (0.6 - 0.8g/kg)."
+    },
     {
       id: "obesity",
       name: "Clinical Obesity & Chronic Weight Management",
@@ -1057,7 +1100,7 @@ footer .inner{
       icd: "ICD-10: E66",
       synonyms: [
         "obesity", "morbid obesity", "overweight", "weight management", "weight loss", "excess body weight", 
-        "high bmi", "bmi > 30", "bmi > 27", "central adiposity", "visceral fat", "bariatric", "weight reduction", "adiposity"
+        "high bmi", "bmi > 30", "bmi > 27", "central adiposity", "visceral fat", "bariatric", "weight reduction"
       ],
       associatedMeds: [
         "orlistat", "obelit", "reeshape", "vyfat", "lipocut", "orlip", "obestat", "fatnil", "xenical",
@@ -1094,7 +1137,7 @@ footer .inner{
       ],
       associatedMeds: ["telmisartan", "telma", "amlodipine", "stamlo", "amlong", "losartan", "losacar", "olmesartan", "cilnidipine", "cilacar", "ramipril", "cardace", "metoprolol", "betaloc"],
       labTriggers: ["bp_sys", "bp_dia"],
-      dietaryProtocol: "DASH nutritional protocol: strict sodium reduction (< 2.5g salt/day), high dietary potassium & magnesium, eliminate pickles/papad/chanachur."
+      dietaryProtocol: "DASH nutritional protocol: strict sodium reduction (< 2.5g salt/day), high dietary potassium & magnesium (unless CKD co-exists), eliminate pickles/papad/chanachur."
     },
     {
       id: "dyslipidemia",
@@ -1133,7 +1176,7 @@ footer .inner{
       ],
       associatedMeds: ["febuxostat", "feburic", "febugood", "allopurinol", "zyloric", "colchicine"],
       labTriggers: ["uric"],
-      dietaryProtocol: "Low-purine protocol: strict prohibition of red meat, organ meats, prawns/shrimp, masoor dal, and spinach; minimum 3 liters hydration."
+      dietaryProtocol: "Low-purine protocol: strict prohibition of red meat, organ meats, prawns/shrimp, masoor dal, and spinach; minimum 3 liters hydration (unless CKD co-exists)."
     },
     {
       id: "hypothyroid",
@@ -1161,19 +1204,6 @@ footer .inner{
       dietaryProtocol: "Non-acidic alkaline hydration (warm cumin/fennel seed water); zero chili, strong tea, coffee, or deep-fried snacks; early dinner."
     },
     {
-      id: "ckd",
-      name: "Renal Impairment / Early Chronic Kidney Disease (CKD)",
-      category: "Nephrology",
-      icd: "ICD-10: N18",
-      synonyms: [
-        "ckd", "renal impairment", "elevated creatinine", "high s. creatinine", "diabetic nephropathy", 
-        "crf", "chronic renal failure", "decreased egfr"
-      ],
-      associatedMeds: ["torsemide", "dytor", "ketoanalogues", "alpostin", "febuxostat"],
-      labTriggers: ["creat"],
-      dietaryProtocol: "Controlled protein diet (0.6 - 0.8g/kg/day); restriction of high-potassium vegetables and excess phosphorus; monitored fluids."
-    },
-    {
       id: "anemia",
       name: "Iron Deficiency Anemia",
       category: "Hematology",
@@ -1184,36 +1214,6 @@ footer .inner{
       associatedMeds: ["orofer", "autrin", "dexorange", "livogen", "ferrous ascorbate", "ferium"],
       labTriggers: ["hb"],
       dietaryProtocol: "Bioavailable iron enhancement: moringa leaves (sojne data/saag), dates, pomegranate, paired with Vitamin C (amla/lemon)."
-    },
-    {
-      id: "pcod",
-      name: "Polycystic Ovarian Syndrome / Disease (PCOS / PCOD)",
-      category: "Gynecological & Metabolic",
-      icd: "ICD-10: E28.2",
-      synonyms: ["pcod", "pcos", "polycystic ovary", "polycystic ovarian syndrome", "insulin resistance in pcos"],
-      associatedMeds: ["metformin", "myo-inositol", "d-chiro-inositol"],
-      labTriggers: ["fbs", "hba1c"],
-      dietaryProtocol: "Anti-inflammatory, low-insulinemic diet with complex seeds (flax, chia, pumpkin), zinc-dense legumes, and unrefined grains."
-    },
-    {
-      id: "cad",
-      name: "Coronary Artery Disease / Ischemic Heart Disease (CAD / IHD)",
-      category: "Cardiovascular",
-      icd: "ICD-10: I25",
-      synonyms: ["cad", "ihd", "coronary artery disease", "ischemic heart disease", "angina", "post ptca", "post cabg", "myocardial infarction"],
-      associatedMeds: ["ecosprin", "aspirin", "clopidogrel", "clopilet", "atorvastatin", "metoprolol", "monotrate"],
-      labTriggers: ["chol", "ldl", "bp_sys"],
-      dietaryProtocol: "Strict cardiac cardioprotective diet: zero saturated animal fats, sodium < 2g/day, fiber > 35g/day from local millets & vegetables."
-    },
-    {
-      id: "osteoarthritis",
-      name: "Osteoarthritis & Osteopenia",
-      category: "Musculoskeletal",
-      icd: "ICD-10: M19",
-      synonyms: ["osteoarthritis", "oa knees", "osteopenia", "osteoporosis", "joint degeneration", "calcium deficiency"],
-      associatedMeds: ["shelcal", "cipcal", "gemcal", "calcimax", "cholecalciferol", "calcirol"],
-      labTriggers: [],
-      dietaryProtocol: "Calcium and vitamin D synergy: fresh homemade low-fat chhena/curd, ragi (finger millet), sesame seeds, anti-inflammatory turmeric."
     }
   ];
 
@@ -1253,7 +1253,7 @@ footer .inner{
     chol: { name: "Total Cholesterol", unit: "mg/dL", normal: "< 200", border: "200 - 239", high: "≥ 240", cond: "Mixed Dyslipidemia & Hypercholesterolemia" },
     tg: { name: "Triglycerides (TG)", unit: "mg/dL", normal: "< 150", border: "150 - 199", high: "≥ 200", cond: "Mixed Dyslipidemia & Hypercholesterolemia" },
     ldl: { name: "LDL Bad Cholesterol", unit: "mg/dL", normal: "< 100", border: "100 - 159", high: "≥ 160", cond: "Mixed Dyslipidemia & Hypercholesterolemia" },
-    creat: { name: "Serum Creatinine", unit: "mg/dL", normal: "0.6 - 1.2", border: "1.2 - 1.4", high: "> 1.4", cond: "Renal Impairment / Early Chronic Kidney Disease (CKD)" },
+    creat: { name: "Serum Creatinine", unit: "mg/dL", normal: "0.6 - 1.2", border: "1.2 - 1.4", high: "> 1.4", cond: "Chronic Kidney Disease (CKD) / Renal Impairment" },
     uric: { name: "Serum Uric Acid", unit: "mg/dL", normal: "3.5 - 7.0", border: "7.0 - 7.4", high: "> 7.5", cond: "Hyperuricemia & Gouty Arthritis" },
     sgpt: { name: "SGPT (ALT) - Liver", unit: "U/L", normal: "7 - 55", border: "55 - 65", high: "> 65", cond: "Non-Alcoholic Fatty Liver Disease (Grade 1 / 2 NAFLD)" },
     tsh: { name: "Thyroid Stimulating Hormone (TSH)", unit: "µIU/mL", normal: "0.4 - 4.5", border: "4.5 - 5.5", high: "> 5.5", cond: "Primary Hypothyroidism" },
@@ -1269,11 +1269,11 @@ footer .inner{
       meals: {
         early: "প্রাতঃকালীন (সকাল ৬:৩০)",
         breakfast: "সকালের জলখাবার (সকাল ৮:৩০)",
-        mid: "মিড-মর্নিং তাজা ফল ও পানীয় (সকাল ১১:০০)",
+        mid: "মিড-মর্নিং তাজা ফল (সকাল ১১:০০)",
         lunch: "দুপুরের প্রধান খাবার (দুপুর ১:৩০)",
         snack: "বিকেলের নাস্তা (বিকেল ৫:০০)",
         dinner: "রাতের সহজপাচ্য খাবার (রাত ৮:৩০)",
-        bedtime: "শয়নকালীন হালকা পানীয় (রাত ১০:০০)"
+        bedtime: "শয়নকালীন প্রটোকল (রাত ১০:০০)"
       },
       headers: {
         reportSummary: "প্রেসক্রিপশন ও ক্লিনিক্যাল ডায়াগনস্টিক বিশ্লেষণ (Clinical Diagnostic Summary)",
@@ -1301,8 +1301,8 @@ footer .inner{
         grains: "দানাশস্য ও চাল (Grains)",
         veggies: "সবজি ও শাক (Vegetables & Greens)",
         fruits: "ফলমূল (Fruits)",
-        protein: "ডাল ও প্রোটিন উৎস (Pulses & Protein)",
-        drinks: "তেল, মশলা ও পানীয় (Oils & Beverages)"
+        protein: "প্রোটিন ও ডাল (Protein & Pulses)",
+        drinks: "তরল ও পানীয় (Liquids, Fluids & Cooking Oils)"
       }
     },
     "Hindi (हिन्दी)": {
@@ -1310,7 +1310,7 @@ footer .inner{
       meals: {
         early: "प्रातःकालीन (सुबह 6:30 बजे)",
         breakfast: "सुबह का नाश्ता (सुबह 8:30 बजे)",
-        mid: "मिड-मॉर्निंग ताजे फल व पेय (सुबह 11:00 बजे)",
+        mid: "मिड-मॉर्निंग फल (सुबह 11:00 बजे)",
         lunch: "दोपहर का मुख्य भोजन (दोपहर 1:30 बजे)",
         snack: "शाम का अल्पाहार (शाम 5:00 बजे)",
         dinner: "रात का हल्का भोजन (रात 8:30 बजे)",
@@ -1342,8 +1342,8 @@ footer .inner{
         grains: "अनाज व रोटियां (Grains)",
         veggies: "सब्जियां व साग (Vegetables & Greens)",
         fruits: "ताजे फल (Fruits)",
-        protein: "दालें व प्रोटीन (Pulses & Protein)",
-        drinks: "तेल, मसाले व पेय (Oils & Beverages)"
+        protein: "प्रोटीन व दालें (Protein & Pulses)",
+        drinks: "तरल पदार्थ व तेल (Fluids, Liquids & Oils)"
       }
     },
     "English": {
@@ -1351,11 +1351,11 @@ footer .inner{
       meals: {
         early: "Early Morning (6:30 AM)",
         breakfast: "Breakfast (8:30 AM)",
-        mid: "Mid-Morning Fresh Fruit & Drink (11:00 AM)",
+        mid: "Mid-Morning Fruit (11:00 AM)",
         lunch: "Lunch (1:30 PM)",
-        snack: "Evening Healthy Snack (5:00 PM)",
+        snack: "Evening Snack (5:00 PM)",
         dinner: "Dinner (8:30 PM)",
-        bedtime: "Bedtime (10:00 PM)"
+        bedtime: "Bedtime Routine (10:00 PM)"
       },
       headers: {
         reportSummary: "Clinical Prescription & Medical Diagnostic Analysis",
@@ -1383,8 +1383,8 @@ footer .inner{
         grains: "Grains & Cereals",
         veggies: "Vegetables & Greens",
         fruits: "Fresh Fruits",
-        protein: "Pulses & Protein Sources",
-        drinks: "Cooking Mediums & Beverages"
+        protein: "Protein & Pulses",
+        drinks: "Liquids, Fluids & Cooking Oils"
       }
     }
   };
@@ -1640,8 +1640,9 @@ footer .inner{
   on(lightboxClose, 'click', closeLightbox);
   on(lightbox, 'click', function (e) { if (e.target === lightbox) closeLightbox(); });
 
+  /* SAMPLE WITH CHRONIC KIDNEY DISEASE (CKD Stage 3) & DIABETES */
   on(demoBtn, 'click', function () {
-    toast('Generating sample prescription & clinical lab report...', '📝');
+    toast('Generating CKD Stage 3 clinical prescription with elevated creatinine...', '📝');
     var c = document.createElement('canvas');
     c.width = 850; c.height = 1150;
     var ctx = c.getContext('2d');
@@ -1649,13 +1650,13 @@ footer .inner{
     
     ctx.fillStyle = '#0f766e'; ctx.fillRect(0, 0, 850, 105);
     ctx.fillStyle = '#ffffff'; ctx.font = 'bold 24px sans-serif';
-    ctx.fillText('APEX CARDIOMETABOLIC & GENERAL CLINIC', 40, 48);
+    ctx.fillText('APEX NEPHROLOGY & METABOLIC CARE CLINIC', 40, 48);
     ctx.font = '13px sans-serif';
-    ctx.fillText('Dr. S. Mukherjee, MBBS, MD (Med) | Reg. No: WB-849204 | Salt Lake, Kolkata', 40, 78);
+    ctx.fillText('Dr. P. Sen, MBBS, MD (Med), DM (Nephrology) | Kolkata | Reg: WB-91823', 40, 78);
     
     ctx.fillStyle = '#1e293b'; ctx.font = '14px sans-serif';
-    ctx.fillText('Patient Name: Amitava Ghosh        Age: 54 Yrs        Gender: Male', 40, 140);
-    ctx.fillText('Date: 12-Oct-2026', 40, 165);
+    ctx.fillText('Patient Name: Ramesh Chandra Pal        Age: 58 Yrs        Gender: Male', 40, 140);
+    ctx.fillText('Date: 15-Oct-2026', 40, 165);
     
     ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(40, 185); ctx.lineTo(810, 185); ctx.stroke();
@@ -1663,53 +1664,53 @@ footer .inner{
     ctx.fillStyle = '#f0fdfa'; ctx.fillRect(40, 200, 770, 150);
     ctx.strokeStyle = '#99f6e4'; ctx.strokeRect(40, 200, 770, 150);
     ctx.fillStyle = '#0f766e'; ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('CLINICAL VITALS & LAB DIAGNOSTIC REPORT (Current):', 55, 225);
+    ctx.fillText('CLINICAL VITALS & LAB DIAGNOSTIC REPORT (RENAL PANEL):', 55, 225);
 
     ctx.fillStyle = '#1e293b'; ctx.font = '13px sans-serif';
-    ctx.fillText('• Blood Pressure (BP): 142/90 mmHg (Stage 1 HTN)', 55, 255);
-    ctx.fillText('• Fasting Blood Sugar (FBS): 168 mg/dL (High)', 55, 280);
-    ctx.fillText('• Glycated HbA1c: 7.9% (Uncontrolled T2DM)', 55, 305);
-    ctx.fillText('• Serum Creatinine: 1.0 mg/dL (Normal)', 55, 330);
+    ctx.fillText('• Serum Creatinine: 2.1 mg/dL (Elevated / CKD Stage 3)', 55, 255);
+    ctx.fillText('• Blood Pressure (BP): 146/92 mmHg (Stage 2 HTN)', 55, 280);
+    ctx.fillText('• Fasting Blood Sugar (FBS): 142 mg/dL (High / Diabetic)', 55, 305);
+    ctx.fillText('• Serum Uric Acid: 7.8 mg/dL (High / Hyperuricemia)', 55, 330);
 
-    ctx.fillText('• Total Cholesterol: 232 mg/dL (Borderline)', 440, 255);
-    ctx.fillText('• Serum Triglycerides: 210 mg/dL (Elevated)', 440, 280);
-    ctx.fillText('• Serum Uric Acid: 7.6 mg/dL (High / Hyperuricemia)', 440, 305);
-    ctx.fillText('• SGPT (ALT): 58 U/L (Mild elevation / NAFLD)', 440, 330);
+    ctx.fillText('• Serum Potassium (K+): 5.1 mEq/L (Upper Normal - Monitor)', 440, 255);
+    ctx.fillText('• Serum Phosphorus: 4.9 mg/dL (Borderline High)', 440, 280);
+    ctx.fillText('• Total Cholesterol: 215 mg/dL (Borderline)', 440, 305);
+    ctx.fillText('• Estimated GFR: 34 mL/min/1.73m² (Impaired Filtration)', 440, 330);
 
     ctx.fillStyle = '#0f766e'; ctx.font = 'bold 15px sans-serif';
     ctx.fillText('CLINICAL IMPRESSION / ACTIVE DIAGNOSIS (Dx):', 40, 385);
     ctx.fillStyle = '#334155'; ctx.font = '14px sans-serif';
-    ctx.fillText('1. Clinical Obesity (BMI 32.4 kg/m²) & Metabolic Syndrome', 55, 415);
-    ctx.fillText('2. Type 2 Diabetes Mellitus (T2DM) - Suboptimal control', 55, 440);
-    ctx.fillText('3. Grade 1 Fatty Liver (NAFLD) with mixed Dyslipidemia', 55, 465);
-    ctx.fillText('4. Essential Hypertension (Stage 1 HTN)', 55, 490);
+    ctx.fillText('1. Chronic Kidney Disease (CKD Stage 3 - Diabetic Nephropathy)', 55, 415);
+    ctx.fillText('2. Essential Hypertension with fluid retention risk', 55, 440);
+    ctx.fillText('3. Type 2 Diabetes Mellitus with high glycemic variability', 55, 465);
+    ctx.fillText('4. Asymptomatic Hyperuricemia', 55, 490);
 
     ctx.fillStyle = '#0d9488'; ctx.font = 'bold 36px serif';
     ctx.fillText('\u211E', 40, 550);
     ctx.fillStyle = '#1e293b'; ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('1. Inj. Semaglutide (Wegovy) 0.5 mg - Subcutaneously once weekly', 65, 590);
-    ctx.fillText('2. Tab. Metformin 500 mg - Twice daily after meals', 65, 630);
-    ctx.fillText('3. Tab. Telmisartan 40 mg - Morning after breakfast', 65, 670);
-    ctx.fillText('4. Tab. Atorvastatin 10 mg - At bedtime', 65, 710);
+    ctx.fillText('1. Tab. Torsemide 10 mg - Morning after breakfast', 65, 590);
+    ctx.fillText('2. Tab. Telmisartan 40 mg - Morning after breakfast', 65, 630);
+    ctx.fillText('3. Tab. Febuxostat 40 mg - Once daily afternoon', 65, 670);
+    ctx.fillText('4. Tab. Metformin 500 mg - Twice daily after meals', 65, 710);
 
-    ctx.fillStyle = '#0f766e'; ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('THERAPEUTIC NUTRITION DIRECTIVE:', 40, 770);
+    ctx.fillStyle = '#9f1239'; ctx.font = 'bold 15px sans-serif';
+    ctx.fillText('CRITICAL RENAL DIETARY DIRECTIVES:', 40, 770);
     ctx.fillStyle = '#334155'; ctx.font = '14px sans-serif';
-    ctx.fillText('- High protein preservation protocol to prevent lean muscle mass loss on GLP-1.', 55, 800);
-    ctx.fillText('- Low glycemic index, calorie deficit of 1,350 kcal/day.', 55, 825);
-    ctx.fillText('- Sodium restricted to < 3g/day, eliminate processed fried snacks.', 55, 850);
-    ctx.fillText('- Maintain 3 liters hydration daily.', 55, 875);
+    ctx.fillText('- STRICT FLUID RESTRICTION: Maximum 1000 mL (1 Litre) TOTAL fluid in 24 hours.', 55, 800);
+    ctx.fillText('- NO MILK or dairy overload (excess phosphorus causes renal vascular calcification).', 55, 825);
+    ctx.fillText('- NO soaked seeds (methi/flax) or green coconut water (dangerous potassium surge).', 55, 850);
+    ctx.fillText('- Protein restricted to 0.6 - 0.8g/kg (High-biological value egg whites preferred).', 55, 875);
 
     ctx.fillStyle = '#64748b'; ctx.font = 'italic 18px cursive';
-    ctx.fillText('Dr. S. Mukherjee', 620, 1020);
-    ctx.strokeStyle = '#cbd5e1'; ctx.strokeRect(580, 980, 200, 70);
+    ctx.fillText('Dr. P. Sen, DM (Nephro)', 590, 1020);
+    ctx.strokeStyle = '#cbd5e1'; ctx.strokeRect(560, 980, 240, 70);
 
     var url = c.toDataURL('image/jpeg', 0.92);
     currentImage = url.split(',')[1];
     currentMime = 'image/jpeg';
     currentPreviewDataUrl = url;
     currentIsPdf = false;
-    currentFileName = 'Clinical_Prescription_DrMukherjee_Labs.jpg';
+    currentFileName = 'CKD_Renal_Prescription_DrSen.jpg';
     currentFileSize = Math.round(url.length * 0.75);
 
     imgPreview.src = url;
@@ -1720,18 +1721,18 @@ footer .inner{
     fsize.textContent = fmtBytes(currentFileSize);
     showPreviewCard();
 
-    verifiedMedicines = ["Semaglutide (Wegovy)", "Metformin 500mg", "Telmisartan 40mg", "Atorvastatin 10mg"];
+    verifiedMedicines = ["Torsemide 10mg", "Telmisartan 40mg", "Febuxostat 40mg", "Metformin 500mg"];
     renderMedPills();
 
-    extractedOcrText = 'Amitava Ghosh 54 Yrs BP: 142/90 mmHg Fasting Blood Sugar FBS: 168 mg/dL HbA1c: 7.9% Total Cholesterol: 232 mg/dL Triglycerides: 210 mg/dL Serum Uric Acid: 7.6 mg/dL S. Creatinine: 1.0 mg/dL SGPT: 58 U/L Dx: Clinical Obesity BMI 32.4, Type 2 Diabetes Mellitus T2DM, Essential Hypertension Stage 1 HTN, Grade 1 Fatty Liver NAFLD Inj Semaglutide Wegovy Tab Metformin 500mg Tab Telmisartan 40mg Tab Atorvastatin 10mg';
+    extractedOcrText = 'Ramesh Chandra Pal 58 Yrs Serum Creatinine: 2.1 mg/dL BP: 146/92 mmHg Fasting Blood Sugar FBS: 142 mg/dL Serum Uric Acid: 7.8 mg/dL eGFR 34 mL/min Dx: Chronic Kidney Disease CKD Stage 3, Diabetic Nephropathy, Essential Hypertension, Hyperuricemia Tab Torsemide 10mg Tab Telmisartan 40mg Tab Febuxostat 40mg Tab Metformin 500mg Strict fluid restriction 1000 mL/day No milk No coconut water';
 
     regionSel.value = 'Eastern India'; updateStates();
     stateSel.value = 'West Bengal';
     langSel.value = 'Bengali (বাংলা)';
     dietitianNameInput.value = 'Dr. R. Sharma, Chief Clinical Nutritionist, Kolkata';
-    targetCaloriesInput.value = '1350';
-    extra.value = 'Pure Vegetarian (No fish/eggs), Age 54, mild acid reflux, allergic to peanuts';
-    toast('Sample loaded with obesity therapy & 1,350 kcal target! Click Generate.', '✨', 4500);
+    targetCaloriesInput.value = '1550';
+    extra.value = 'Diagnosed with CKD Stage 3, swelling in feet (edema), vegetarian, no milk';
+    toast('Sample loaded: CKD Stage 3 with strict fluid & electrolyte restriction! Click Generate.', '✨', 4500);
   });
 
   function parseAllLabReports(text) {
@@ -1795,7 +1796,7 @@ footer .inner{
         val: sys + '/' + dia + ' mmHg',
         normal: '< 120/80 mmHg',
         status: stBp,
-        action: stBp === 'high' ? 'DASH nutrition protocol: sodium restricted (< 3g salt/day); strictly avoid pickles, papad, chanachur; increase natural potassium.' : 'Normotensive status.'
+        action: stBp === 'high' ? 'DASH nutrition protocol: sodium restricted (< 2.5g salt/day); strictly avoid pickles, papad, chanachur; strictly eliminate baking soda.' : 'Normotensive status.'
       });
     }
 
@@ -1834,11 +1835,11 @@ footer .inner{
         val: uric + ' mg/dL',
         normal: '3.5 - 7.0 mg/dL',
         status: stUric,
-        action: stUric !== 'normal' ? 'Low-purine diet: avoid red meat, organ meats, masoor dal, spinach, and alcohol; hydrate with 3 liters of water daily.' : 'Uric acid within safe threshold.'
+        action: stUric !== 'normal' ? 'Low-purine diet: avoid red meat, organ meats, masoor dal, spinach, and alcohol; hydrate with 3 liters of water daily (unless CKD co-exists).' : 'Uric acid within safe threshold.'
       });
     }
 
-    var creat = matchNum([/(?:s\.?\s*creatinine|serum\s*creatinine)[:\s=]+([0-9]+(?:\.[0-9]+)?)/i]);
+    var creat = matchNum([/(?:s\.?\s*creatinine|serum\s*creatinine|creatinine)[:\s=]+([0-9]+(?:\.[0-9]+)?)/i]);
     if (creat) {
       var stCreat = creat > 1.4 ? 'high' : (creat > 1.2 ? 'borderline' : 'normal');
       labs.push({
@@ -1847,7 +1848,7 @@ footer .inner{
         val: creat + ' mg/dL',
         normal: '0.6 - 1.2 mg/dL',
         status: stCreat,
-        action: stCreat === 'high' ? 'Moderate protein (0.8g/kg body weight); restrict excess potassium and phosphorus; maintain monitored hydration.' : 'Normal renal filtration.'
+        action: stCreat === 'high' ? 'CRITICAL RENAL PROTOCOL: Moderate to low protein (0.6-0.8g/kg); STRICT FLUID BUDGET (1000-1200 mL/day); eliminate milk/dairy & soaked seeds.' : 'Normal renal filtration.'
       });
     }
 
@@ -2055,14 +2056,18 @@ footer .inner{
      CALORIE CALCULATION WITH OPTIONAL DOCTOR TARGET OVERRIDE
   ------------------------------------------------------------- */
   function calculateKcalTarget(diseases, labs, prefs, doctorCalories) {
-    // 1. If Doctor explicitly prescribed target calories, respect it directly!
     if (doctorCalories && !isNaN(doctorCalories) && doctorCalories >= 700 && doctorCalories <= 4000) {
       var dKcal = Math.round(doctorCalories);
       var cRatio = 0.50, pRatio = 0.22, fRatio = 0.28;
       
-      // If obesity or diabetes, prioritize higher protein protection
+      var isCKD = diseases.some(function(d){ return d.id === 'ckd'; });
       var hasObesityOrT2D = diseases.some(function(d){ return d.id === 'obesity' || d.id === 't2dm'; });
-      if (hasObesityOrT2D) {
+
+      if (isCKD) {
+        pRatio = 0.12; // strictly protein-restricted in renal failure
+        cRatio = 0.60;
+        fRatio = 0.28;
+      } else if (hasObesityOrT2D) {
         pRatio = 0.25;
         cRatio = 0.48;
         fRatio = 0.27;
@@ -2078,20 +2083,22 @@ footer .inner{
       };
     }
 
-    // 2. Automated Diagnostic Analysis
-    var hasObesity = false, hasDiabetes = false, hasHTN = false, hasFattyLiver = false, hasCKD = false;
+    var hasCKD = false, hasObesity = false, hasDiabetes = false, hasHTN = false, hasFattyLiver = false;
     diseases.forEach(function (d) {
+      if (d.id === 'ckd') hasCKD = true;
       if (d.id === 'obesity') hasObesity = true;
       if (d.id === 't2dm') hasDiabetes = true;
       if (d.id === 'htn') hasHTN = true;
       if (d.id === 'nafld') hasFattyLiver = true;
-      if (d.id === 'ckd') hasCKD = true;
     });
 
     var baseKcal = 1600;
     var note = "Balanced Cardiometabolic Energy Target";
 
-    if (hasObesity) {
+    if (hasCKD) {
+      baseKcal = 1550;
+      note = "Renal Protective Caloric Target (Strict Protein Limitation & Fluid Restriction)";
+    } else if (hasObesity) {
       baseKcal = hasDiabetes ? 1350 : 1300;
       note = "Therapeutic Hypocaloric Weight Management & Satiety Protocol";
     } else if (hasDiabetes && (hasHTN || hasFattyLiver)) {
@@ -2100,9 +2107,6 @@ footer .inner{
     } else if (hasDiabetes) {
       baseKcal = 1500;
       note = "Moderate Low Glycemic Target";
-    } else if (hasCKD) {
-      baseKcal = 1650;
-      note = "Renal Protection & Glomerular Shielding";
     }
 
     if (prefs && prefs.statedAge && prefs.statedAge >= 65 && baseKcal > 1400) {
@@ -2110,7 +2114,7 @@ footer .inner{
       note += " (Adjusted for age " + prefs.statedAge + ")";
     }
 
-    var proteinPct = (hasObesity || hasDiabetes) ? 0.24 : (hasCKD ? 0.12 : 0.20);
+    var proteinPct = hasCKD ? 0.12 : ((hasObesity || hasDiabetes) ? 0.24 : 0.20);
     var carbPct = hasCKD ? 0.60 : 0.50;
     var fatPct = 1 - (proteinPct + carbPct);
 
@@ -2125,23 +2129,26 @@ footer .inner{
   }
 
   /* -------------------------------------------------------------
-     BUILD REGIONAL NUTRITION PLAN WITH DYNAMIC SCALED KCAL
+     CLINICAL CONTRAINDICATION & MEAL GENERATOR ENGINE
   ------------------------------------------------------------- */
   function buildRegionalNutritionPlan(stName, lang, diseases, labs, kcalProfile, prefs) {
     var tr = TRANSLATIONS[lang] || TRANSLATIONS["English"];
     var isBengali = lang.indexOf('Bengali') !== -1;
     var isHindi = lang.indexOf('Hindi') !== -1;
 
+    // Check specific clinical condition flags
+    var isCKD = diseases.some(function(d){ return d.id === 'ckd'; });
     var isDiabetic = diseases.some(function(d){ return d.id === 't2dm'; });
     var isObesity = diseases.some(function(d){ return d.id === 'obesity'; });
     var isGout = diseases.some(function(d){ return d.id === 'gout'; });
+    var isHTN = diseases.some(function(d){ return d.id === 'htn'; });
 
     var isVeg = prefs.isVeg;
     var hasReflux = prefs.hasReflux;
     var noEgg = prefs.noEgg;
     var noDairy = prefs.noDairy;
 
-    // Mathematically scale meal-by-meal calories to match total calories exactly
+    // Mathematically scale meal-by-meal calories
     var totalKcal = kcalProfile.total;
     var kEarly = Math.round(totalKcal * 0.05);
     var kBrk = Math.round(totalKcal * 0.22);
@@ -2153,193 +2160,214 @@ footer .inner{
 
     var dailyMeals = [];
     if (isBengali) {
-      var morningDrink = hasReflux ? "১ গ্লাস কুসুম গরম মৌরি ও জিরে ভেজানো জল (গ্যাস ও রিফ্লাক্সের আরামদায়ক)" : "১ গ্লাস কুসুম গরম মেথি ভেজানো জল";
-      var morningNuts = prefs.peanutAllergy ? "৪টি ভেজানো খোসা ছাড়ানো কাঠবাদাম (Almonds) - চিনাবাদাম সম্পূর্ণ নিষিদ্ধ" : "৪টি ভেজানো খোসা ছাড়ানো কাঠবাদাম (Almonds)";
-      
-      var breakfastProt = (noEgg || isVeg) ? "৫০ গ্রাম বাড়িতে তৈরি তাজা ছানা বা ১ বাটি সেদ্ধ অঙ্কুরিত মুগ" : "১টি সেদ্ধ ডিমের সাদা অংশ (অথবা ৫০ গ্রাম ঘরে তৈরি ছানা)";
-      var midDrink = noDairy ? "১ গ্লাস ডাবের জল বা পাতলা লেবু-পুদিনার জল" : "১ গ্লাস চিনি ও লবণ ছাড়া পাতলা ঘোল (বা লেবুর জল)";
-      
-      var lunchCurry = isVeg ? 
-        "১ বাটি সুস্বাদু কম তেলের ছানার ডালনা অথবা সোয়াবিন ও পটলের পাতলা রসা (১০০% নিরামিষ প্রোটিন)" : 
-        "১ টুকরো হালকা রুই বা কাতলা মাছের জিরে-বাটা পাতলা ঝোল";
+      // 1. EARLY MORNING CONTRAINDICATION FILTER
+      var morningDrink = "";
+      if (isCKD) {
+        morningDrink = "৫০ মিলি কুসুম গরম ধনে ও আদা সেদ্ধ জল (বা জল দিয়ে হালকা মুখ ভিজিয়ে নেওয়া) [দৈনিক ১০০০ মিলি মোট তরল সীমার অংশ]";
+      } else if (hasReflux) {
+        morningDrink = "১ গ্লাস কুসুম গরম মৌরি ও জিরে ভেজানো জল (গ্যাস ও অম্বলের আরামদায়ক)";
+      } else {
+        morningDrink = "১ গ্লাস কুসুম গরম মেথি ভেজানো জল";
+      }
 
-      var bedtimeDrink = noDairy ? "১ কাপ হালকা গরম ক্যামোমাইল চা বা ইসবগুলের ভুসি সহ কুসুম গরম জল" : "১ কাপ হালকা গরম মাখন-তোলা গরুর দুধ অথবা ১ গ্লাস গরম জল ও ১ চামচ ইসবগুল";
+      var morningNuts = "";
+      if (isCKD) {
+        morningNuts = "১-২টি রোস্টেড মাখানা বা ১টি ড্রাই ক্রিম ক্র্যাকার বিস্কুট (কিডনির ক্ষতি রোধে মেথি/বাদাম সম্পূর্ণ নিষিদ্ধ)";
+      } else if (prefs.peanutAllergy) {
+        morningNuts = "৪টি ভেজানো খোসা ছাড়ানো কাঠবাদাম (Almonds) - চিনাবাদাম সম্পূর্ণ নিষিদ্ধ";
+      } else {
+        morningNuts = "৪টি ভেজানো খোসা ছাড়ানো কাঠবাদাম (Almonds)";
+      }
+
+      // 2. BREAKFAST CONTRAINDICATION FILTER
+      var breakfastProt = "";
+      if (isCKD) {
+        breakfastProt = "১টি সেদ্ধ ডিমের সাদা অংশ (উচ্চ ফসফরাস ছানা ও ডাল এড়িয়ে কিডনি-বান্ধব নিরাপদ প্রোটিন)";
+      } else if (noEgg || isVeg) {
+        breakfastProt = "৫০ গ্রাম বাড়িতে তৈরি তাজা ছানা বা ১ বাটি সেদ্ধ অঙ্কুরিত মুগ";
+      } else {
+        breakfastProt = "১টি সেদ্ধ ডিমের সাদা অংশ (অথবা ৫০ গ্রাম ঘরে তৈরি ছানা)";
+      }
+
+      // 3. MID-MORNING CONTRAINDICATION FILTER
+      var midItem = "";
+      if (isCKD) {
+        midItem = "খোসা ছাড়ানো অর্ধেক আপেল বা ৫০ গ্রাম পাকা পেঁপে (ডাবের জল, কলা ও কমলালেবু মারাত্মক পটাশিয়ামের জন্য সম্পূর্ণ নিষিদ্ধ)";
+      } else if (noDairy) {
+        midItem = "১টি কচি ডাঁসা পেয়ারা বা পাকা পেঁপে + ১ কাপ পাতলা লেবু-পুদিনার জল";
+      } else {
+        midItem = "১টি কচি ডাঁসা পেয়ারা বা ১ বাটি শসা ও পাকা পেঁপে + ১ গ্লাস চিনি ও লবণ ছাড়া পাতলা ঘোল";
+      }
+
+      // 4. LUNCH CONTRAINDICATION FILTER
+      var lunchItem = "";
+      if (isCKD) {
+        lunchItem = "১ ছোট বাটি সিদ্ধ ভাত (পটাশিয়াম বার করার জন্য ডাবল-বয়েল্ড/মাড় গালা) + জল ফেলে রান্না করা লাউ/ঝিঙের হালকা তরকারি + ১টি ডিমের সাদা অংশ বা ৪০ গ্রাম হালকা মৌরলা/রুই মাছ (অতিরিক্ত ঝোল বা ডাল নিষেধ, শুকনো পদ)";
+      } else if (isVeg) {
+        lunchItem = "১ ছোট বাটি ঢেঁকিছাঁটা ভাত + ১ বাটি পাতলা মুগ ডাল + ১ বাটি নিরামিষ শুক্তো বা লাউ ঘণ্ট + ৫০ গ্রাম ছানার ডালনা বা সোয়াবিন তরকারি";
+      } else {
+        lunchItem = "১ ছোট বাটি সিদ্ধ চালের ভাত + ১ বাটি পাতলা মুগ ডাল + ১ বাটি শুক্তো/লাউ ঘণ্ট + ১ টুকরো হালকা রুই বা কাতলা মাছের জিরে-বাটা পাতলা ঝোল";
+      }
+
+      // 5. SNACK FILTER
+      var snackItem = "";
+      if (isCKD) {
+        snackItem = "১ ছোট বাটি শুকনো চালভাজা বা রোস্টেড মাখানা + ৫০ মিলি লিকার লাল চা (তরল সীমার মধ্যে)";
+      } else {
+        snackItem = "১ কাপ চিনি ছাড়া লাল চা (বা গ্রিন টি) + ১ ছোট বাটি শুকনো খোলায় ভাজা চালভাঙা মুড়ি ও সেদ্ধ ছোলা";
+      }
+
+      // 6. DINNER FILTER
+      var dinnerItem = "";
+      if (isCKD) {
+        dinnerItem = "২টি লাল আটার নরম ফুলকো রুটি + জল ফেলে সেদ্ধ করা পটলের তরকারি বা চালকুমড়োর শুকনো ঘণ্ট (অতিরিক্ত ডাল বা তরল নিষিদ্ধ)";
+      } else {
+        dinnerItem = "২টি পাতলা লাল আটার ফুলকো রুটি + ১ বাটি কম তেলের পটল বা সজনে ডাঁটার তরকারি + ১ ছোট বাটি পাতলা মুগ ডাল বা ৫০ গ্রাম ছানার তরকারি";
+      }
+
+      // 7. BEDTIME CONTRAINDICATION FILTER (CRITICAL RENAL CHECK)
+      var bedtimeItem = "";
+      if (isCKD) {
+        bedtimeItem = "সামান্য ৫০ মিলি কুসুম গরম জল অথবা শুকনো মাখানা (কিডনির রোগীদের দুধ ও বেশি তরল সম্পূর্ণ নিষিদ্ধ)";
+      } else if (noDairy) {
+        bedtimeItem = "১ কাপ হালকা গরম ক্যামোমাইল চা বা ইসবগুলের ভুসি সহ কুসুম গরম জল";
+      } else {
+        bedtimeItem = "১ কাপ হালকা গরম মাখন-তোলা গরুর দুধ অথবা ১ গ্লাস গরম জল ও ১ চামচ ইসবগুল";
+      }
 
       dailyMeals = [
         { time: tr.meals.early, menu: morningDrink + " + " + morningNuts, kcal: kEarly + " kcal" },
-        { time: tr.meals.breakfast, menu: "২টি হাতে গড়া লাল আটার পাতলা রুটি + ১ বাটি হালকা তেল-মশলায় রান্না লাউ/ঝিঙে বা পেঁপে তরকারি + " + breakfastProt, kcal: kBrk + " kcal" },
-        { time: tr.meals.mid, menu: "১টি কচি ডাঁসা পেয়ারা (অথবা ১ বাটি শসা ও পাকা পেঁপে) + " + midDrink, kcal: kMid + " kcal" },
-        { time: tr.meals.lunch, menu: "১ ছোট বাটি ঢেঁকিছাঁটা বা সিদ্ধ চালের ভাত (৮০-১০০ গ্রাম রান্না) + ১ বাটি পাতলা মুগ ডাল + ১ বাটি নিরামিষ শুক্তো/লাউ ঘণ্ট + " + lunchCurry, kcal: kLunch + " kcal" },
-        { time: tr.meals.snack, menu: "১ কাপ চিনি ছাড়া লাল চা (বা গ্রিন টি) + ১ ছোট বাটি শুকনো খোলায় ভাজা চালভাঙা মুড়ি ও সেদ্ধ ছোলা বা অঙ্কুরিত মুগ", kcal: kSnk + " kcal" },
-        { time: tr.meals.dinner, menu: "২টি পাতলা লাল আটার ফুলকো রুটি + ১ বাটি কম তেলের পটল বা সজনে ডাঁটার তরকারি + ১ ছোট বাটি পাতলা মুগ ডাল বা ৫০ গ্রাম ছানার তরকারি", kcal: kDin + " kcal" },
-        { time: tr.meals.bedtime, menu: bedtimeDrink, kcal: kBed + " kcal" }
+        { time: tr.meals.breakfast, menu: "২টি হাতে গড়া লাল আটার পাতলা রুটি + ১ বাটি হালকা রান্না করা লাউ/পেঁপে তরকারি + " + breakfastProt, kcal: kBrk + " kcal" },
+        { time: tr.meals.mid, menu: midItem, kcal: kMid + " kcal" },
+        { time: tr.meals.lunch, menu: lunchItem, kcal: kLunch + " kcal" },
+        { time: tr.meals.snack, menu: snackItem, kcal: kSnk + " kcal" },
+        { time: tr.meals.dinner, menu: dinnerItem, kcal: kDin + " kcal" },
+        { time: tr.meals.bedtime, menu: bedtimeItem, kcal: kBed + " kcal" }
       ];
     } else if (isHindi) {
-      var morningDrinkH = hasReflux ? "1 गिलास गुनगुना सौंफ व जीरे का पानी (एसिडिटी रोधी)" : "1 गिलास गुनगुना मेथी का पानी";
-      var breakfastProtH = (noEgg || isVeg) ? "50 ग्राम ताजा गाय का पनीर या उबले अंकुरित मूंग" : "1 उबले अंडे का सफेद भाग (या 50 ग्राम पनीर)";
-      var lunchProtH = isVeg ? "1 कटोरी सोयाबीन करी या उबले गट्टे की कम तेल की सब्जी (100% शाकाहारी)" : "1 टुकड़ा कम मसाले वाली तली-रहित मछली की झोल";
+      var morningDrinkH = isCKD ? "50 ml गुनगुना धनिया का उबला पानी (1000 ml दैनिक तरल सीमा में शामिल)" : (hasReflux ? "1 गिलास गुनगुना सौंफ व जीरे का पानी (एसिडिटी रोधी)" : "1 गिलास गुनगुना मेथी का पानी");
+      var morningNutsH = isCKD ? "रोस्टेड मखाने (किडनी रोगी मेथी व बादाम न लें)" : "4 भीगे हुए बादाम";
+      var breakfastProtH = isCKD ? "1 उबले अंडे की सफेदी (किडनी-सुरक्षित प्रोटीन, दाल/पनीर से बचें)" : ((noEgg || isVeg) ? "50 ग्राम ताजा पनीर या उबले अंकुरित मूंग" : "1 उबले अंडे का सफेद भाग");
+      var midH = isCKD ? "आधा छिला हुआ सेब या 50g पपीता (नारियल पानी, केला व संतरा सख्त मना है)" : "1 ताजा अमरूद या पपीता + 1 गिलास छाछ";
+      var lunchH = isCKD ? "उबले चावल (मांड निकाला हुआ) + उबली लौकी/टिंडे की सूखी सब्जी + 1 अंडे का सफेद भाग (दाल व तरीदार ग्रेवी से बचें)" : "1 छोटी कटोरी उबले चावल + 1 कटोरी मूंग दाल + तोरी की सब्जी + दही";
+      var bedtimeH = isCKD ? "50 ml गुनगुना पानी का घूंट (दूध सख्त वर्जित है / NO MILK)" : (noDairy ? "गुनगुना पानी व इसबगोल" : "1 कप बिना मलाई का गुनगुना दूध");
 
       dailyMeals = [
-        { time: tr.meals.early, menu: morningDrinkH + " + 4 भीगे हुए बादाम", kcal: kEarly + " kcal" },
-        { time: tr.meals.breakfast, menu: "2 गेहूं व चने के आटे की पतली रोटियां + 1 कटोरी तोरी/लौकी की कम तेल वाली सब्जी + " + breakfastProtH, kcal: kBrk + " kcal" },
-        { time: tr.meals.mid, menu: "1 ताजा अमरूद (या खीरा व पपीता) + 1 गिलास बिना चीनी व नमक की छाछ", kcal: kMid + " kcal" },
-        { time: tr.meals.lunch, menu: "1 छोटी कटोरी उबले चावल + 1 कटोरी मूंग दाल + 1 कटोरी टिंडे/तोरी की सब्जी + " + lunchProtH, kcal: kLunch + " kcal" },
-        { time: tr.meals.snack, menu: "1 कप बिना चीनी की हर्बल चाय + 1 कटोरी उबले अंकुरित चने व भुने मखाने", kcal: kSnk + " kcal" },
-        { time: tr.meals.dinner, menu: "2 पतली फुलका रोटियां + 1 कटोरी लौकी का भर्ता या परवल की सब्जी + 1 कटोरी पतली दाल", kcal: kDin + " kcal" },
-        { time: tr.meals.bedtime, menu: "1 कप बिना मलाई का गुनगुना दूध व चुटकी भर हल्दी", kcal: kBed + " kcal" }
+        { time: tr.meals.early, menu: morningDrinkH + " + " + morningNutsH, kcal: kEarly + " kcal" },
+        { time: tr.meals.breakfast, menu: "2 गेहूं के आटे की पतली रोटियां + तोरी/लौकी की कम तेल वाली सब्जी + " + breakfastProtH, kcal: kBrk + " kcal" },
+        { time: tr.meals.mid, menu: midH, kcal: kMid + " kcal" },
+        { time: tr.meals.lunch, menu: lunchH, kcal: kLunch + " kcal" },
+        { time: tr.meals.snack, menu: "1 कप बिना चीनी की हर्बल चाय (सीमित) + भुने मखाने", kcal: kSnk + " kcal" },
+        { time: tr.meals.dinner, menu: "2 पतली फुलका रोटियां + परवल या लौकी की सूखी सब्जी", kcal: kDin + " kcal" },
+        { time: tr.meals.bedtime, menu: bedtimeH, kcal: kBed + " kcal" }
       ];
     } else {
-      var morningDrinkE = hasReflux ? "1 glass lukewarm fennel & cumin soaked water (alkaline, acid reflux relief)" : "1 glass lukewarm fenugreek water";
-      var breakfastProtE = (noEgg || isVeg) ? "50g fresh homemade cottage cheese (paneer) or boiled sprouts" : "1 boiled egg white (or 50g fresh paneer)";
-      var lunchProtE = isVeg ? "1 bowl low-fat cottage cheese (paneer) or nutri-nugget soya stew (100% Vegetarian)" : "1 piece light freshwater fish stew";
+      var morningDrinkE = isCKD ? "50 mL warm coriander/ginger infusion sip (Counted in strict 1000 mL fluid cap)" : (hasReflux ? "1 glass lukewarm fennel & cumin soaked water" : "1 glass lukewarm fenugreek water");
+      var morningNutsE = isCKD ? "Roasted makhana or cream cracker (Fenugreek & nuts restricted due to potassium/phosphorus)" : "4 soaked peeled almonds";
+      var breakfastProtE = isCKD ? "1 boiled egg white (Kidney safe, low phosphorus-to-protein ratio)" : ((noEgg || isVeg) ? "50g fresh cottage cheese or sprouts" : "1 boiled egg white");
+      var midE = isCKD ? "Half peeled apple or 50g ripe papaya (Green coconut water, bananas, and citrus strictly banned)" : "1 fresh guava + 1 glass diluted buttermilk";
+      var lunchE = isCKD ? "1 small cup double-boiled leached rice + leached bottle gourd/pointed gourd + 1 egg white (Semi-dry, zero dal gravies)" : "1 small cup unpolished rice + yellow moong dal + seasonal vegetable + fish/paneer";
+      var bedtimeE = isCKD ? "50 mL warm water sip (MILK STRICTLY PROHIBITED in CKD due to high phosphorus)" : (noDairy ? "Warm isabgol water" : "1 cup warm skimmed milk");
 
       dailyMeals = [
-        { time: tr.meals.early, menu: morningDrinkE + " + 4 soaked peeled almonds", kcal: kEarly + " kcal" },
-        { time: tr.meals.breakfast, menu: "2 whole wheat multigrain rotis + 1 bowl low-oil bottle gourd (lauki) sabzi + " + breakfastProtE, kcal: kBrk + " kcal" },
-        { time: tr.meals.mid, menu: "1 fresh guava (or papaya bowl) + 1 glass unsweetened diluted chaas", kcal: kMid + " kcal" },
-        { time: tr.meals.lunch, menu: "1 small cup unpolished steamed rice + 1 bowl yellow moong dal + 1 bowl seasonal vegetable curry + " + lunchProtE, kcal: kLunch + " kcal" },
-        { time: tr.meals.snack, menu: "1 cup unsweetened green tea + 1 small bowl roasted makhana and boiled sprouts", kcal: kSnk + " kcal" },
-        { time: tr.meals.dinner, menu: "2 soft thin phulkas + 1 bowl pointed gourd (parwal) sabzi + 1 small bowl thin dal", kcal: kDin + " kcal" },
-        { time: tr.meals.bedtime, menu: "1 cup warm skimmed milk or warm isabgol water", kcal: kBed + " kcal" }
+        { time: tr.meals.early, menu: morningDrinkE + " + " + morningNutsE, kcal: kEarly + " kcal" },
+        { time: tr.meals.breakfast, menu: "2 whole wheat multigrain rotis + low-oil bottle gourd (lauki) sabzi + " + breakfastProtE, kcal: kBrk + " kcal" },
+        { time: tr.meals.mid, menu: midE, kcal: kMid + " kcal" },
+        { time: tr.meals.lunch, menu: lunchE, kcal: kLunch + " kcal" },
+        { time: tr.meals.snack, menu: "1 cup unsweetened black tea (counted in fluid quota) + roasted puffed rice", kcal: kSnk + " kcal" },
+        { time: tr.meals.dinner, menu: "2 soft thin phulkas + dry pointed gourd (parwal) sabzi", kcal: kDin + " kcal" },
+        { time: tr.meals.bedtime, menu: bedtimeE, kcal: kBed + " kcal" }
       ];
     }
 
+    // 7-DAY ROTATION (DISEASE SENSITIVE)
     var weeklyPlan = [];
     if (isBengali) {
-      var monLunch = isVeg ? "ভাত + মুগ ডাল + শুক্তো + ছানার ডালনা" : "ভাত + মুগ ডাল + শুক্তো + রুই মাছের ঝোল";
-      var tueLunch = isVeg ? "ভাত + মুসুর ছাড়া ডাল + পটল পোড়া + সোয়াবিন তরকারি" : "ভাত + মুসুর ছাড়া ডাল + পটল পোড়া + কাতলা মাছের ঝোল";
-      var wedLunch = isVeg ? "ভাত + লাউ ডাল + পেঁপে তরকারি + সজনে ডাঁটার চচ্চড়ি" : "ভাত + লাউ ডাল + পেঁপে তরকারি + মৌরলা মাছের চচ্চড়ি";
-      var thuLunch = isVeg ? "ভাত + মুগ ডাল + এঁচোড়ের ডালনা (কম তেল) + ছানা" : "ভাত + মুগ ডাল + এঁচোড়ের ডালনা + মাছের ঝোল";
-      var friLunch = isVeg ? "ভাত + শুক্তো + ডালমা + ভেন্ডি পোস্ত কম তেল" : "ভাত + শুক্তো + তোপসে বা রুই মাছের পাতলা ঝোল";
-      var satLunch = isVeg ? "ভাত + ডালমা + ভেন্ডির তরকারি + পনিরের তরকারি" : "ভাত + ডালমা + ভেন্ডির তরকারি + পাতলা মাছের ঝোল";
-      var sunLunch = isVeg ? "সিদ্ধ চালের ভাত + মেথি শাকের তরকারি + ধোকার ডালনা" : "সিদ্ধ চালের ভাত + মেথি শাকের তরকারি + বাটা মাছের ঝোল";
+      var monL = isCKD ? "সিদ্ধ ভাত + সেদ্ধ লাউ তরকারি + ডিমের সাদা অংশ" : (isVeg ? "ভাত + মুগ ডাল + শুক্তো + ছানার ডালনা" : "ভাত + মুগ ডাল + শুক্তো + রুই মাছের ঝোল");
+      var tueL = isCKD ? "ভাত + জল ফেলে রান্না পটল পোড়া + ছোট মাছ (৪০ গ্রাম)" : (isVeg ? "ভাত + ডাল + পটল তরকারি + সোয়াবিন" : "ভাত + ডাল + কাতলা মাছের ঝোল");
+      var wedL = isCKD ? "ভাত + পেঁপে তরকারি + ডিমের সাদা অংশ" : "ভাত + ডাল + পেঁপে তরকারি + মৌরলা মাছ";
+      var thuL = isCKD ? "ভাত + চালকুমড়োর তরকারি + ডিমের সাদা অংশ" : "ভাত + ডাল + এঁচোড়ের ডালনা + মাছের ঝোল";
+      var friL = isCKD ? "ভাত + সেদ্ধ ঝিঙে আলু (জল ফেলে) + ছোট মাছ" : "ভাত + শুক্তো + তোপসে বা রুই মাছের পাতলা ঝোল";
+      var satL = isCKD ? "ভাত + ডালমা (অল্প ডাল) + ভেন্ডির শুকনো তরকারি" : "ভাত + ডালমা + ভেন্ডির তরকারি + পাতলা মাছের ঝোল";
+      var sunL = isCKD ? "সিদ্ধ চালের ভাত + লাউ ঘণ্ট + ডিমের সাদা অংশ" : "সিদ্ধ চালের ভাত + মেথি শাকের তরকারি + বাটা মাছের ঝোল";
 
       weeklyPlan = [
-        { day: tr.days[0], breakfast: "২টি আটার রুটি + লাউ তরকারি", mid: "১টি পেয়ারা + পাতলা ঘোল", lunch: monLunch, snack: "মুড়ি ও সেদ্ধ ছোলা + লাল চা", dinner: "২টি ফুলকো রুটি + পটলের ডালনা" },
-        { day: tr.days[1], breakfast: "১ বাটি ওটস খিচুড়ি বা ডালিয়া", mid: "শসা ও পাকা পেঁপে", lunch: tueLunch, snack: "ভাজা মাখানা + গ্রিন টি", dinner: "২টি রুটি + সজনে ডাঁটার তরকারি + ছানা" },
-        { day: tr.days[2], breakfast: "২টি রুটি + ঝিঙে আলুর তরকারি", mid: "১টি ছোট আপেল", lunch: wedLunch, snack: "অঙ্কুরিত মুগ ডাল চাট", dinner: "২টি রুটি + কম তেলের বেগুন ভর্তা + পাতলা ডাল" },
-        { day: tr.days[3], breakfast: (noEgg || isVeg) ? "২টি আটার রুটি + ঘরে তৈরি ছানা" : "২টি আটার রুটি + ডিমের সাদা অংশ", mid: "পাতলা লেবুর জল + পেয়ারা", lunch: thuLunch, snack: "মুড়ি ও শসা কুচি + লাল চা", dinner: "২টি রুটি + চালকুমড়োর ঘণ্ট + এক বাটি ডাল" },
-        { day: tr.days[4], breakfast: "ভেজিটেবল সুজি উপমা (কম তেল)", mid: "১ বাটি পাকা পেঁপে", lunch: friLunch, snack: "ভাজা ছোলা + সবুজ চা", dinner: "২টি রুটি + লাউয়ের ডালনা + পাতলা ডাল" },
-        { day: tr.days[5], breakfast: "২টি আটার রুটি + পেঁপের তরকারি", mid: "১টি মুসাম্বি লেবু বা শসা", lunch: satLunch, snack: "মুড়ি মাখা (তেল ছাড়া)", dinner: "২টি রুটি + পটল আলুর পাতলা তরকারি" },
-        { day: tr.days[6], breakfast: "২টি বেসন বা ছাতুর হালকা রুটি", mid: "১টি টাটকা পেয়ারা + ঘোল", lunch: sunLunch, snack: "রোস্টেড মাখানা + লাল চা", dinner: "২টি রুটি + পেঁপে ও ঝিঙের ঝোল + ঘরে পাতা টক দই" }
-      ];
-    } else if (isHindi) {
-      weeklyPlan = [
-        { day: tr.days[0], breakfast: "2 रोटी + तोरी की सब्जी", mid: "1 अमरूद + छाछ", lunch: "उबले चावल + मूंग दाल + टिंडे की सब्जी + सलाद", snack: "भुने मखाने + ग्रीन टी", dinner: "2 रोटी + लौकी की सब्जी" },
-        { day: tr.days[1], breakfast: "1 कटोरी वेज दलिया", mid: "पपीता व खीरा", lunch: "रोटी + अरहर दाल + भिंडी + दही", snack: "अंकुरित चना + चाय", dinner: "2 रोटी + तोरी की भुर्जी" },
-        { day: tr.days[2], breakfast: "2 मिस्सी रोटी + पनीर", mid: "1 सेब", lunch: "चावल + पंचमेल दाल + परवल की सब्जी", snack: "भुना चना + छाछ", dinner: "2 रोटी + मेथी की सब्जी" },
-        { day: tr.days[3], breakfast: "मूंग दाल चीला", mid: "खीरा + जीरा पानी", lunch: "रोटी + मूंग दाल + लौकी का कोफ्ता (उबला)", snack: "मखाना चाट", dinner: "2 पतली रोटी + दाल" },
-        { day: tr.days[4], breakfast: "2 मल्टीग्रेन रोटी + उबले चने", mid: "1 अमरूद", lunch: "चावल + कढ़ी (कम तेल) + पालक की सब्जी", snack: "भुने चने + ग्रीन टी", dinner: "2 रोटी + टिंडे की सब्जी" },
-        { day: tr.days[5], breakfast: "वेजिटेबल ओट्स", mid: "मौसमी या पपीता", lunch: "रोटी + दाल तड़का + परवल आलू कम तेल", snack: "मुरमुरा + चाय", dinner: "2 रोटी + कद्दू की सब्जी" },
-        { day: tr.days[6], breakfast: "2 बेसन की रोटी + दही", mid: "ताजा छाछ + सेब", lunch: "चावल + सादा दाल + मेथी आलू + सलाद", snack: "अंकुरित मूंग चाट", dinner: "2 रोटी + लौकी का सूप व सब्जी" }
+        { day: tr.days[0], breakfast: "২টি আটার রুটি + লাউ তরকারি", mid: isCKD ? "অর্ধেক আপেল" : "১টি পেয়ারা + ঘোল", lunch: monL, snack: "মুড়ি ও চা (সীমিত)", dinner: "২টি ফুলকো রুটি + পটলের তরকারি" },
+        { day: tr.days[1], breakfast: "১ বাটি সুজির উপমা বা ওটস", mid: isCKD ? "৫০ গ্রাম পেঁপে" : "শসা ও পাকা পেঁপে", lunch: tueL, snack: "ভাজা মাখানা + চা", dinner: "২টি রুটি + লাউয়ের ডালনা" },
+        { day: tr.days[2], breakfast: "২টি রুটি + ঝিঙে তরকারি", mid: isCKD ? "অর্ধেক নাশপাতি" : "১টি ছোট আপেল", lunch: wedL, snack: "রোস্টেড চালভাজা", dinner: "২টি রুটি + সজনে ডাঁটার তরকারি" },
+        { day: tr.days[3], breakfast: "২টি আটার রুটি + ডিমের সাদা", mid: isCKD ? "অর্ধেক আপেল" : "লেবুর জল + পেয়ারা", lunch: thuL, snack: "মুড়ি + ব্ল্যাক টি", dinner: "২টি রুটি + চালকুমড়োর ঘণ্ট" },
+        { day: tr.days[4], breakfast: "ভেজিটেবল সুজি উপমা", mid: isCKD ? "৫০ গ্রাম পেঁপে" : "১ বাটি পাকা পেঁপে", lunch: friL, snack: "রোস্টেড মাখানা", dinner: "২টি রুটি + পটলের শুকনো তরকারি" },
+        { day: tr.days[5], breakfast: "২টি আটার রুটি + পেঁপে তরকারি", mid: isCKD ? "অর্ধেক আপেল" : "১টি মুসাম্বি লেবু", lunch: satL, snack: "মুড়ি (তেল ছাড়া)", dinner: "২টি রুটি + ঝিঙের তরকারি" },
+        { day: tr.days[6], breakfast: "২টি পাতলা আটার রুটি + ডিমের সাদা", mid: isCKD ? "৫০ গ্রাম পেঁপে" : "১টি টাটকা পেয়ারা", lunch: sunL, snack: "রোস্টেড মাখানা", dinner: "২টি রুটি + পেঁপের শুকনো তরকারি" }
       ];
     } else {
       weeklyPlan = [
-        { day: tr.days[0], breakfast: "2 rotis + bottle gourd sabzi", mid: "1 fresh guava + buttermilk", lunch: "Rice + yellow dal + vegetable stew + cottage cheese", snack: "Roasted makhana + green tea", dinner: "2 phulkas + pointed gourd sabzi" },
-        { day: tr.days[1], breakfast: "1 bowl vegetable dalia porridge", mid: "Papaya & cucumber slices", lunch: "Rotis + moong dal + ridge gourd + curd", snack: "Boiled sprouts + herbal tea", dinner: "2 phulkas + zucchini/lauki sabzi" },
-        { day: tr.days[2], breakfast: "2 multigrain rotis + paneer", mid: "1 green apple", lunch: "Steamed rice + panchmel dal + mixed veg", snack: "Roasted chickpeas + cumin water", dinner: "2 phulkas + fenugreek greens" },
-        { day: tr.days[3], breakfast: "1 moong dal cheela with mint chutney", mid: "Cucumber + fennel water", lunch: "Rotis + moong dal + steamed lauki kofta", snack: "Makhana chaat", dinner: "2 thin rotis + thin dal" },
-        { day: tr.days[4], breakfast: "2 rotis + boiled sprouts", mid: "1 fresh guava", lunch: "Brown rice + light kadhi + spinach stew", snack: "Roasted chana + black tea", dinner: "2 phulkas + round gourd curry" },
-        { day: tr.days[5], breakfast: "Vegetable oats upma", mid: "Sweet lime or papaya", lunch: "Rotis + dal tadka + pointed gourd sabzi", snack: "Puffed rice (oil-free) + tea", dinner: "2 rotis + pumpkin curry" },
-        { day: tr.days[6], breakfast: "2 sattu/besan rotis + curd", mid: "Diluted chaas + apple", lunch: "Steamed rice + moong dal + methi sabzi", snack: "Sprouted moong salad", dinner: "2 rotis + bottle gourd soup & sabzi" }
+        { day: tr.days[0], breakfast: "2 rotis + bottle gourd sabzi", mid: isCKD ? "Half peeled apple" : "1 guava + buttermilk", lunch: isCKD ? "Leached rice + lauki + egg white" : "Rice + dal + veg + fish", snack: "Roasted puffed rice", dinner: "2 phulkas + parwal sabzi" },
+        { day: tr.days[1], breakfast: "1 bowl vegetable suji upma", mid: isCKD ? "50g papaya" : "Papaya slices", lunch: isCKD ? "Leached rice + parwal + egg white" : "Rotis + dal + ridge gourd", snack: "Roasted makhana", dinner: "2 phulkas + zucchini sabzi" },
+        { day: tr.days[2], breakfast: "2 wheat rotis + egg white", mid: isCKD ? "Half pear" : "1 green apple", lunch: isCKD ? "Leached rice + ridge gourd + fish" : "Rice + dal + mixed veg", snack: "Puffed rice", dinner: "2 phulkas + lauki sabzi" },
+        { day: tr.days[3], breakfast: "2 rotis + low-oil lauki", mid: isCKD ? "Half apple" : "Cucumber slices", lunch: isCKD ? "Leached rice + snake gourd + egg white" : "Rotis + moong dal + kofta", snack: "Makhana chaat", dinner: "2 thin rotis + parwal sabzi" },
+        { day: tr.days[4], breakfast: "Vegetable oats porridge", mid: isCKD ? "50g papaya" : "1 guava", lunch: isCKD ? "Leached rice + pumpkin + egg white" : "Brown rice + kadhi + spinach", snack: "Roasted chana", dinner: "2 phulkas + round gourd sabzi" },
+        { day: tr.days[5], breakfast: "2 rotis + boiled egg white", mid: isCKD ? "Half apple" : "Sweet lime", lunch: isCKD ? "Leached rice + tinda + fish" : "Rotis + dal tadka + parwal", snack: "Puffed rice", dinner: "2 rotis + pumpkin curry" },
+        { day: tr.days[6], breakfast: "2 rotis + raw papaya sabzi", mid: isCKD ? "50g papaya" : "Diluted chaas", lunch: isCKD ? "Leached rice + lauki + egg white" : "Rice + dal + methi sabzi", snack: "Makhana", dinner: "2 rotis + bottle gourd soup" }
       ];
     }
 
+    // STRICT WHAT TO EAT VS WHAT TO AVOID MATRIX
     var eatAvoidTable = [];
     if (isBengali) {
-      var protEat = isVeg ? 
-        "পাতলা মুগ ডাল, বাড়িতে পাতা কম ফ্যাটের ছানা, সয়াবিন কারি, অঙ্কুরিত মুগ ও চনা, পনির।" : 
-        "পাতলা মুগ ডাল, রুই/কাতলা/মৌরলা মাছের ঝোল (কম তেল), সেদ্ধ ডিমের সাদা অংশ, বাড়িতে পাতা কম ফ্যাটের ছানা।";
-
-      var protAvoid = isVeg ? 
-        "সকল প্রকার মাছ, মাংস, ডিম ও সামুদ্রিক খাদ্য (রোগীর নিরামিষ পছন্দ অনুযায়ী সম্পূর্ণ পরিহারযোগ্য)।" : 
-        (isGout ? "খাসির মাংস (Mutton), বিফ, চিংড়ি মাছ, কাঁকড়া, অর্গান মিট (মেটে/কলিজা), মসুর ডাল।" : "রেড মিট, খাসির মাংসের চর্বি, চিংড়ি, ফাস্ট ফুড।");
-
-      var drinksAvoid = hasReflux ? 
-        "কড়া ব্ল্যাক কফি, কড়া চা, কার্বনেটেড কোল্ড ড্রিংকস, মদ, কাঁচা পেঁয়াজ-রসুন, অতিরিক্ত ভাজা চানাচুর।" : 
-        "ডালডা, পাম অয়েল, মাখন, ঘি, প্যাকেটজাত কোল্ড ড্রিংকস, মদ বা অ্যালকোহল, মিষ্টি শরবত, চানাচুর।";
-
       eatAvoidTable = [
         {
           cat: tr.cats.grains,
-          eat: "ঢেঁকিছাঁটা বা সিদ্ধ চাল (পরিমিত), লাল আটা, ওটস, বার্লি, দালিয়া।",
-          avoid: "ময়দা, লুচি, পরোটা, সাদা পাউরুটি, চাউমিন, বাসি পোলাও ও বিরিয়ানি।"
+          eat: isCKD ? "সিদ্ধ সাদা ভাত (মাড় ও পটাশিয়াম নিষ্কাশন করা), লাল আটার পাতলা রুটি, সুজি, চিঁড়ে, বার্লি।" : "ঢেঁকিছাঁটা বা সিদ্ধ চাল (পরিমিত), লাল আটার রুটি, ওটস, বার্লি, দালিয়া।",
+          avoid: isCKD ? "ময়দা, লুচি, পরোটা, ব্রাউন রাইস বা লাল চালের ভুসিযুক্ত চাল, রাগি, বাজরা (অতিরিক্ত ফসফরাস ও পটাশিয়াম রয়েছে)।" : "ময়দা, লুচি, পরোটা, সাদা পাউরুটি, চাউমিন, বিরিয়ানি।"
         },
         {
           cat: tr.cats.veggies,
-          eat: "লাউ, পটল, ঝিঙে, উচ্ছে বা করলা, শুক্তোর সবজি, পেঁপে, সজনে ডাঁটা, কুঁদরি, চালকুমড়ো।",
-          avoid: isGout ? "অতিরিক্ত পালং শাক, ফুলকপি, লাল শাক, কচু, অতিরিক্ত মাটির নিচের আলু।" : "ডিপ-ফ্রাই করা আলু ভাজা, বেগুনি, চপ, কড়া মশলাদার দম আলু।"
+          eat: isCKD ? "লাউ, পটল, ঝিঙে, চালকুমড়ো, কুঁদরি, পেঁপে (রান্নার পূর্বে ছোট টুকরো করে দ্বিগুণ জলে সেদ্ধ করে জল ফেলে বা 'Leached' করে রান্না করতে হবে)।" : "লাউ, পটল, ঝিঙে, উচ্ছে, শুক্তোর সবজি, পেঁপে, সজনে ডাঁটা, চালকুমড়ো।",
+          avoid: isCKD ? "পালং শাক, লাল শাক, পুঁই শাক, কাঁচা টমেটো, কাঁচা সালাদ, আলু, মিষ্টি আলু, মাটির নিচের সবজি, মাশরুম, ফুলকপি (মারাত্মক পটাশিয়াম রক্তে মিশে হৃদস্পন্দন থামিয়ে দিতে পারে)।" : "ডিপ-ফ্রাই করা আলু ভাজা, বেগুনি, চপ, কড়া মশলাদার দম আলু।"
         },
         {
           cat: tr.cats.fruits,
-          eat: "টাটকা পেয়ারা, পাকা পেঁপে, আপেল, শসা, জাম, জামরুল, বাতাবি লেবু।",
-          avoid: isDiabetic || isObesity ? "পাকা আম, কাঁঠাল, পাকা কলা, লিচু, স্যাপোটা (সফেদা), কিসমিস ও মিষ্টি ফলের রস।" : "চিনির সিরায় ভেজানো ক্যানড ফ্রুটস।"
+          eat: isCKD ? "খোসা ছাড়ানো অর্ধেক আপেল, পেঁপে (৫০ গ্রাম), নাশপাতি (অল্প পরিমাণে)।" : "টাটকা পেয়ারা, পাকা পেঁপে, আপেল, শসা, জাম, জামরুল, বাতাবি লেবু।",
+          avoid: isCKD ? "ডাবের জল (সবচেয়ে বিপজ্জনক পটাশিয়াম!), পাকা কলা, আম, কমলালেবু, মুসাম্বি, আঙুর, শুকনো ফল, কিসমিস, কাজু, খেজুর, ফলের রস।" : "পাকা আম, কাঁঠাল, পাকা কলা, লিচু, মিষ্টি ফলের রস।"
         },
         {
           cat: tr.cats.protein,
-          eat: protEat,
-          avoid: protAvoid
+          eat: isCKD ? "ডিমের সাদা অংশ (সবচেয়ে নিরাপদ উচ্চ মানের প্রোটিন), দিনে সর্বোচ্চ ৪০-৫০ গ্রাম ছোট মাছের সেদ্ধ অংশ।" : (isVeg ? "মুগ ডাল, ছানা, সোয়াবিন, পনির।" : "পাতলা মুগ ডাল, রুই/কাতলা মাছের ঝোল, ডিমের সাদা অংশ, ছানা।"),
+          avoid: isCKD ? "গরুর বা মোষের দুধ (Phosphorus overload), পনির, ছানা, দই, মাংস (খাসি/মুরগি), মসুর ডাল, রাজমা, কাবলি ছোলা, প্রোটিন পাউডার।" : (isGout ? "খাসির মাংস, মেটে, চিংড়ি, কাঁকড়া, মসুর ডাল।" : "রেড মিট, চর্বিযুক্ত মাংস, ডিপ ফ্রাইড মাছ।")
         },
         {
           cat: tr.cats.drinks,
-          eat: "কাঁচা সরষের তেল বা রাইস ব্রান অয়েল (দিনে সর্বোচ্চ ৩ চামচ বা ১৫ মিলি), মৌরি জল, পাতলা টক দইয়ের ঘোল, ইসবগুল।",
-          avoid: drinksAvoid
-        }
-      ];
-    } else if (isHindi) {
-      eatAvoidTable = [
-        {
-          cat: tr.cats.grains,
-          eat: "जौ, चना व चोकर युक्त गेहूं की रोटियां, भूरे चावल, दलिया, ओट्स।",
-          avoid: "मैदा, सफेद ब्रेड, नान, भटूरे, समोसा, कचौरी, पूरी।"
-        },
-        {
-          cat: tr.cats.veggies,
-          eat: "लौकी, तोरी, परवल, टिंडा, करेला, खीरा, कद्दू, शिमला मिर्च।",
-          avoid: isGout ? "पालक, फूलगोभी, अरबी, मशरूम, तली हुई कटहल की सब्जी।" : "तले हुए आलू, भरवां पकोड़े, अधिक मसालेदार तरी वाली ग्रेवी।"
-        },
-        {
-          cat: tr.cats.fruits,
-          eat: "अमरूद, कच्चा/पका पपीता, हरा सेब, जामुन, संतरा, मौसमी।",
-          avoid: isDiabetic || isObesity ? "पका आम, चीकू, लीची, केला, अंगूर, डिब्बाबंद मीठे जूस।" : "चीनी चाशनी में डूबे डिब्बाबंद फल।"
-        },
-        {
-          cat: tr.cats.protein,
-          eat: isVeg ? "मूंग दाल, ताजा गाय का पनीर, अंकुरित मूंग, चना, सोयाबीन (शाकाहारी)।" : "मूंग दाल, ताजा पनीर, उबला अंडा, पतली मछली का झोल।",
-          avoid: isVeg ? "मांसाहार, मछली, अंडा, सी-फूड (मरीज के शाकाहारी होने के कारण वर्जित)।" : "रेड मीट, चर्बी वाला मांस, डीप फ्राई की हुई मछली।"
-        },
-        {
-          cat: tr.cats.drinks,
-          eat: "सरसों तेल या राइस ब्रान तेल (15ml / 3 चम्मच प्रतिदिन), सौंफ पानी, छाछ, मेथी जल।",
-          avoid: "डालडा, वनस्पति घी, मक्खन, कोल्ड ड्रिंक्स, पैकेज्ड जूस, शराब, नमकीन भुजिया।"
+          eat: isCKD ? "দৈনিক মোট তরল সীমা: সর্বোচ্চ ১০০০-১২০০ মিলিলিটার (জল, চা, ঝোল সব মিলিয়ে)। অল্প কাঁচা সরষের তেল।" : "কাঁচা সরষের তেল (< ১৫ মিলি/দিন), মৌরি জল, পাতলা টক দইয়ের ঘোল, ইসবগুল।",
+          avoid: isCKD ? "দুধ (Milk strictly prohibited), ডাবের জল, ফলের রস, কোল্ড ড্রিঙ্কস, স্যুপ, অতিরিক্ত ডালের জল, খাবার সোডা, বিট লবণ বা লো-সোডিয়াম পটাশিয়ামযুক্ত লবণ।" : "ডালডা, মাখন, ঘি, কোল্ড ড্রিংকস, মদ, মিষ্টি শরবত।"
         }
       ];
     } else {
       eatAvoidTable = [
         {
           cat: tr.cats.grains,
-          eat: "Unpolished parboiled rice, whole wheat multigrain roti, oats, barley, dalia.",
-          avoid: "Refined flour (maida), white bread, naans, bhaturas, puris, fried noodles."
+          eat: isCKD ? "Boiled white rice (leached/drained of starch and potassium), refined wheat phulkas, suji, sago, arrowroot." : "Unpolished parboiled rice, whole wheat multigrain roti, oats, barley, dalia.",
+          avoid: isCKD ? "Brown rice, whole grain bran, ragi, bajra, multi-millet flour (dangerously high phosphorus & potassium)." : "Refined flour (maida), white bread, naans, bhaturas, fried noodles."
         },
         {
           cat: tr.cats.veggies,
-          eat: "Bottle gourd (lauki), pointed gourd (parwal), ridge gourd (turai), bitter gourd, raw papaya, ivy gourd.",
-          avoid: isGout ? "Excess spinach, cauliflower, mushrooms, deep-fried jackfruit, excess potatoes." : "Deep-fried vegetable pakoras, rich buttery gravies."
+          eat: isCKD ? "Bottle gourd (lauki), pointed gourd (parwal), ridge gourd (turai), snake gourd (must be cubed, double-boiled, and boiling water discarded/leached)." : "Bottle gourd, pointed gourd, bitter gourd, raw papaya, ivy gourd.",
+          avoid: isCKD ? "Spinach, raw salads, tomatoes, potatoes, sweet potatoes, yams, beetroots, mushrooms, cauliflower (fatal potassium accumulation risk)." : "Deep-fried vegetable pakoras, rich buttery gravies."
         },
         {
           cat: tr.cats.fruits,
-          eat: "Fresh local guava, green apple, raw/ripe papaya, Indian jamun, sweet lime, cucumber.",
-          avoid: isDiabetic || isObesity ? "Ripe mangoes, chiku (sapodilla), grapes, litchis, bananas, commercial fruit juices." : "Canned fruits preserved in heavy sugar syrup."
+          eat: isCKD ? "Half peeled apple, small portion of papaya (max 50g), peeled pear (strictly portion controlled)." : "Fresh local guava, green apple, raw/ripe papaya, sweet lime, cucumber.",
+          avoid: isCKD ? "Green coconut water (lethal potassium spike!), bananas, oranges, mausambi, kiwis, dry fruits, raisins, apricots, commercial fruit juices." : "Ripe mangoes, sapodilla, grapes, litchis, bananas, commercial fruit juices."
         },
         {
           cat: tr.cats.protein,
-          eat: isVeg ? "Yellow moong dal, low-fat homemade paneer, boiled sprouts, nutrimeat soya." : "Yellow moong dal, thin freshwater fish stew, egg whites, cottage cheese.",
-          avoid: isVeg ? "All meat, poultry, seafood, and eggs (as per patient's vegetarian choice)." : "Mutton, organ meats, prawns, heavy masoor dal."
+          eat: isCKD ? "Boiled egg white (safest high biological value protein with lowest phosphorus ratio), 40-50g freshwater fish (steamed)." : (isVeg ? "Yellow moong dal, paneer, sprouts, soya." : "Yellow moong dal, thin freshwater fish stew, egg whites."),
+          avoid: isCKD ? "Cow/Buffalo Milk, curd, paneer, cheese (high phosphorus triggers cardiac calcification), red meat, masoor dal, rajma, protein powders." : (isGout ? "Mutton, organ meats, prawns, heavy masoor dal." : "Processed red meats, fatty cuts.")
         },
         {
           cat: tr.cats.drinks,
-          eat: "Mustard or rice bran oil (< 15 ml / 3 tsp per day), diluted buttermilk (chaas), fennel water, isabgol.",
-          avoid: "Vanaspati ghee, butter, commercial soft drinks, alcohol, sweetened beverages, packaged namkeen."
+          eat: isCKD ? "STRICT TOTAL FLUID BUDGET: Maximum 1000 mL to 1200 mL in 24 hours (inclusive of water, tea, and gravies). Limited mustard oil (<15mL/day)." : "Mustard/rice bran oil (< 15 ml / 3 tsp per day), diluted buttermilk, fennel water.",
+          avoid: isCKD ? "Cow milk, green coconut water, soups, excess dal water, packaged drinks, low-sodium potassium salt substitutes, baking soda." : "Vanaspati ghee, butter, commercial soft drinks, alcohol."
         }
       ];
     }
@@ -2348,7 +2376,12 @@ footer .inner{
       dailyMeals: dailyMeals,
       weeklyPlan: weeklyPlan,
       eatAvoidTable: eatAvoidTable,
-      headers: tr.headers
+      headers: tr.headers,
+      isCKD: isCKD,
+      isGout: isGout,
+      isDiabetic: isDiabetic,
+      isObesity: isObesity,
+      isHTN: isHTN
     };
   }
 
@@ -2358,6 +2391,17 @@ footer .inner{
 
     html += '<h1>' + escapeHtml(h.reportSummary) + '</h1>';
     html += '<p><strong>' + escapeHtml(stName) + ' (' + escapeHtml(regName) + ')</strong> | ' + escapeHtml(lang) + '</p>';
+
+    // DEDICATED CLINICAL CONTRAINDICATION ALERT (IF CKD OR SEVERE COMORBIDITY DETECTED)
+    if (plan.isCKD) {
+      html += '<div class="contra-banner">';
+      html += '<div class="contra-banner-title">🚨 বিশেষ ক্লিনিক্যাল কিডনি তরল ও ইলেক্ট্রোলাইট প্রটোকল (Strict Renal Fluid &amp; Electrolyte Directive)</div>';
+      html += '<p><strong>১. দৈনিক মোট তরল সীমা (24-Hour Strict Fluid Quota):</strong> রোগীর জন্য দিনে <strong>১,০০০ মিলি থেকে ১,২০০ মিলিলিটার (সর্বোচ্চ ৪-৫ কাপ)</strong> তরল বরাদ্দ। এর মধ্যে পান করার জল, চা, ডাল ও তরকারির ঝোল সবকিছু অন্তর্ভুক্ত। বাড়িতে ১ লিটারের একটি বোতল মেপে রেখে সারা দিনে তার বেশি ১ ফোঁটাও তরল গ্রহণ করবেন না।</p>';
+      html += '<p><strong>২. দুধ ও দুগ্ধজাত খাবার সম্পূর্ণ নিষিদ্ধ (Milk Strictly Prohibited):</strong> কিডনির পরিস্রাবণ ক্ষমতা কম থাকায় দুধের অতিরিক্ত ফসফরাস রক্তে জমে চুলকানি, হাড়ের ক্ষয় এবং রক্তনালী শক্ত করে দেয়। রাতে বা সকালে দুধ খাওয়া সম্পূর্ণ বারণ।</p>';
+      html += '<p><strong>৩. ডাবের জল ও মেথি জল নিষেধ (Zero Coconut Water &amp; Methi Seeds):</strong> ডাবের জল ও ভেজানো মেথি বীজে প্রচুর পটাশিয়াম থাকে। কিডনি বিকল অবস্থায় এই পটাশিয়াম শরীর থেকে বের হতে না পেরে মারাত্মক কার্ডিয়াক অ্যারেস্ট (হৃদস্পন্দন বন্ধ) ঘটাতে পারে।</p>';
+      html += '<p><strong>৪. সবজি লিচিং পদ্ধতি (Vegetable Leaching):</strong> লাউ, পটল, পেঁপে ইত্যাদি সবজি রান্নার আগে ছোট টুকরো করে দ্বিগুণ জলে ফুটিয়ে সেই সেদ্ধ জলটি ফেলে দিয়ে তারপর রান্না করতে হবে।</p>';
+      html += '</div>';
+    }
 
     // Factored Patient Preferences Box
     if (prefs.raw || prefs.customDirectives.length > 0) {
@@ -2539,6 +2583,7 @@ footer .inner{
           '<span class="chip teal">📍 ' + escapeHtml(sv) + ' (' + escapeHtml(rv) + ')</span>' +
           '<span class="chip blue">🗣️ ' + escapeHtml(lv) + '</span>' +
           '<span class="chip amber">⚡ ' + escapeHtml(kcalProfile.label) + '</span>' +
+          (planData.isCKD ? '<span class="chip red">💧 1,000 mL Fluid Budget</span>' : '') +
           '<span class="chip purple">🩺 ' + activeDiseases.length + ' Diseases Verified</span>' +
           '<span class="chip green">🧪 ' + parsedLabs.length + ' Lab Markers Analyzed</span>';
 
@@ -2553,7 +2598,7 @@ footer .inner{
         loading.style.display = 'none';
         result.style.display = 'block';
         toolbar.classList.add('active');
-        toast('Clinical diet chart formulated with medical dictionary!', '🎉');
+        toast('Clinical diet chart formulated with contraindication safety!', '🎉');
 
         if (window.innerWidth < 1024) {
           try { result.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
@@ -2603,7 +2648,6 @@ footer .inner{
     cvs.height = size;
     var ctx = cvs.getContext('2d');
     
-    // Teal background with rounded corners
     ctx.fillStyle = '#0d9488';
     ctx.beginPath();
     var r = Math.round(size * 0.2);
@@ -2619,7 +2663,6 @@ footer .inner{
     ctx.closePath();
     ctx.fill();
 
-    // Leaf emoji in center
     ctx.font = Math.round(size * 0.55) + 'px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -2635,7 +2678,7 @@ footer .inner{
       var currentUrl = window.location.href.split('?')[0];
 
       var manifest = {
-        id: "arogyadiet-pwa-v2",
+        id: "arogyadiet-pwa-v3",
         name: "ArogyaDiet AI - Clinical Diet Planner",
         short_name: "ArogyaDiet",
         description: "Clinical Prescription & Lab-Based Regional Diet Planner",
@@ -2659,10 +2702,9 @@ footer .inner{
     }
   })();
 
-  // Lightweight Service Worker
   if ('serviceWorker' in navigator) {
     try {
-      var swScript = "const C='arogya-v2';self.addEventListener('install',e=>self.skipWaiting());" +
+      var swScript = "const C='arogya-v3';self.addEventListener('install',e=>self.skipWaiting());" +
         "self.addEventListener('activate',e=>e.waitUntil(clients.claim()));" +
         "self.addEventListener('fetch',e=>{});";
       var swBlob = new Blob([swScript], { type: 'application/javascript' });
@@ -2671,7 +2713,6 @@ footer .inner{
     } catch (e) {}
   }
 
-  // BeforeInstallPrompt Handler
   window.addEventListener('beforeinstallprompt', function (e) {
     e.preventDefault();
     deferredPrompt = e;
@@ -2738,7 +2779,7 @@ footer .inner{
     if (e.target === pwaModal) pwaModal.classList.remove('open');
   });
 
-  console.log('[ArogyaDiet AI] Obesity Pharmacopeia & Calorie Precision Engine Ready ✓');
+  console.log('[ArogyaDiet AI] Clinical Contraindication & Renal Precision Engine Ready ✓');
 })();
 </script>
 
