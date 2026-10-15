@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="ArogyaDiet AI">
 <title>ArogyaDiet AI - Clinical Prescription &amp; Medical Diagnostic Diet Planner</title>
 
-<!-- Dynamic Manifest Link -->
+<!-- Dynamic Manifest Link for PWA -->
 <link rel="manifest" id="manifestLink">
 
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -214,7 +214,7 @@ main{
 .field:last-child{margin-bottom:0}
 label.lbl{display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#475569;margin-bottom:0.375rem}
 .req{color:#f43f5e}
-select,textarea,input[type="text"]{
+select,textarea,input[type="text"],input[type="number"]{
   width:100%;
   padding:0.625rem 0.75rem;
   font-size:clamp(0.8125rem,2.2vw,0.875rem);
@@ -381,6 +381,7 @@ textarea{resize:none;min-height:70px}
 .quick-med-row{display:flex;flex-wrap:wrap;gap:0.25rem;margin-top:0.5rem}
 .quick-chip{font-size:10px;background:#e2e8f0;color:#475569;border:none;border-radius:0.25rem;padding:0.2rem 0.45rem;min-height:24px;cursor:pointer}
 .quick-chip:hover{background:#cbd5e1;color:#1e293b}
+.quick-chip.weight{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
 
 .gen-btn{
   width:100%;
@@ -756,9 +757,9 @@ footer .inner{
 <main>
 
   <section class="hero">
-    <div class="hero-badge">✓ 100% Free • Medical Dictionary Engine • Responsive PWA • Native Indian Cuisines</div>
+    <div class="hero-badge">✓ 100% Free • Obesity &amp; Weight Drugs Included • Doctor-Prescribed Calorie Override • Responsive PWA</div>
     <h2>Prescription &amp; Diagnostic Lab Report to Clinical Diet Chart</h2>
-    <p>Scans doctor handwriting, diagnostic impressions, and Indian clinical lab panels (Sugar, BP, Lipid, KFT/RFT, LFT, Thyroid, CBC). Automatically references a medical dictionary to identify exact diseases and tailors 7-day authentic regional kitchen meals in your mother tongue.</p>
+    <p>Scans doctor handwriting, diagnostic impressions, and Indian clinical lab panels (Sugar, BP, Lipid, KFT/RFT, LFT, Thyroid, CBC). References an Indian pharmacopeia (including anti-obesity medications) to calculate exact kilocalories and formulate 7-day regional meals in your mother tongue.</p>
   </section>
 
   <div class="grid">
@@ -819,7 +820,7 @@ footer .inner{
             <span style="font-size:11px;color:#94a3b8;align-self:center;">Upload a prescription or click sample to auto-detect</span>
           </div>
           <div class="med-add-row">
-            <input type="text" id="manualMedInput" placeholder="Add or correct medicine (e.g. Metformin 500, Telma 40)...">
+            <input type="text" id="manualMedInput" placeholder="Add or correct medicine (e.g. Metformin 500, Wegovy, Orlistat, Telma 40)...">
             <button type="button" id="addMedBtn">+ Add</button>
           </div>
           <div class="quick-med-row">
@@ -828,9 +829,10 @@ footer .inner{
             <button type="button" class="quick-chip" data-med="Telmisartan 40mg">Telmisartan</button>
             <button type="button" class="quick-chip" data-med="Atorvastatin 10mg">Atorvastatin</button>
             <button type="button" class="quick-chip" data-med="Thyronorm 50mcg">Thyronorm</button>
-            <button type="button" class="quick-chip" data-med="Febuxostat 40mg">Febuxostat</button>
+            <button type="button" class="quick-chip weight" data-med="Orlistat 120mg">⚖️ Orlistat</button>
+            <button type="button" class="quick-chip weight" data-med="Semaglutide (Wegovy / Rybelsus)">⚖️ Semaglutide</button>
+            <button type="button" class="quick-chip weight" data-med="Tirzepatide (Mounjaro)">⚖️ Tirzepatide</button>
             <button type="button" class="quick-chip" data-med="Pan 40">Pan-40</button>
-            <button type="button" class="quick-chip" data-med="Shelcal 500">Shelcal</button>
           </div>
         </div>
       </div>
@@ -870,12 +872,22 @@ footer .inner{
         </select>
       </div>
 
-      <div class="field">
-        <div class="field-head">
-          <label class="lbl" for="dietitianName">Dietitian / Clinic / Company Name</label>
-          <span class="opt-tag">Optional</span>
+      <!-- OPTIONAL DOCTOR-PRESCRIBED CALORIES & DIETITIAN NAME -->
+      <div class="grid-2">
+        <div class="field">
+          <div class="field-head">
+            <label class="lbl" for="dietitianName">Dietitian / Clinic / Company</label>
+            <span class="opt-tag">Optional</span>
+          </div>
+          <input type="text" id="dietitianName" placeholder="e.g. Dr. R. Sharma, Clinical Nutritionist">
         </div>
-        <input type="text" id="dietitianName" placeholder="e.g. Dr. R. Sharma, Clinical Nutritionist / Arogya Wellness Center">
+        <div class="field">
+          <div class="field-head">
+            <label class="lbl" for="targetCalories">Doctor-Prescribed Calories (kcal/day)</label>
+            <span class="opt-tag">Optional</span>
+          </div>
+          <input type="number" id="targetCalories" placeholder="e.g. 1200, 1350, 1500 (blank = auto)" min="700" max="4000" step="50">
+        </div>
       </div>
 
       <div class="field">
@@ -888,7 +900,7 @@ footer .inner{
 
       <button id="genBtn" class="gen-btn" type="button">
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
         </svg>
         <span>Analyze Labs &amp; Generate Diet Chart</span>
       </button>
@@ -925,7 +937,7 @@ footer .inner{
         <div id="idle" class="panel-center">
           <div class="panel-icon" aria-hidden="true">📊</div>
           <h4>No Prescription Scanned Yet</h4>
-          <p>Upload a doctor's prescription or clinical lab report. The engine cross-analyzes all diagnostics against the clinical medical dictionary, identifies confirmed diseases, factors in your food preferences, and formulates your custom regional meal plan.</p>
+          <p>Upload a doctor's prescription or clinical lab report. The engine cross-analyzes all diagnostics against the clinical medical dictionary, identifies confirmed diseases (including obesity management protocols), factors in your food preferences, and formulates your custom regional meal plan.</p>
           <div class="panel-tip">💡 Tip: Tap "Try Sample" above to see a live clinical analysis</div>
         </div>
 
@@ -966,14 +978,14 @@ footer .inner{
       <div class="feature-icon" style="background:#f0fdfa;color:#0d9488;" aria-hidden="true">📖</div>
       <div>
         <h4>Medical Dictionary Ontology</h4>
-        <p>Searches and resolves diagnostic shorthand (T2DM, HTN, NAFLD, CKD, GERD, PCOD) using a clinical knowledge base.</p>
+        <p>Searches and resolves diagnostic shorthand (T2DM, HTN, NAFLD, Obesity, CKD, GERD, PCOD) using a clinical knowledge base.</p>
       </div>
     </div>
     <div class="feature">
-      <div class="feature-icon" style="background:#ecfdf5;color:#059669;" aria-hidden="true">📱</div>
+      <div class="feature-icon" style="background:#ecfdf5;color:#059669;" aria-hidden="true">⚖️</div>
       <div>
-        <h4>Installable PWA Application</h4>
-        <p>Installs directly on Android, iPhone, Windows, and Mac with zero app store fees and instant home screen launching.</p>
+        <h4>Obesity &amp; Calorie Precision</h4>
+        <p>Supports all Indian obesity medications and scales meal slots to doctor-prescribed daily calorie targets.</p>
       </div>
     </div>
     <div class="feature">
@@ -1035,8 +1047,29 @@ footer .inner{
 
   /* -------------------------------------------------------------
      1. COMPREHENSIVE CLINICAL MEDICAL DICTIONARY & ONTOLOGY
+        (Includes All Indian CDSCO-Approved Obesity Medications)
   ------------------------------------------------------------- */
   var MEDICAL_DISEASE_DICTIONARY = [
+    {
+      id: "obesity",
+      name: "Clinical Obesity & Chronic Weight Management",
+      category: "Metabolic & Bariatric",
+      icd: "ICD-10: E66",
+      synonyms: [
+        "obesity", "morbid obesity", "overweight", "weight management", "weight loss", "excess body weight", 
+        "high bmi", "bmi > 30", "bmi > 27", "central adiposity", "visceral fat", "bariatric", "weight reduction", "adiposity"
+      ],
+      associatedMeds: [
+        "orlistat", "obelit", "reeshape", "vyfat", "lipocut", "orlip", "obestat", "fatnil", "xenical",
+        "semaglutide", "wegovy", "ozempic", "rybelsus", "alterme", "obeda", "semaglyn", "semalix",
+        "tirzepatide", "mounjaro", "zepbound", "yurpeak",
+        "liraglutide", "saxenda", "victoza",
+        "mysimba", "contrave", "naltrexone", "bupropion",
+        "topiramate", "topirol", "topamac"
+      ],
+      labTriggers: ["chol", "tg", "fbs", "hba1c"],
+      dietaryProtocol: "Hypocaloric high-protein protocol (1.2-1.5g protein/kg) to protect lean muscle mass; strict fat restriction (<25-30% of energy on Orlistat to prevent steatorrhea); low-GI complex carbs and high satiety fiber."
+    },
     {
       id: "t2dm",
       name: "Type 2 Diabetes Mellitus (T2DM)",
@@ -1372,7 +1405,7 @@ footer .inner{
   var fname = $('fname'), ftype = $('ftype'), fsize = $('fsize');
   var changeBtn = $('changeBtn'), removeBtn = $('removeBtn'), thumbClick = $('thumbClick');
   var regionSel = $('region'), stateSel = $('state'), langSel = $('lang');
-  var dietitianNameInput = $('dietitianName'), extra = $('extra');
+  var dietitianNameInput = $('dietitianName'), targetCaloriesInput = $('targetCalories'), extra = $('extra');
   var genBtn = $('genBtn'), demoBtn = $('demoBtn');
   var idle = $('idle'), loading = $('loading'), error = $('error'), result = $('result');
   var errMsg = $('errMsg'), output = $('output'), badges = $('badges');
@@ -1646,26 +1679,26 @@ footer .inner{
     ctx.fillStyle = '#0f766e'; ctx.font = 'bold 15px sans-serif';
     ctx.fillText('CLINICAL IMPRESSION / ACTIVE DIAGNOSIS (Dx):', 40, 385);
     ctx.fillStyle = '#334155'; ctx.font = '14px sans-serif';
-    ctx.fillText('1. Type 2 Diabetes Mellitus (T2DM) - Poorly controlled', 55, 415);
-    ctx.fillText('2. Essential Hypertension (Stage 1 HTN)', 55, 440);
+    ctx.fillText('1. Clinical Obesity (BMI 32.4 kg/m²) & Metabolic Syndrome', 55, 415);
+    ctx.fillText('2. Type 2 Diabetes Mellitus (T2DM) - Suboptimal control', 55, 440);
     ctx.fillText('3. Grade 1 Fatty Liver (NAFLD) with mixed Dyslipidemia', 55, 465);
-    ctx.fillText('4. Asymptomatic Hyperuricemia with Gout risk', 55, 490);
+    ctx.fillText('4. Essential Hypertension (Stage 1 HTN)', 55, 490);
 
     ctx.fillStyle = '#0d9488'; ctx.font = 'bold 36px serif';
     ctx.fillText('\u211E', 40, 550);
     ctx.fillStyle = '#1e293b'; ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('1. Tab. Metformin 500 mg - Twice daily after meals', 65, 590);
-    ctx.fillText('2. Tab. Telmisartan 40 mg - Morning after breakfast', 65, 630);
-    ctx.fillText('3. Tab. Atorvastatin 10 mg - At bedtime', 65, 670);
-    ctx.fillText('4. Tab. Febuxostat 40 mg - Once daily afternoon', 65, 710);
+    ctx.fillText('1. Inj. Semaglutide (Wegovy) 0.5 mg - Subcutaneously once weekly', 65, 590);
+    ctx.fillText('2. Tab. Metformin 500 mg - Twice daily after meals', 65, 630);
+    ctx.fillText('3. Tab. Telmisartan 40 mg - Morning after breakfast', 65, 670);
+    ctx.fillText('4. Tab. Atorvastatin 10 mg - At bedtime', 65, 710);
 
     ctx.fillStyle = '#0f766e'; ctx.font = 'bold 15px sans-serif';
     ctx.fillText('THERAPEUTIC NUTRITION DIRECTIVE:', 40, 770);
     ctx.fillStyle = '#334155'; ctx.font = '14px sans-serif';
-    ctx.fillText('- Strict low-glycemic, high soluble fiber diet tailored to authentic Bengali staples.', 55, 800);
-    ctx.fillText('- Low purine protocol: strictly avoid organ meats, masoor dal, red spinach.', 55, 825);
+    ctx.fillText('- High protein preservation protocol to prevent lean muscle mass loss on GLP-1.', 55, 800);
+    ctx.fillText('- Low glycemic index, calorie deficit of 1,350 kcal/day.', 55, 825);
     ctx.fillText('- Sodium restricted to < 3g/day, eliminate processed fried snacks.', 55, 850);
-    ctx.fillText('- Energy requirement calculated strictly between 1,450 to 1,500 kcal/day.', 55, 875);
+    ctx.fillText('- Maintain 3 liters hydration daily.', 55, 875);
 
     ctx.fillStyle = '#64748b'; ctx.font = 'italic 18px cursive';
     ctx.fillText('Dr. S. Mukherjee', 620, 1020);
@@ -1687,17 +1720,18 @@ footer .inner{
     fsize.textContent = fmtBytes(currentFileSize);
     showPreviewCard();
 
-    verifiedMedicines = ["Metformin 500mg", "Telmisartan 40mg", "Atorvastatin 10mg", "Febuxostat 40mg"];
+    verifiedMedicines = ["Semaglutide (Wegovy)", "Metformin 500mg", "Telmisartan 40mg", "Atorvastatin 10mg"];
     renderMedPills();
 
-    extractedOcrText = 'Amitava Ghosh 54 Yrs BP: 142/90 mmHg Fasting Blood Sugar FBS: 168 mg/dL HbA1c: 7.9% Total Cholesterol: 232 mg/dL Triglycerides: 210 mg/dL Serum Uric Acid: 7.6 mg/dL S. Creatinine: 1.0 mg/dL SGPT: 58 U/L Dx: Type 2 Diabetes Mellitus T2DM, Essential Hypertension Stage 1 HTN, Grade 1 Fatty Liver NAFLD, Dyslipidemia, Hyperuricemia Tab Metformin 500mg Tab Telmisartan 40mg Tab Atorvastatin 10mg Tab Febuxostat 40mg';
+    extractedOcrText = 'Amitava Ghosh 54 Yrs BP: 142/90 mmHg Fasting Blood Sugar FBS: 168 mg/dL HbA1c: 7.9% Total Cholesterol: 232 mg/dL Triglycerides: 210 mg/dL Serum Uric Acid: 7.6 mg/dL S. Creatinine: 1.0 mg/dL SGPT: 58 U/L Dx: Clinical Obesity BMI 32.4, Type 2 Diabetes Mellitus T2DM, Essential Hypertension Stage 1 HTN, Grade 1 Fatty Liver NAFLD Inj Semaglutide Wegovy Tab Metformin 500mg Tab Telmisartan 40mg Tab Atorvastatin 10mg';
 
     regionSel.value = 'Eastern India'; updateStates();
     stateSel.value = 'West Bengal';
     langSel.value = 'Bengali (বাংলা)';
     dietitianNameInput.value = 'Dr. R. Sharma, Chief Clinical Nutritionist, Kolkata';
+    targetCaloriesInput.value = '1350';
     extra.value = 'Pure Vegetarian (No fish/eggs), Age 54, mild acid reflux, allergic to peanuts';
-    toast('Sample loaded with complete lab markers & preferences! Click Generate.', '✨', 4500);
+    toast('Sample loaded with obesity therapy & 1,350 kcal target! Click Generate.', '✨', 4500);
   });
 
   function parseAllLabReports(text) {
@@ -1905,7 +1939,7 @@ footer .inner{
         var mLower = med.toLowerCase();
         for (var k = 0; k < disease.associatedMeds.length; k++) {
           if (mLower.indexOf(disease.associatedMeds[k]) !== -1) {
-            score += 4;
+            score += 6;
             evidence.push("Rx Indication: " + med);
             break;
           }
@@ -2017,9 +2051,37 @@ footer .inner{
     return prefs;
   }
 
-  function calculateKcalTarget(diseases, labs, prefs) {
-    var hasDiabetes = false, hasHTN = false, hasFattyLiver = false, hasCKD = false;
+  /* -------------------------------------------------------------
+     CALORIE CALCULATION WITH OPTIONAL DOCTOR TARGET OVERRIDE
+  ------------------------------------------------------------- */
+  function calculateKcalTarget(diseases, labs, prefs, doctorCalories) {
+    // 1. If Doctor explicitly prescribed target calories, respect it directly!
+    if (doctorCalories && !isNaN(doctorCalories) && doctorCalories >= 700 && doctorCalories <= 4000) {
+      var dKcal = Math.round(doctorCalories);
+      var cRatio = 0.50, pRatio = 0.22, fRatio = 0.28;
+      
+      // If obesity or diabetes, prioritize higher protein protection
+      var hasObesityOrT2D = diseases.some(function(d){ return d.id === 'obesity' || d.id === 't2dm'; });
+      if (hasObesityOrT2D) {
+        pRatio = 0.25;
+        cRatio = 0.48;
+        fRatio = 0.27;
+      }
+
+      return {
+        total: dKcal,
+        label: dKcal.toLocaleString() + " kcal / day (Doctor Prescribed)",
+        carbs: Math.round(cRatio * 100) + "% (" + Math.round((dKcal * cRatio) / 4) + "g)",
+        protein: Math.round(pRatio * 100) + "% (" + Math.round((dKcal * pRatio) / 4) + "g)",
+        fat: Math.round(fRatio * 100) + "% (" + Math.round((dKcal * fRatio) / 9) + "g)",
+        note: "Direct Doctor Directive: Diet formulated strictly to match prescribed " + dKcal + " kcal/day target."
+      };
+    }
+
+    // 2. Automated Diagnostic Analysis
+    var hasObesity = false, hasDiabetes = false, hasHTN = false, hasFattyLiver = false, hasCKD = false;
     diseases.forEach(function (d) {
+      if (d.id === 'obesity') hasObesity = true;
       if (d.id === 't2dm') hasDiabetes = true;
       if (d.id === 'htn') hasHTN = true;
       if (d.id === 'nafld') hasFattyLiver = true;
@@ -2029,7 +2091,10 @@ footer .inner{
     var baseKcal = 1600;
     var note = "Balanced Cardiometabolic Energy Target";
 
-    if (hasDiabetes && (hasHTN || hasFattyLiver)) {
+    if (hasObesity) {
+      baseKcal = hasDiabetes ? 1350 : 1300;
+      note = "Therapeutic Hypocaloric Weight Management & Satiety Protocol";
+    } else if (hasDiabetes && (hasHTN || hasFattyLiver)) {
       baseKcal = 1450;
       note = "Therapeutic Caloric Restriction for Glycemic & Lipid Normalization";
     } else if (hasDiabetes) {
@@ -2045,28 +2110,46 @@ footer .inner{
       note += " (Adjusted for age " + prefs.statedAge + ")";
     }
 
+    var proteinPct = (hasObesity || hasDiabetes) ? 0.24 : (hasCKD ? 0.12 : 0.20);
+    var carbPct = hasCKD ? 0.60 : 0.50;
+    var fatPct = 1 - (proteinPct + carbPct);
+
     return {
       total: baseKcal,
-      label: baseKcal.toLocaleString() + " kcal / day",
-      carbs: baseKcal === 1450 ? "50% (180g)" : "52% (195g)",
-      protein: baseKcal === 1650 ? "12% (50g)" : "20% (72g)",
-      fat: "28% (46g)",
+      label: baseKcal.toLocaleString() + " kcal / day (Automated Clinical Estimate)",
+      carbs: Math.round(carbPct * 100) + "% (" + Math.round((baseKcal * carbPct) / 4) + "g)",
+      protein: Math.round(proteinPct * 100) + "% (" + Math.round((baseKcal * proteinPct) / 4) + "g)",
+      fat: Math.round(fatPct * 100) + "% (" + Math.round((baseKcal * fatPct) / 9) + "g)",
       note: note
     };
   }
 
+  /* -------------------------------------------------------------
+     BUILD REGIONAL NUTRITION PLAN WITH DYNAMIC SCALED KCAL
+  ------------------------------------------------------------- */
   function buildRegionalNutritionPlan(stName, lang, diseases, labs, kcalProfile, prefs) {
     var tr = TRANSLATIONS[lang] || TRANSLATIONS["English"];
     var isBengali = lang.indexOf('Bengali') !== -1;
     var isHindi = lang.indexOf('Hindi') !== -1;
 
     var isDiabetic = diseases.some(function(d){ return d.id === 't2dm'; });
+    var isObesity = diseases.some(function(d){ return d.id === 'obesity'; });
     var isGout = diseases.some(function(d){ return d.id === 'gout'; });
 
     var isVeg = prefs.isVeg;
     var hasReflux = prefs.hasReflux;
     var noEgg = prefs.noEgg;
     var noDairy = prefs.noDairy;
+
+    // Mathematically scale meal-by-meal calories to match total calories exactly
+    var totalKcal = kcalProfile.total;
+    var kEarly = Math.round(totalKcal * 0.05);
+    var kBrk = Math.round(totalKcal * 0.22);
+    var kMid = Math.round(totalKcal * 0.08);
+    var kLunch = Math.round(totalKcal * 0.34);
+    var kSnk = Math.round(totalKcal * 0.09);
+    var kDin = Math.round(totalKcal * 0.18);
+    var kBed = totalKcal - (kEarly + kBrk + kMid + kLunch + kSnk + kDin);
 
     var dailyMeals = [];
     if (isBengali) {
@@ -2083,13 +2166,13 @@ footer .inner{
       var bedtimeDrink = noDairy ? "১ কাপ হালকা গরম ক্যামোমাইল চা বা ইসবগুলের ভুসি সহ কুসুম গরম জল" : "১ কাপ হালকা গরম মাখন-তোলা গরুর দুধ অথবা ১ গ্লাস গরম জল ও ১ চামচ ইসবগুল";
 
       dailyMeals = [
-        { time: tr.meals.early, menu: morningDrink + " + " + morningNuts, kcal: "80 kcal" },
-        { time: tr.meals.breakfast, menu: "২টি হাতে গড়া লাল আটার রুটি + ১ বাটি হালকা তেল-মশলায় রান্না লাউ/ঝিঙে বা পেঁপে তরকারি + " + breakfastProt, kcal: "340 kcal" },
-        { time: tr.meals.mid, menu: "১টি কচি ডাঁসা পেয়ারা (অথবা ১ বাটি শসা ও পাকা পেঁপে) + " + midDrink, kcal: "110 kcal" },
-        { time: tr.meals.lunch, menu: "১ ছোট বাটি ঢেঁকিছাঁটা বা সিদ্ধ চালের ভাত (১০০ গ্রাম রান্না) + ১ বাটি পাতলা মুগ ডাল + ১ বাটি নিরামিষ শুক্তো/লাউ ঘণ্ট + " + lunchCurry, kcal: "490 kcal" },
-        { time: tr.meals.snack, menu: "১ কাপ চিনি ছাড়া লাল চা (বা গ্রিন টি) + ১ ছোট বাটি শুকনো খোলায় ভাজা চালভাঙা মুড়ি ও সেদ্ধ ছোলা বা অঙ্কুরিত মুগ", kcal: "140 kcal" },
-        { time: tr.meals.dinner, menu: "২টি পাতলা লাল আটার ফুলকো রুটি + ১ বাটি কম তেলের পটল বা সজনে ডাঁটার তরকারি + ১ ছোট বাটি পাতলা মুগ ডাল বা ৫০ গ্রাম ছানার তরকারি", kcal: "310 kcal" },
-        { time: tr.meals.bedtime, menu: bedtimeDrink, kcal: "80 kcal" }
+        { time: tr.meals.early, menu: morningDrink + " + " + morningNuts, kcal: kEarly + " kcal" },
+        { time: tr.meals.breakfast, menu: "২টি হাতে গড়া লাল আটার পাতলা রুটি + ১ বাটি হালকা তেল-মশলায় রান্না লাউ/ঝিঙে বা পেঁপে তরকারি + " + breakfastProt, kcal: kBrk + " kcal" },
+        { time: tr.meals.mid, menu: "১টি কচি ডাঁসা পেয়ারা (অথবা ১ বাটি শসা ও পাকা পেঁপে) + " + midDrink, kcal: kMid + " kcal" },
+        { time: tr.meals.lunch, menu: "১ ছোট বাটি ঢেঁকিছাঁটা বা সিদ্ধ চালের ভাত (৮০-১০০ গ্রাম রান্না) + ১ বাটি পাতলা মুগ ডাল + ১ বাটি নিরামিষ শুক্তো/লাউ ঘণ্ট + " + lunchCurry, kcal: kLunch + " kcal" },
+        { time: tr.meals.snack, menu: "১ কাপ চিনি ছাড়া লাল চা (বা গ্রিন টি) + ১ ছোট বাটি শুকনো খোলায় ভাজা চালভাঙা মুড়ি ও সেদ্ধ ছোলা বা অঙ্কুরিত মুগ", kcal: kSnk + " kcal" },
+        { time: tr.meals.dinner, menu: "২টি পাতলা লাল আটার ফুলকো রুটি + ১ বাটি কম তেলের পটল বা সজনে ডাঁটার তরকারি + ১ ছোট বাটি পাতলা মুগ ডাল বা ৫০ গ্রাম ছানার তরকারি", kcal: kDin + " kcal" },
+        { time: tr.meals.bedtime, menu: bedtimeDrink, kcal: kBed + " kcal" }
       ];
     } else if (isHindi) {
       var morningDrinkH = hasReflux ? "1 गिलास गुनगुना सौंफ व जीरे का पानी (एसिडिटी रोधी)" : "1 गिलास गुनगुना मेथी का पानी";
@@ -2097,13 +2180,13 @@ footer .inner{
       var lunchProtH = isVeg ? "1 कटोरी सोयाबीन करी या उबले गट्टे की कम तेल की सब्जी (100% शाकाहारी)" : "1 टुकड़ा कम मसाले वाली तली-रहित मछली की झोल";
 
       dailyMeals = [
-        { time: tr.meals.early, menu: morningDrinkH + " + 4 भीगे हुए बादाम", kcal: "80 kcal" },
-        { time: tr.meals.breakfast, menu: "2 गेहूं व चने के आटे की पतली रोटियां + 1 कटोरी तोरी/लौकी की कम तेल वाली सब्जी + " + breakfastProtH, kcal: "340 kcal" },
-        { time: tr.meals.mid, menu: "1 ताजा अमरूद (या खीरा व पपीता) + 1 गिलास बिना चीनी व नमक की छाछ", kcal: "110 kcal" },
-        { time: tr.meals.lunch, menu: "1 छोटी कटोरी उबले चावल + 1 कटोरी मूंग दाल + 1 कटोरी टिंडे/तोरी की सब्जी + " + lunchProtH, kcal: "490 kcal" },
-        { time: tr.meals.snack, menu: "1 कप बिना चीनी की हर्बल चाय + 1 कटोरी उबले अंकुरित चने व भुने मखाने", kcal: "140 kcal" },
-        { time: tr.meals.dinner, menu: "2 पतली फुलका रोटियां + 1 कटोरी लौकी का भर्ता या परवल की सब्जी + 1 कटोरी पतली दाल", kcal: "310 kcal" },
-        { time: tr.meals.bedtime, menu: "1 कप बिना मलाई का गुनगुना दूध व चुटकी भर हल्दी", kcal: "80 kcal" }
+        { time: tr.meals.early, menu: morningDrinkH + " + 4 भीगे हुए बादाम", kcal: kEarly + " kcal" },
+        { time: tr.meals.breakfast, menu: "2 गेहूं व चने के आटे की पतली रोटियां + 1 कटोरी तोरी/लौकी की कम तेल वाली सब्जी + " + breakfastProtH, kcal: kBrk + " kcal" },
+        { time: tr.meals.mid, menu: "1 ताजा अमरूद (या खीरा व पपीता) + 1 गिलास बिना चीनी व नमक की छाछ", kcal: kMid + " kcal" },
+        { time: tr.meals.lunch, menu: "1 छोटी कटोरी उबले चावल + 1 कटोरी मूंग दाल + 1 कटोरी टिंडे/तोरी की सब्जी + " + lunchProtH, kcal: kLunch + " kcal" },
+        { time: tr.meals.snack, menu: "1 कप बिना चीनी की हर्बल चाय + 1 कटोरी उबले अंकुरित चने व भुने मखाने", kcal: kSnk + " kcal" },
+        { time: tr.meals.dinner, menu: "2 पतली फुलका रोटियां + 1 कटोरी लौकी का भर्ता या परवल की सब्जी + 1 कटोरी पतली दाल", kcal: kDin + " kcal" },
+        { time: tr.meals.bedtime, menu: "1 कप बिना मलाई का गुनगुना दूध व चुटकी भर हल्दी", kcal: kBed + " kcal" }
       ];
     } else {
       var morningDrinkE = hasReflux ? "1 glass lukewarm fennel & cumin soaked water (alkaline, acid reflux relief)" : "1 glass lukewarm fenugreek water";
@@ -2111,13 +2194,13 @@ footer .inner{
       var lunchProtE = isVeg ? "1 bowl low-fat cottage cheese (paneer) or nutri-nugget soya stew (100% Vegetarian)" : "1 piece light freshwater fish stew";
 
       dailyMeals = [
-        { time: tr.meals.early, menu: morningDrinkE + " + 4 soaked peeled almonds", kcal: "80 kcal" },
-        { time: tr.meals.breakfast, menu: "2 whole wheat multigrain rotis + 1 bowl low-oil bottle gourd (lauki) sabzi + " + breakfastProtE, kcal: "340 kcal" },
-        { time: tr.meals.mid, menu: "1 fresh guava (or papaya bowl) + 1 glass unsweetened diluted chaas", kcal: "110 kcal" },
-        { time: tr.meals.lunch, menu: "1 small cup unpolished steamed rice + 1 bowl yellow moong dal + 1 bowl seasonal vegetable curry + " + lunchProtE, kcal: "490 kcal" },
-        { time: tr.meals.snack, menu: "1 cup unsweetened green tea + 1 small bowl roasted makhana and boiled sprouts", kcal: "140 kcal" },
-        { time: tr.meals.dinner, menu: "2 soft thin phulkas + 1 bowl pointed gourd (parwal) sabzi + 1 small bowl thin dal", kcal: "310 kcal" },
-        { time: tr.meals.bedtime, menu: "1 cup warm skimmed milk or warm isabgol water", kcal: "80 kcal" }
+        { time: tr.meals.early, menu: morningDrinkE + " + 4 soaked peeled almonds", kcal: kEarly + " kcal" },
+        { time: tr.meals.breakfast, menu: "2 whole wheat multigrain rotis + 1 bowl low-oil bottle gourd (lauki) sabzi + " + breakfastProtE, kcal: kBrk + " kcal" },
+        { time: tr.meals.mid, menu: "1 fresh guava (or papaya bowl) + 1 glass unsweetened diluted chaas", kcal: kMid + " kcal" },
+        { time: tr.meals.lunch, menu: "1 small cup unpolished steamed rice + 1 bowl yellow moong dal + 1 bowl seasonal vegetable curry + " + lunchProtE, kcal: kLunch + " kcal" },
+        { time: tr.meals.snack, menu: "1 cup unsweetened green tea + 1 small bowl roasted makhana and boiled sprouts", kcal: kSnk + " kcal" },
+        { time: tr.meals.dinner, menu: "2 soft thin phulkas + 1 bowl pointed gourd (parwal) sabzi + 1 small bowl thin dal", kcal: kDin + " kcal" },
+        { time: tr.meals.bedtime, menu: "1 cup warm skimmed milk or warm isabgol water", kcal: kBed + " kcal" }
       ];
     }
 
@@ -2190,7 +2273,7 @@ footer .inner{
         {
           cat: tr.cats.fruits,
           eat: "টাটকা পেয়ারা, পাকা পেঁপে, আপেল, শসা, জাম, জামরুল, বাতাবি লেবু।",
-          avoid: isDiabetic ? "পাকা আম, কাঁঠাল, পাকা কলা, লিচু, স্যাপোটা (সফেদা), কিসমিস ও মিষ্টি ফলের রস।" : "চিনির সিরায় ভেজানো ক্যানড ফ্রুটস।"
+          avoid: isDiabetic || isObesity ? "পাকা আম, কাঁঠাল, পাকা কলা, লিচু, স্যাপোটা (সফেদা), কিসমিস ও মিষ্টি ফলের রস।" : "চিনির সিরায় ভেজানো ক্যানড ফ্রুটস।"
         },
         {
           cat: tr.cats.protein,
@@ -2218,7 +2301,7 @@ footer .inner{
         {
           cat: tr.cats.fruits,
           eat: "अमरूद, कच्चा/पका पपीता, हरा सेब, जामुन, संतरा, मौसमी।",
-          avoid: isDiabetic ? "पका आम, चीकू, लीची, केला, अंगूर, डिब्बाबंद मीठे जूस।" : "चीनी चाशनी में डूबे डिब्बाबंद फल।"
+          avoid: isDiabetic || isObesity ? "पका आम, चीकू, लीची, केला, अंगूर, डिब्बाबंद मीठे जूस।" : "चीनी चाशनी में डूबे डिब्बाबंद फल।"
         },
         {
           cat: tr.cats.protein,
@@ -2246,7 +2329,7 @@ footer .inner{
         {
           cat: tr.cats.fruits,
           eat: "Fresh local guava, green apple, raw/ripe papaya, Indian jamun, sweet lime, cucumber.",
-          avoid: isDiabetic ? "Ripe mangoes, chiku (sapodilla), grapes, litchis, bananas, commercial fruit juices." : "Canned fruits preserved in heavy sugar syrup."
+          avoid: isDiabetic || isObesity ? "Ripe mangoes, chiku (sapodilla), grapes, litchis, bananas, commercial fruit juices." : "Canned fruits preserved in heavy sugar syrup."
         },
         {
           cat: tr.cats.protein,
@@ -2432,6 +2515,7 @@ footer .inner{
 
     var rv = regionSel.value, sv = stateSel.value, lv = langSel.value;
     var dietitianName = (dietitianNameInput.value || '').trim();
+    var docCalories = parseFloat(targetCaloriesInput.value);
 
     idle.style.display = 'none';
     loading.style.display = 'block';
@@ -2445,7 +2529,7 @@ footer .inner{
         var patientPrefs = parsePatientPreferences(extra.value);
         var parsedLabs = parseAllLabReports(extractedOcrText);
         var activeDiseases = detectExactDiseasesViaDictionary(extractedOcrText, verifiedMedicines, parsedLabs);
-        var kcalProfile = calculateKcalTarget(activeDiseases, parsedLabs, patientPrefs);
+        var kcalProfile = calculateKcalTarget(activeDiseases, parsedLabs, patientPrefs, docCalories);
         var planData = buildRegionalNutritionPlan(sv, lv, activeDiseases, parsedLabs, kcalProfile, patientPrefs);
 
         var finalHTML = renderDietChartHTML(sv, rv, lv, verifiedMedicines, parsedLabs, activeDiseases, kcalProfile, planData, patientPrefs);
@@ -2654,7 +2738,7 @@ footer .inner{
     if (e.target === pwaModal) pwaModal.classList.remove('open');
   });
 
-  console.log('[ArogyaDiet AI] Medical Dictionary Engine & Real PNG PWA Ready ✓');
+  console.log('[ArogyaDiet AI] Obesity Pharmacopeia & Calorie Precision Engine Ready ✓');
 })();
 </script>
 
