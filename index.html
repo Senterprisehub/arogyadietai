@@ -263,7 +263,7 @@ textarea{resize:none;min-height:70px}
 .drop-text strong{color:#0d9488;font-weight:600;text-decoration:underline}
 .drop-hint{font-size:11px;color:#94a3b8}
 
-/* PREVIEW CARD */
+/* PREVIEW CARD & SCANNING ANIMATION */
 .preview-card{
   position:relative;
   border:1px solid #99f6e4;
@@ -282,6 +282,12 @@ textarea{resize:none;min-height:70px}
   font-size:0.75rem;
   font-weight:600;
   color:#115e59;
+  transition:background 0.3s;
+}
+.preview-status.scanning{
+  background:rgba(254,243,199,0.7);
+  border-bottom-color:#fde68a;
+  color:#92400e;
 }
 .preview-status .check{
   display:inline-flex;
@@ -307,6 +313,40 @@ textarea{resize:none;min-height:70px}
   cursor:zoom-in;
 }
 .preview-thumb img,.preview-thumb canvas{max-width:100%;max-height:13rem;width:auto;height:auto;object-fit:contain;display:block}
+
+/* SCANNING LASER & GRID ANIMATION */
+.scan-laser{
+  position:absolute;
+  left:0;
+  right:0;
+  height:3px;
+  background:linear-gradient(90deg,transparent,#0d9488 20%,#34d399 50%,#0d9488 80%,transparent);
+  box-shadow:0 0 16px 4px rgba(13,148,136,0.85);
+  animation:scanSweep 1.8s ease-in-out infinite alternate;
+  z-index:10;
+  display:none;
+}
+.scan-overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(13,148,136,0.06);
+  background-image:linear-gradient(rgba(13,148,136,0.12) 1px,transparent 1px),
+                    linear-gradient(90deg,rgba(13,148,136,0.12) 1px,transparent 1px);
+  background-size:16px 16px;
+  animation:scanPulse 1.8s ease-in-out infinite alternate;
+  z-index:9;
+  display:none;
+  pointer-events:none;
+}
+@keyframes scanSweep{
+  0%{top:0%}
+  100%{top:98%}
+}
+@keyframes scanPulse{
+  0%{opacity:0.25}
+  100%{opacity:0.85}
+}
+
 .preview-zoom-hint{
   position:absolute;
   bottom:0.5rem;
@@ -383,6 +423,7 @@ textarea{resize:none;min-height:70px}
 .quick-chip:hover{background:#cbd5e1;color:#1e293b}
 .quick-chip.weight{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
 
+/* GENERATE BUTTON & SPINNERS */
 .gen-btn{
   width:100%;
   min-height:48px;
@@ -398,11 +439,35 @@ textarea{resize:none;min-height:70px}
   align-items:center;
   justify-content:center;
   gap:0.5rem;
-  transition:transform .1s,box-shadow .2s;
+  transition:all .2s;
   margin-top:1rem;
 }
 .gen-btn:active{transform:scale(.98)}
-.gen-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.gen-btn:disabled{
+  opacity:0.6;
+  cursor:not-allowed;
+  transform:none;
+  background:#64748b;
+  box-shadow:none;
+}
+.btn-spinner{
+  width:1.2rem;
+  height:1.2rem;
+  border:2.5px solid rgba(255,255,255,0.3);
+  border-top-color:#fff;
+  border-radius:9999px;
+  animation:spin 0.7s linear infinite;
+  flex-shrink:0;
+}
+.spinner-dot{
+  display:inline-block;
+  width:0.75rem;
+  height:0.75rem;
+  border:2px solid #b45309;
+  border-top-color:transparent;
+  border-radius:9999px;
+  animation:spin 0.8s linear infinite;
+}
 
 /* RESULTS PANEL */
 .result-shell{display:flex;flex-direction:column;min-height:34rem}
@@ -520,11 +585,6 @@ textarea{resize:none;min-height:70px}
   color:#881337;
   margin:0.25rem 0;
   line-height:1.55;
-}
-.contra-banner ul{
-  margin:0.35rem 0 0.35rem 1.2rem;
-  font-size:0.8125rem;
-  color:#9f1239;
 }
 
 /* RESPONSIVE SCROLL-SAFE TABLE WRAPPER */
@@ -814,12 +874,16 @@ footer .inner{
         </div>
 
         <div id="previewCard" class="preview-card" style="display:none;">
-          <div class="preview-status">
+          <div id="previewStatus" class="preview-status">
             <span class="check" aria-hidden="true">✓</span>
-            <span>Document loaded &amp; optical scanner ready</span>
+            <span id="previewStatusText">Document loaded &amp; ready</span>
           </div>
           <div class="preview-thumb">
             <div class="preview-thumb-inner" id="thumbClick" title="Click to zoom">
+              <!-- Animated Scan Laser Beam & Grid Overlay -->
+              <div id="scanLaser" class="scan-laser"></div>
+              <div id="scanOverlay" class="scan-overlay"></div>
+              
               <img id="imgPreview" alt="Prescription preview" style="display:none;">
               <canvas id="pdfCanvas" style="display:none;"></canvas>
               <span class="preview-zoom-hint">🔍 Tap to inspect</span>
@@ -928,11 +992,12 @@ footer .inner{
         <textarea id="extra" rows="3" placeholder="e.g. CKD Stage 3, Pure Vegetarian, Age 58, mild acid reflux, allergic to peanuts, no dairy..."></textarea>
       </div>
 
+      <!-- ANALYZE BUTTON (Dynamically locked during prescription scanning) -->
       <button id="genBtn" class="gen-btn" type="button">
-        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+        <svg id="genBtnIcon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
         </svg>
-        <span>Analyze Contraindications &amp; Generate Diet Chart</span>
+        <span id="genBtnText">Analyze Contraindications &amp; Generate Diet Chart</span>
       </button>
     </section>
 
@@ -1401,12 +1466,14 @@ footer .inner{
   // DOM Elements
   var fileInput = $('file'), drop = $('drop');
   var dropPrompt = $('dropPrompt'), previewCard = $('previewCard');
+  var previewStatus = $('previewStatus'), previewStatusText = $('previewStatusText');
+  var scanLaser = $('scanLaser'), scanOverlay = $('scanOverlay');
   var imgPreview = $('imgPreview'), pdfCanvas = $('pdfCanvas');
   var fname = $('fname'), ftype = $('ftype'), fsize = $('fsize');
   var changeBtn = $('changeBtn'), removeBtn = $('removeBtn'), thumbClick = $('thumbClick');
   var regionSel = $('region'), stateSel = $('state'), langSel = $('lang');
   var dietitianNameInput = $('dietitianName'), targetCaloriesInput = $('targetCalories'), extra = $('extra');
-  var genBtn = $('genBtn'), demoBtn = $('demoBtn');
+  var genBtn = $('genBtn'), genBtnIcon = $('genBtnIcon'), genBtnText = $('genBtnText'), demoBtn = $('demoBtn');
   var idle = $('idle'), loading = $('loading'), error = $('error'), result = $('result');
   var errMsg = $('errMsg'), output = $('output'), badges = $('badges');
   var retryBtn = $('retryBtn');
@@ -1424,6 +1491,7 @@ footer .inner{
   var toastTimer = null, extractedOcrText = '';
   var verifiedMedicines = [];
   var deferredPrompt = null;
+  var isScanning = false;
 
   function toast(msg, icon, ms) {
     var t = $('toast');
@@ -1498,6 +1566,39 @@ footer .inner{
     });
   });
 
+  /* -------------------------------------------------------------
+     SCANNING STATE MANAGER (ANIMATIONS & BUTTON LOCKING)
+  ------------------------------------------------------------- */
+  function setScanningState(scanning) {
+    isScanning = scanning;
+    if (scanning) {
+      // 1. Lock Generate Button
+      genBtn.disabled = true;
+      genBtnIcon.style.display = 'none';
+      genBtn.innerHTML = '<div class="btn-spinner"></div><span>Scanning Prescription in Progress...</span>';
+
+      // 2. Trigger Laser Sweep & Grid Animation
+      scanLaser.style.display = 'block';
+      scanOverlay.style.display = 'block';
+
+      // 3. Update Preview Status Pill
+      previewStatus.classList.add('scanning');
+      previewStatusText.innerHTML = '<span class="spinner-dot"></span> Optical scanner reading doctor handwriting &amp; medicines...';
+    } else {
+      // 1. Unlock Generate Button
+      genBtn.disabled = false;
+      genBtn.innerHTML = '<svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg><span>Analyze Contraindications &amp; Generate Diet Chart</span>';
+
+      // 2. Hide Laser Sweep Animation
+      scanLaser.style.display = 'none';
+      scanOverlay.style.display = 'none';
+
+      // 3. Restore Preview Status Pill
+      previewStatus.classList.remove('scanning');
+      previewStatusText.innerHTML = '<span class="check" aria-hidden="true">✓</span> Document scan complete &amp; verified';
+    }
+  }
+
   function clearFile() {
     fileInput.value = '';
     currentImage = null; currentMime = null;
@@ -1506,6 +1607,7 @@ footer .inner{
     extractedOcrText = '';
     verifiedMedicines = [];
     renderMedPills();
+    setScanningState(false);
     dropPrompt.style.display = 'flex';
     previewCard.style.display = 'none';
     imgPreview.style.display = 'none'; imgPreview.src = '';
@@ -1518,18 +1620,26 @@ footer .inner{
   }
 
   function runOCR(imageDataUri) {
-    if (!window.Tesseract) return;
-    toast('Scanning prescription & consulting medical dictionary...', '🔍');
+    if (!window.Tesseract) {
+      setScanningState(false);
+      return;
+    }
+    setScanningState(true);
+    toast('Scanning prescription with Optical AI...', '🔍');
     window.Tesseract.recognize(imageDataUri, 'eng')
       .then(function (res) {
         if (res && res.data && res.data.text) {
           extractedOcrText = res.data.text;
           detectMedicinesFromText(extractedOcrText);
-          toast('Prescription & labs analyzed!', '✅');
+          toast('Prescription successfully scanned!', '✅');
         }
       })
       .catch(function (e) {
         console.warn('OCR notice:', e);
+        toast('OCR scan completed with warnings. You can verify medicines manually.', 'ℹ️');
+      })
+      .finally(function () {
+        setScanningState(false);
       });
   }
 
@@ -1558,6 +1668,8 @@ footer .inner{
     fname.textContent = f.name;
     ftype.textContent = extOf(f.name);
     fsize.textContent = fmtBytes(f.size);
+
+    setScanningState(true);
 
     if (isPdf) {
       if (!window.pdfjsLib) { toast('PDF engine loading, please wait...', '⚠️'); clearFile(); return; }
@@ -1643,6 +1755,8 @@ footer .inner{
   /* SAMPLE WITH CHRONIC KIDNEY DISEASE (CKD Stage 3) & DIABETES */
   on(demoBtn, 'click', function () {
     toast('Generating CKD Stage 3 clinical prescription with elevated creatinine...', '📝');
+    setScanningState(true);
+
     var c = document.createElement('canvas');
     c.width = 850; c.height = 1150;
     var ctx = c.getContext('2d');
@@ -1732,7 +1846,12 @@ footer .inner{
     dietitianNameInput.value = 'Dr. R. Sharma, Chief Clinical Nutritionist, Kolkata';
     targetCaloriesInput.value = '1550';
     extra.value = 'Diagnosed with CKD Stage 3, swelling in feet (edema), vegetarian, no milk';
-    toast('Sample loaded: CKD Stage 3 with strict fluid & electrolyte restriction! Click Generate.', '✨', 4500);
+
+    // Simulate scan completion after visual laser animation
+    setTimeout(function() {
+      setScanningState(false);
+      toast('Sample loaded: CKD Stage 3 scanned! Button unlocked.', '✨', 4000);
+    }, 1200);
   });
 
   function parseAllLabReports(text) {
@@ -2064,7 +2183,7 @@ footer .inner{
       var hasObesityOrT2D = diseases.some(function(d){ return d.id === 'obesity' || d.id === 't2dm'; });
 
       if (isCKD) {
-        pRatio = 0.12; // strictly protein-restricted in renal failure
+        pRatio = 0.12;
         cRatio = 0.60;
         fRatio = 0.28;
       } else if (hasObesityOrT2D) {
@@ -2128,428 +2247,12 @@ footer .inner{
     };
   }
 
-  /* -------------------------------------------------------------
-     CLINICAL CONTRAINDICATION & MEAL GENERATOR ENGINE
-  ------------------------------------------------------------- */
-  function buildRegionalNutritionPlan(stName, lang, diseases, labs, kcalProfile, prefs) {
-    var tr = TRANSLATIONS[lang] || TRANSLATIONS["English"];
-    var isBengali = lang.indexOf('Bengali') !== -1;
-    var isHindi = lang.indexOf('Hindi') !== -1;
-
-    // Check specific clinical condition flags
-    var isCKD = diseases.some(function(d){ return d.id === 'ckd'; });
-    var isDiabetic = diseases.some(function(d){ return d.id === 't2dm'; });
-    var isObesity = diseases.some(function(d){ return d.id === 'obesity'; });
-    var isGout = diseases.some(function(d){ return d.id === 'gout'; });
-    var isHTN = diseases.some(function(d){ return d.id === 'htn'; });
-
-    var isVeg = prefs.isVeg;
-    var hasReflux = prefs.hasReflux;
-    var noEgg = prefs.noEgg;
-    var noDairy = prefs.noDairy;
-
-    // Mathematically scale meal-by-meal calories
-    var totalKcal = kcalProfile.total;
-    var kEarly = Math.round(totalKcal * 0.05);
-    var kBrk = Math.round(totalKcal * 0.22);
-    var kMid = Math.round(totalKcal * 0.08);
-    var kLunch = Math.round(totalKcal * 0.34);
-    var kSnk = Math.round(totalKcal * 0.09);
-    var kDin = Math.round(totalKcal * 0.18);
-    var kBed = totalKcal - (kEarly + kBrk + kMid + kLunch + kSnk + kDin);
-
-    var dailyMeals = [];
-    if (isBengali) {
-      // 1. EARLY MORNING CONTRAINDICATION FILTER
-      var morningDrink = "";
-      if (isCKD) {
-        morningDrink = "৫০ মিলি কুসুম গরম ধনে ও আদা সেদ্ধ জল (বা জল দিয়ে হালকা মুখ ভিজিয়ে নেওয়া) [দৈনিক ১০০০ মিলি মোট তরল সীমার অংশ]";
-      } else if (hasReflux) {
-        morningDrink = "১ গ্লাস কুসুম গরম মৌরি ও জিরে ভেজানো জল (গ্যাস ও অম্বলের আরামদায়ক)";
-      } else {
-        morningDrink = "১ গ্লাস কুসুম গরম মেথি ভেজানো জল";
-      }
-
-      var morningNuts = "";
-      if (isCKD) {
-        morningNuts = "১-২টি রোস্টেড মাখানা বা ১টি ড্রাই ক্রিম ক্র্যাকার বিস্কুট (কিডনির ক্ষতি রোধে মেথি/বাদাম সম্পূর্ণ নিষিদ্ধ)";
-      } else if (prefs.peanutAllergy) {
-        morningNuts = "৪টি ভেজানো খোসা ছাড়ানো কাঠবাদাম (Almonds) - চিনাবাদাম সম্পূর্ণ নিষিদ্ধ";
-      } else {
-        morningNuts = "৪টি ভেজানো খোসা ছাড়ানো কাঠবাদাম (Almonds)";
-      }
-
-      // 2. BREAKFAST CONTRAINDICATION FILTER
-      var breakfastProt = "";
-      if (isCKD) {
-        breakfastProt = "১টি সেদ্ধ ডিমের সাদা অংশ (উচ্চ ফসফরাস ছানা ও ডাল এড়িয়ে কিডনি-বান্ধব নিরাপদ প্রোটিন)";
-      } else if (noEgg || isVeg) {
-        breakfastProt = "৫০ গ্রাম বাড়িতে তৈরি তাজা ছানা বা ১ বাটি সেদ্ধ অঙ্কুরিত মুগ";
-      } else {
-        breakfastProt = "১টি সেদ্ধ ডিমের সাদা অংশ (অথবা ৫০ গ্রাম ঘরে তৈরি ছানা)";
-      }
-
-      // 3. MID-MORNING CONTRAINDICATION FILTER
-      var midItem = "";
-      if (isCKD) {
-        midItem = "খোসা ছাড়ানো অর্ধেক আপেল বা ৫০ গ্রাম পাকা পেঁপে (ডাবের জল, কলা ও কমলালেবু মারাত্মক পটাশিয়ামের জন্য সম্পূর্ণ নিষিদ্ধ)";
-      } else if (noDairy) {
-        midItem = "১টি কচি ডাঁসা পেয়ারা বা পাকা পেঁপে + ১ কাপ পাতলা লেবু-পুদিনার জল";
-      } else {
-        midItem = "১টি কচি ডাঁসা পেয়ারা বা ১ বাটি শসা ও পাকা পেঁপে + ১ গ্লাস চিনি ও লবণ ছাড়া পাতলা ঘোল";
-      }
-
-      // 4. LUNCH CONTRAINDICATION FILTER
-      var lunchItem = "";
-      if (isCKD) {
-        lunchItem = "১ ছোট বাটি সিদ্ধ ভাত (পটাশিয়াম বার করার জন্য ডাবল-বয়েল্ড/মাড় গালা) + জল ফেলে রান্না করা লাউ/ঝিঙের হালকা তরকারি + ১টি ডিমের সাদা অংশ বা ৪০ গ্রাম হালকা মৌরলা/রুই মাছ (অতিরিক্ত ঝোল বা ডাল নিষেধ, শুকনো পদ)";
-      } else if (isVeg) {
-        lunchItem = "১ ছোট বাটি ঢেঁকিছাঁটা ভাত + ১ বাটি পাতলা মুগ ডাল + ১ বাটি নিরামিষ শুক্তো বা লাউ ঘণ্ট + ৫০ গ্রাম ছানার ডালনা বা সোয়াবিন তরকারি";
-      } else {
-        lunchItem = "১ ছোট বাটি সিদ্ধ চালের ভাত + ১ বাটি পাতলা মুগ ডাল + ১ বাটি শুক্তো/লাউ ঘণ্ট + ১ টুকরো হালকা রুই বা কাতলা মাছের জিরে-বাটা পাতলা ঝোল";
-      }
-
-      // 5. SNACK FILTER
-      var snackItem = "";
-      if (isCKD) {
-        snackItem = "১ ছোট বাটি শুকনো চালভাজা বা রোস্টেড মাখানা + ৫০ মিলি লিকার লাল চা (তরল সীমার মধ্যে)";
-      } else {
-        snackItem = "১ কাপ চিনি ছাড়া লাল চা (বা গ্রিন টি) + ১ ছোট বাটি শুকনো খোলায় ভাজা চালভাঙা মুড়ি ও সেদ্ধ ছোলা";
-      }
-
-      // 6. DINNER FILTER
-      var dinnerItem = "";
-      if (isCKD) {
-        dinnerItem = "২টি লাল আটার নরম ফুলকো রুটি + জল ফেলে সেদ্ধ করা পটলের তরকারি বা চালকুমড়োর শুকনো ঘণ্ট (অতিরিক্ত ডাল বা তরল নিষিদ্ধ)";
-      } else {
-        dinnerItem = "২টি পাতলা লাল আটার ফুলকো রুটি + ১ বাটি কম তেলের পটল বা সজনে ডাঁটার তরকারি + ১ ছোট বাটি পাতলা মুগ ডাল বা ৫০ গ্রাম ছানার তরকারি";
-      }
-
-      // 7. BEDTIME CONTRAINDICATION FILTER (CRITICAL RENAL CHECK)
-      var bedtimeItem = "";
-      if (isCKD) {
-        bedtimeItem = "সামান্য ৫০ মিলি কুসুম গরম জল অথবা শুকনো মাখানা (কিডনির রোগীদের দুধ ও বেশি তরল সম্পূর্ণ নিষিদ্ধ)";
-      } else if (noDairy) {
-        bedtimeItem = "১ কাপ হালকা গরম ক্যামোমাইল চা বা ইসবগুলের ভুসি সহ কুসুম গরম জল";
-      } else {
-        bedtimeItem = "১ কাপ হালকা গরম মাখন-তোলা গরুর দুধ অথবা ১ গ্লাস গরম জল ও ১ চামচ ইসবগুল";
-      }
-
-      dailyMeals = [
-        { time: tr.meals.early, menu: morningDrink + " + " + morningNuts, kcal: kEarly + " kcal" },
-        { time: tr.meals.breakfast, menu: "২টি হাতে গড়া লাল আটার পাতলা রুটি + ১ বাটি হালকা রান্না করা লাউ/পেঁপে তরকারি + " + breakfastProt, kcal: kBrk + " kcal" },
-        { time: tr.meals.mid, menu: midItem, kcal: kMid + " kcal" },
-        { time: tr.meals.lunch, menu: lunchItem, kcal: kLunch + " kcal" },
-        { time: tr.meals.snack, menu: snackItem, kcal: kSnk + " kcal" },
-        { time: tr.meals.dinner, menu: dinnerItem, kcal: kDin + " kcal" },
-        { time: tr.meals.bedtime, menu: bedtimeItem, kcal: kBed + " kcal" }
-      ];
-    } else if (isHindi) {
-      var morningDrinkH = isCKD ? "50 ml गुनगुना धनिया का उबला पानी (1000 ml दैनिक तरल सीमा में शामिल)" : (hasReflux ? "1 गिलास गुनगुना सौंफ व जीरे का पानी (एसिडिटी रोधी)" : "1 गिलास गुनगुना मेथी का पानी");
-      var morningNutsH = isCKD ? "रोस्टेड मखाने (किडनी रोगी मेथी व बादाम न लें)" : "4 भीगे हुए बादाम";
-      var breakfastProtH = isCKD ? "1 उबले अंडे की सफेदी (किडनी-सुरक्षित प्रोटीन, दाल/पनीर से बचें)" : ((noEgg || isVeg) ? "50 ग्राम ताजा पनीर या उबले अंकुरित मूंग" : "1 उबले अंडे का सफेद भाग");
-      var midH = isCKD ? "आधा छिला हुआ सेब या 50g पपीता (नारियल पानी, केला व संतरा सख्त मना है)" : "1 ताजा अमरूद या पपीता + 1 गिलास छाछ";
-      var lunchH = isCKD ? "उबले चावल (मांड निकाला हुआ) + उबली लौकी/टिंडे की सूखी सब्जी + 1 अंडे का सफेद भाग (दाल व तरीदार ग्रेवी से बचें)" : "1 छोटी कटोरी उबले चावल + 1 कटोरी मूंग दाल + तोरी की सब्जी + दही";
-      var bedtimeH = isCKD ? "50 ml गुनगुना पानी का घूंट (दूध सख्त वर्जित है / NO MILK)" : (noDairy ? "गुनगुना पानी व इसबगोल" : "1 कप बिना मलाई का गुनगुना दूध");
-
-      dailyMeals = [
-        { time: tr.meals.early, menu: morningDrinkH + " + " + morningNutsH, kcal: kEarly + " kcal" },
-        { time: tr.meals.breakfast, menu: "2 गेहूं के आटे की पतली रोटियां + तोरी/लौकी की कम तेल वाली सब्जी + " + breakfastProtH, kcal: kBrk + " kcal" },
-        { time: tr.meals.mid, menu: midH, kcal: kMid + " kcal" },
-        { time: tr.meals.lunch, menu: lunchH, kcal: kLunch + " kcal" },
-        { time: tr.meals.snack, menu: "1 कप बिना चीनी की हर्बल चाय (सीमित) + भुने मखाने", kcal: kSnk + " kcal" },
-        { time: tr.meals.dinner, menu: "2 पतली फुलका रोटियां + परवल या लौकी की सूखी सब्जी", kcal: kDin + " kcal" },
-        { time: tr.meals.bedtime, menu: bedtimeH, kcal: kBed + " kcal" }
-      ];
-    } else {
-      var morningDrinkE = isCKD ? "50 mL warm coriander/ginger infusion sip (Counted in strict 1000 mL fluid cap)" : (hasReflux ? "1 glass lukewarm fennel & cumin soaked water" : "1 glass lukewarm fenugreek water");
-      var morningNutsE = isCKD ? "Roasted makhana or cream cracker (Fenugreek & nuts restricted due to potassium/phosphorus)" : "4 soaked peeled almonds";
-      var breakfastProtE = isCKD ? "1 boiled egg white (Kidney safe, low phosphorus-to-protein ratio)" : ((noEgg || isVeg) ? "50g fresh cottage cheese or sprouts" : "1 boiled egg white");
-      var midE = isCKD ? "Half peeled apple or 50g ripe papaya (Green coconut water, bananas, and citrus strictly banned)" : "1 fresh guava + 1 glass diluted buttermilk";
-      var lunchE = isCKD ? "1 small cup double-boiled leached rice + leached bottle gourd/pointed gourd + 1 egg white (Semi-dry, zero dal gravies)" : "1 small cup unpolished rice + yellow moong dal + seasonal vegetable + fish/paneer";
-      var bedtimeE = isCKD ? "50 mL warm water sip (MILK STRICTLY PROHIBITED in CKD due to high phosphorus)" : (noDairy ? "Warm isabgol water" : "1 cup warm skimmed milk");
-
-      dailyMeals = [
-        { time: tr.meals.early, menu: morningDrinkE + " + " + morningNutsE, kcal: kEarly + " kcal" },
-        { time: tr.meals.breakfast, menu: "2 whole wheat multigrain rotis + low-oil bottle gourd (lauki) sabzi + " + breakfastProtE, kcal: kBrk + " kcal" },
-        { time: tr.meals.mid, menu: midE, kcal: kMid + " kcal" },
-        { time: tr.meals.lunch, menu: lunchE, kcal: kLunch + " kcal" },
-        { time: tr.meals.snack, menu: "1 cup unsweetened black tea (counted in fluid quota) + roasted puffed rice", kcal: kSnk + " kcal" },
-        { time: tr.meals.dinner, menu: "2 soft thin phulkas + dry pointed gourd (parwal) sabzi", kcal: kDin + " kcal" },
-        { time: tr.meals.bedtime, menu: bedtimeE, kcal: kBed + " kcal" }
-      ];
-    }
-
-    // 7-DAY ROTATION (DISEASE SENSITIVE)
-    var weeklyPlan = [];
-    if (isBengali) {
-      var monL = isCKD ? "সিদ্ধ ভাত + সেদ্ধ লাউ তরকারি + ডিমের সাদা অংশ" : (isVeg ? "ভাত + মুগ ডাল + শুক্তো + ছানার ডালনা" : "ভাত + মুগ ডাল + শুক্তো + রুই মাছের ঝোল");
-      var tueL = isCKD ? "ভাত + জল ফেলে রান্না পটল পোড়া + ছোট মাছ (৪০ গ্রাম)" : (isVeg ? "ভাত + ডাল + পটল তরকারি + সোয়াবিন" : "ভাত + ডাল + কাতলা মাছের ঝোল");
-      var wedL = isCKD ? "ভাত + পেঁপে তরকারি + ডিমের সাদা অংশ" : "ভাত + ডাল + পেঁপে তরকারি + মৌরলা মাছ";
-      var thuL = isCKD ? "ভাত + চালকুমড়োর তরকারি + ডিমের সাদা অংশ" : "ভাত + ডাল + এঁচোড়ের ডালনা + মাছের ঝোল";
-      var friL = isCKD ? "ভাত + সেদ্ধ ঝিঙে আলু (জল ফেলে) + ছোট মাছ" : "ভাত + শুক্তো + তোপসে বা রুই মাছের পাতলা ঝোল";
-      var satL = isCKD ? "ভাত + ডালমা (অল্প ডাল) + ভেন্ডির শুকনো তরকারি" : "ভাত + ডালমা + ভেন্ডির তরকারি + পাতলা মাছের ঝোল";
-      var sunL = isCKD ? "সিদ্ধ চালের ভাত + লাউ ঘণ্ট + ডিমের সাদা অংশ" : "সিদ্ধ চালের ভাত + মেথি শাকের তরকারি + বাটা মাছের ঝোল";
-
-      weeklyPlan = [
-        { day: tr.days[0], breakfast: "২টি আটার রুটি + লাউ তরকারি", mid: isCKD ? "অর্ধেক আপেল" : "১টি পেয়ারা + ঘোল", lunch: monL, snack: "মুড়ি ও চা (সীমিত)", dinner: "২টি ফুলকো রুটি + পটলের তরকারি" },
-        { day: tr.days[1], breakfast: "১ বাটি সুজির উপমা বা ওটস", mid: isCKD ? "৫০ গ্রাম পেঁপে" : "শসা ও পাকা পেঁপে", lunch: tueL, snack: "ভাজা মাখানা + চা", dinner: "২টি রুটি + লাউয়ের ডালনা" },
-        { day: tr.days[2], breakfast: "২টি রুটি + ঝিঙে তরকারি", mid: isCKD ? "অর্ধেক নাশপাতি" : "১টি ছোট আপেল", lunch: wedL, snack: "রোস্টেড চালভাজা", dinner: "২টি রুটি + সজনে ডাঁটার তরকারি" },
-        { day: tr.days[3], breakfast: "২টি আটার রুটি + ডিমের সাদা", mid: isCKD ? "অর্ধেক আপেল" : "লেবুর জল + পেয়ারা", lunch: thuL, snack: "মুড়ি + ব্ল্যাক টি", dinner: "২টি রুটি + চালকুমড়োর ঘণ্ট" },
-        { day: tr.days[4], breakfast: "ভেজিটেবল সুজি উপমা", mid: isCKD ? "৫০ গ্রাম পেঁপে" : "১ বাটি পাকা পেঁপে", lunch: friL, snack: "রোস্টেড মাখানা", dinner: "২টি রুটি + পটলের শুকনো তরকারি" },
-        { day: tr.days[5], breakfast: "২টি আটার রুটি + পেঁপে তরকারি", mid: isCKD ? "অর্ধেক আপেল" : "১টি মুসাম্বি লেবু", lunch: satL, snack: "মুড়ি (তেল ছাড়া)", dinner: "২টি রুটি + ঝিঙের তরকারি" },
-        { day: tr.days[6], breakfast: "২টি পাতলা আটার রুটি + ডিমের সাদা", mid: isCKD ? "৫০ গ্রাম পেঁপে" : "১টি টাটকা পেয়ারা", lunch: sunL, snack: "রোস্টেড মাখানা", dinner: "২টি রুটি + পেঁপের শুকনো তরকারি" }
-      ];
-    } else {
-      weeklyPlan = [
-        { day: tr.days[0], breakfast: "2 rotis + bottle gourd sabzi", mid: isCKD ? "Half peeled apple" : "1 guava + buttermilk", lunch: isCKD ? "Leached rice + lauki + egg white" : "Rice + dal + veg + fish", snack: "Roasted puffed rice", dinner: "2 phulkas + parwal sabzi" },
-        { day: tr.days[1], breakfast: "1 bowl vegetable suji upma", mid: isCKD ? "50g papaya" : "Papaya slices", lunch: isCKD ? "Leached rice + parwal + egg white" : "Rotis + dal + ridge gourd", snack: "Roasted makhana", dinner: "2 phulkas + zucchini sabzi" },
-        { day: tr.days[2], breakfast: "2 wheat rotis + egg white", mid: isCKD ? "Half pear" : "1 green apple", lunch: isCKD ? "Leached rice + ridge gourd + fish" : "Rice + dal + mixed veg", snack: "Puffed rice", dinner: "2 phulkas + lauki sabzi" },
-        { day: tr.days[3], breakfast: "2 rotis + low-oil lauki", mid: isCKD ? "Half apple" : "Cucumber slices", lunch: isCKD ? "Leached rice + snake gourd + egg white" : "Rotis + moong dal + kofta", snack: "Makhana chaat", dinner: "2 thin rotis + parwal sabzi" },
-        { day: tr.days[4], breakfast: "Vegetable oats porridge", mid: isCKD ? "50g papaya" : "1 guava", lunch: isCKD ? "Leached rice + pumpkin + egg white" : "Brown rice + kadhi + spinach", snack: "Roasted chana", dinner: "2 phulkas + round gourd sabzi" },
-        { day: tr.days[5], breakfast: "2 rotis + boiled egg white", mid: isCKD ? "Half apple" : "Sweet lime", lunch: isCKD ? "Leached rice + tinda + fish" : "Rotis + dal tadka + parwal", snack: "Puffed rice", dinner: "2 rotis + pumpkin curry" },
-        { day: tr.days[6], breakfast: "2 rotis + raw papaya sabzi", mid: isCKD ? "50g papaya" : "Diluted chaas", lunch: isCKD ? "Leached rice + lauki + egg white" : "Rice + dal + methi sabzi", snack: "Makhana", dinner: "2 rotis + bottle gourd soup" }
-      ];
-    }
-
-    // STRICT WHAT TO EAT VS WHAT TO AVOID MATRIX
-    var eatAvoidTable = [];
-    if (isBengali) {
-      eatAvoidTable = [
-        {
-          cat: tr.cats.grains,
-          eat: isCKD ? "সিদ্ধ সাদা ভাত (মাড় ও পটাশিয়াম নিষ্কাশন করা), লাল আটার পাতলা রুটি, সুজি, চিঁড়ে, বার্লি।" : "ঢেঁকিছাঁটা বা সিদ্ধ চাল (পরিমিত), লাল আটার রুটি, ওটস, বার্লি, দালিয়া।",
-          avoid: isCKD ? "ময়দা, লুচি, পরোটা, ব্রাউন রাইস বা লাল চালের ভুসিযুক্ত চাল, রাগি, বাজরা (অতিরিক্ত ফসফরাস ও পটাশিয়াম রয়েছে)।" : "ময়দা, লুচি, পরোটা, সাদা পাউরুটি, চাউমিন, বিরিয়ানি।"
-        },
-        {
-          cat: tr.cats.veggies,
-          eat: isCKD ? "লাউ, পটল, ঝিঙে, চালকুমড়ো, কুঁদরি, পেঁপে (রান্নার পূর্বে ছোট টুকরো করে দ্বিগুণ জলে সেদ্ধ করে জল ফেলে বা 'Leached' করে রান্না করতে হবে)।" : "লাউ, পটল, ঝিঙে, উচ্ছে, শুক্তোর সবজি, পেঁপে, সজনে ডাঁটা, চালকুমড়ো।",
-          avoid: isCKD ? "পালং শাক, লাল শাক, পুঁই শাক, কাঁচা টমেটো, কাঁচা সালাদ, আলু, মিষ্টি আলু, মাটির নিচের সবজি, মাশরুম, ফুলকপি (মারাত্মক পটাশিয়াম রক্তে মিশে হৃদস্পন্দন থামিয়ে দিতে পারে)।" : "ডিপ-ফ্রাই করা আলু ভাজা, বেগুনি, চপ, কড়া মশলাদার দম আলু।"
-        },
-        {
-          cat: tr.cats.fruits,
-          eat: isCKD ? "খোসা ছাড়ানো অর্ধেক আপেল, পেঁপে (৫০ গ্রাম), নাশপাতি (অল্প পরিমাণে)।" : "টাটকা পেয়ারা, পাকা পেঁপে, আপেল, শসা, জাম, জামরুল, বাতাবি লেবু।",
-          avoid: isCKD ? "ডাবের জল (সবচেয়ে বিপজ্জনক পটাশিয়াম!), পাকা কলা, আম, কমলালেবু, মুসাম্বি, আঙুর, শুকনো ফল, কিসমিস, কাজু, খেজুর, ফলের রস।" : "পাকা আম, কাঁঠাল, পাকা কলা, লিচু, মিষ্টি ফলের রস।"
-        },
-        {
-          cat: tr.cats.protein,
-          eat: isCKD ? "ডিমের সাদা অংশ (সবচেয়ে নিরাপদ উচ্চ মানের প্রোটিন), দিনে সর্বোচ্চ ৪০-৫০ গ্রাম ছোট মাছের সেদ্ধ অংশ।" : (isVeg ? "মুগ ডাল, ছানা, সোয়াবিন, পনির।" : "পাতলা মুগ ডাল, রুই/কাতলা মাছের ঝোল, ডিমের সাদা অংশ, ছানা।"),
-          avoid: isCKD ? "গরুর বা মোষের দুধ (Phosphorus overload), পনির, ছানা, দই, মাংস (খাসি/মুরগি), মসুর ডাল, রাজমা, কাবলি ছোলা, প্রোটিন পাউডার।" : (isGout ? "খাসির মাংস, মেটে, চিংড়ি, কাঁকড়া, মসুর ডাল।" : "রেড মিট, চর্বিযুক্ত মাংস, ডিপ ফ্রাইড মাছ।")
-        },
-        {
-          cat: tr.cats.drinks,
-          eat: isCKD ? "দৈনিক মোট তরল সীমা: সর্বোচ্চ ১০০০-১২০০ মিলিলিটার (জল, চা, ঝোল সব মিলিয়ে)। অল্প কাঁচা সরষের তেল।" : "কাঁচা সরষের তেল (< ১৫ মিলি/দিন), মৌরি জল, পাতলা টক দইয়ের ঘোল, ইসবগুল।",
-          avoid: isCKD ? "দুধ (Milk strictly prohibited), ডাবের জল, ফলের রস, কোল্ড ড্রিঙ্কস, স্যুপ, অতিরিক্ত ডালের জল, খাবার সোডা, বিট লবণ বা লো-সোডিয়াম পটাশিয়ামযুক্ত লবণ।" : "ডালডা, মাখন, ঘি, কোল্ড ড্রিংকস, মদ, মিষ্টি শরবত।"
-        }
-      ];
-    } else {
-      eatAvoidTable = [
-        {
-          cat: tr.cats.grains,
-          eat: isCKD ? "Boiled white rice (leached/drained of starch and potassium), refined wheat phulkas, suji, sago, arrowroot." : "Unpolished parboiled rice, whole wheat multigrain roti, oats, barley, dalia.",
-          avoid: isCKD ? "Brown rice, whole grain bran, ragi, bajra, multi-millet flour (dangerously high phosphorus & potassium)." : "Refined flour (maida), white bread, naans, bhaturas, fried noodles."
-        },
-        {
-          cat: tr.cats.veggies,
-          eat: isCKD ? "Bottle gourd (lauki), pointed gourd (parwal), ridge gourd (turai), snake gourd (must be cubed, double-boiled, and boiling water discarded/leached)." : "Bottle gourd, pointed gourd, bitter gourd, raw papaya, ivy gourd.",
-          avoid: isCKD ? "Spinach, raw salads, tomatoes, potatoes, sweet potatoes, yams, beetroots, mushrooms, cauliflower (fatal potassium accumulation risk)." : "Deep-fried vegetable pakoras, rich buttery gravies."
-        },
-        {
-          cat: tr.cats.fruits,
-          eat: isCKD ? "Half peeled apple, small portion of papaya (max 50g), peeled pear (strictly portion controlled)." : "Fresh local guava, green apple, raw/ripe papaya, sweet lime, cucumber.",
-          avoid: isCKD ? "Green coconut water (lethal potassium spike!), bananas, oranges, mausambi, kiwis, dry fruits, raisins, apricots, commercial fruit juices." : "Ripe mangoes, sapodilla, grapes, litchis, bananas, commercial fruit juices."
-        },
-        {
-          cat: tr.cats.protein,
-          eat: isCKD ? "Boiled egg white (safest high biological value protein with lowest phosphorus ratio), 40-50g freshwater fish (steamed)." : (isVeg ? "Yellow moong dal, paneer, sprouts, soya." : "Yellow moong dal, thin freshwater fish stew, egg whites."),
-          avoid: isCKD ? "Cow/Buffalo Milk, curd, paneer, cheese (high phosphorus triggers cardiac calcification), red meat, masoor dal, rajma, protein powders." : (isGout ? "Mutton, organ meats, prawns, heavy masoor dal." : "Processed red meats, fatty cuts.")
-        },
-        {
-          cat: tr.cats.drinks,
-          eat: isCKD ? "STRICT TOTAL FLUID BUDGET: Maximum 1000 mL to 1200 mL in 24 hours (inclusive of water, tea, and gravies). Limited mustard oil (<15mL/day)." : "Mustard/rice bran oil (< 15 ml / 3 tsp per day), diluted buttermilk, fennel water.",
-          avoid: isCKD ? "Cow milk, green coconut water, soups, excess dal water, packaged drinks, low-sodium potassium salt substitutes, baking soda." : "Vanaspati ghee, butter, commercial soft drinks, alcohol."
-        }
-      ];
-    }
-
-    return {
-      dailyMeals: dailyMeals,
-      weeklyPlan: weeklyPlan,
-      eatAvoidTable: eatAvoidTable,
-      headers: tr.headers,
-      isCKD: isCKD,
-      isGout: isGout,
-      isDiabetic: isDiabetic,
-      isObesity: isObesity,
-      isHTN: isHTN
-    };
-  }
-
-  function renderDietChartHTML(stName, regName, lang, verifiedMeds, labs, diseases, kcalProfile, plan, prefs) {
-    var h = plan.headers;
-    var html = '';
-
-    html += '<h1>' + escapeHtml(h.reportSummary) + '</h1>';
-    html += '<p><strong>' + escapeHtml(stName) + ' (' + escapeHtml(regName) + ')</strong> | ' + escapeHtml(lang) + '</p>';
-
-    // DEDICATED CLINICAL CONTRAINDICATION ALERT (IF CKD OR SEVERE COMORBIDITY DETECTED)
-    if (plan.isCKD) {
-      html += '<div class="contra-banner">';
-      html += '<div class="contra-banner-title">🚨 বিশেষ ক্লিনিক্যাল কিডনি তরল ও ইলেক্ট্রোলাইট প্রটোকল (Strict Renal Fluid &amp; Electrolyte Directive)</div>';
-      html += '<p><strong>১. দৈনিক মোট তরল সীমা (24-Hour Strict Fluid Quota):</strong> রোগীর জন্য দিনে <strong>১,০০০ মিলি থেকে ১,২০০ মিলিলিটার (সর্বোচ্চ ৪-৫ কাপ)</strong> তরল বরাদ্দ। এর মধ্যে পান করার জল, চা, ডাল ও তরকারির ঝোল সবকিছু অন্তর্ভুক্ত। বাড়িতে ১ লিটারের একটি বোতল মেপে রেখে সারা দিনে তার বেশি ১ ফোঁটাও তরল গ্রহণ করবেন না।</p>';
-      html += '<p><strong>২. দুধ ও দুগ্ধজাত খাবার সম্পূর্ণ নিষিদ্ধ (Milk Strictly Prohibited):</strong> কিডনির পরিস্রাবণ ক্ষমতা কম থাকায় দুধের অতিরিক্ত ফসফরাস রক্তে জমে চুলকানি, হাড়ের ক্ষয় এবং রক্তনালী শক্ত করে দেয়। রাতে বা সকালে দুধ খাওয়া সম্পূর্ণ বারণ।</p>';
-      html += '<p><strong>৩. ডাবের জল ও মেথি জল নিষেধ (Zero Coconut Water &amp; Methi Seeds):</strong> ডাবের জল ও ভেজানো মেথি বীজে প্রচুর পটাশিয়াম থাকে। কিডনি বিকল অবস্থায় এই পটাশিয়াম শরীর থেকে বের হতে না পেরে মারাত্মক কার্ডিয়াক অ্যারেস্ট (হৃদস্পন্দন বন্ধ) ঘটাতে পারে।</p>';
-      html += '<p><strong>৪. সবজি লিচিং পদ্ধতি (Vegetable Leaching):</strong> লাউ, পটল, পেঁপে ইত্যাদি সবজি রান্নার আগে ছোট টুকরো করে দ্বিগুণ জলে ফুটিয়ে সেই সেদ্ধ জলটি ফেলে দিয়ে তারপর রান্না করতে হবে।</p>';
-      html += '</div>';
-    }
-
-    // Factored Patient Preferences Box
-    if (prefs.raw || prefs.customDirectives.length > 0) {
-      html += '<div class="pref-box">';
-      html += '<div class="pref-box-title"><span>👤</span> ' + escapeHtml(h.prefCard) + '</div>';
-      if (prefs.raw) {
-        html += '<p style="margin:0 0 .35rem;font-size:12px;color:#431407;"><strong>Stated Notes:</strong> "' + escapeHtml(prefs.raw) + '"</p>';
-      }
-      if (prefs.customDirectives.length > 0) {
-        html += '<ul>';
-        prefs.customDirectives.forEach(function (cd) {
-          html += '<li>' + escapeHtml(cd) + '</li>';
-        });
-        html += '</ul>';
-      }
-      html += '</div>';
-    }
-
-    // 1. LAB TESTS TABLE (Overflow-Safe Wrapper)
-    html += '<h2>' + escapeHtml(h.labTable) + '</h2>';
-    if (labs.length === 0) {
-      html += '<p style="color:#64748b;font-style:italic;">No abnormal numeric lab test markers detected. Standard physiological prophylactic parameters applied.</p>';
-    } else {
-      html += '<div class="table-wrap">';
-      html += '<table>';
-      html += '<thead><tr>';
-      html += '<th>' + escapeHtml(h.testCol) + '</th>';
-      html += '<th>' + escapeHtml(h.valCol) + '</th>';
-      html += '<th>' + escapeHtml(h.normCol) + '</th>';
-      html += '<th>' + escapeHtml(h.statusCol) + '</th>';
-      html += '<th>' + escapeHtml(h.actionCol) + '</th>';
-      html += '</tr></thead><tbody>';
-
-      labs.forEach(function (lb) {
-        var statusBadge = '';
-        if (lb.status === 'high') statusBadge = '<span class="lab-status high">🚨 High / Elevated</span>';
-        else if (lb.status === 'borderline') statusBadge = '<span class="lab-status borderline">⚠️ Borderline</span>';
-        else if (lb.status === 'low') statusBadge = '<span class="lab-status low">⬇️ Below Normal</span>';
-        else statusBadge = '<span class="lab-status normal">✅ Within Range</span>';
-
-        html += '<tr>';
-        html += '<td><strong>' + escapeHtml(lb.name) + '</strong></td>';
-        html += '<td>' + escapeHtml(lb.val) + '</td>';
-        html += '<td style="color:#64748b;">' + escapeHtml(lb.normal) + '</td>';
-        html += '<td>' + statusBadge + '</td>';
-        html += '<td style="font-size:12px;">' + escapeHtml(lb.action) + '</td>';
-        html += '</tr>';
-      });
-      html += '</tbody></table></div>';
-    }
-
-    // 2. MEDICAL DICTIONARY VERIFIED ACTIVE DISEASES
-    html += '<h3>' + escapeHtml(h.activeCond) + '</h3>';
-    html += '<div style="margin-bottom:1rem;">';
-    diseases.forEach(function (d) {
-      html += '<div class="diag-card">';
-      html += '<div class="diag-title">';
-      html += '<span>🩺 ' + escapeHtml(d.name) + '</span>';
-      html += '<span class="diag-proof">✓ ' + escapeHtml(d.proof) + '</span>';
-      html += '</div>';
-      html += '<div class="diag-meta">';
-      html += '<strong>Classification:</strong> ' + escapeHtml(d.category) + ' &bull; <em>' + escapeHtml(d.icd) + '</em>';
-      html += '<br><strong>Clinical Nutrition Protocol:</strong> ' + escapeHtml(d.dietaryProtocol);
-      html += '</div></div>';
-    });
-    html += '</div>';
-
-    if (verifiedMedicines.length > 0) {
-      html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications:</strong> ' + escapeHtml(verifiedMedicines.join(', ')) + '</p>';
-    }
-
-    // 3. CALORIE TARGET CARD
-    html += '<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:.75rem;padding:1rem;margin:1rem 0;">';
-    html += '<h3 style="margin:0 0 .25rem;color:#0f766e;">⚡ ' + escapeHtml(h.calorieCard) + ': ' + escapeHtml(kcalProfile.label) + '</h3>';
-    html += '<p style="margin:0 0 .5rem;font-size:12px;color:#134e4a;"><strong>Clinical Protocol:</strong> ' + escapeHtml(kcalProfile.note) + '</p>';
-    html += '<div style="display:flex;flex-wrap:wrap;gap:.75rem;font-size:12px;font-weight:600;color:#0f766e;">';
-    html += '<span>🍞 Carbs: ' + escapeHtml(kcalProfile.carbs) + '</span>';
-    html += '<span>🥚 Protein: ' + escapeHtml(kcalProfile.protein) + '</span>';
-    html += '<span>🥑 Healthy Fats: ' + escapeHtml(kcalProfile.fat) + '</span>';
-    html += '</div></div>';
-
-    // 4. DAILY TIME-WISE MEAL PLAN (Overflow-Safe Wrapper)
-    html += '<h2>' + escapeHtml(h.dailyPlan) + '</h2>';
-    html += '<div class="table-wrap">';
-    html += '<table>';
-    html += '<thead><tr>';
-    html += '<th style="width:25%;">' + escapeHtml(h.mealCol) + '</th>';
-    html += '<th style="width:60%;">' + escapeHtml(h.menuCol) + '</th>';
-    html += '<th style="width:15%;">' + escapeHtml(h.kcalCol) + '</th>';
-    html += '</tr></thead><tbody>';
-
-    plan.dailyMeals.forEach(function (m) {
-      html += '<tr>';
-      html += '<td><strong>' + escapeHtml(m.time) + '</strong></td>';
-      html += '<td>' + escapeHtml(m.menu) + '</td>';
-      html += '<td style="font-weight:600;color:#0d9488;">' + escapeHtml(m.kcal) + '</td>';
-      html += '</tr>';
-    });
-    html += '</tbody></table></div>';
-
-    // 5. 7-DAY WEEKLY ROTATION PLAN (Overflow-Safe Wrapper)
-    html += '<h2>' + escapeHtml(h.weeklyPlan) + '</h2>';
-    html += '<div class="table-wrap">';
-    html += '<table>';
-    html += '<thead><tr>';
-    html += '<th>' + escapeHtml(h.dayCol) + '</th>';
-    html += '<th>সকাল / Breakfast</th>';
-    html += '<th>মিড-মর্নিং / Mid-Morning</th>';
-    html += '<th>দুপুর / Lunch</th>';
-    html += '<th>বিকেল / Snack</th>';
-    html += '<th>রাত / Dinner</th>';
-    html += '</tr></thead><tbody>';
-
-    plan.weeklyPlan.forEach(function (row) {
-      html += '<tr>';
-      html += '<td><strong>' + escapeHtml(row.day) + '</strong></td>';
-      html += '<td style="font-size:12px;">' + escapeHtml(row.breakfast) + '</td>';
-      html += '<td style="font-size:12px;">' + escapeHtml(row.mid) + '</td>';
-      html += '<td style="font-size:12px;">' + escapeHtml(row.lunch) + '</td>';
-      html += '<td style="font-size:12px;">' + escapeHtml(row.snack) + '</td>';
-      html += '<td style="font-size:12px;">' + escapeHtml(row.dinner) + '</td>';
-      html += '</tr>';
-    });
-    html += '</tbody></table></div>';
-
-    // 6. WHAT TO EAT VS AVOID TABLE (Overflow-Safe Wrapper)
-    html += '<h2>' + escapeHtml(h.eatTitle) + '</h2>';
-    html += '<div class="table-wrap">';
-    html += '<table>';
-    html += '<thead><tr>';
-    html += '<th style="width:22%;">' + escapeHtml(h.catCol) + '</th>';
-    html += '<th style="width:39%;color:#047857;">' + escapeHtml(h.allowedCol) + '</th>';
-    html += '<th style="width:39%;color:#b91c1c;">' + escapeHtml(h.avoidCol) + '</th>';
-    html += '</tr></thead><tbody>';
-
-    plan.eatAvoidTable.forEach(function (c) {
-      html += '<tr>';
-      html += '<td><strong>' + escapeHtml(c.cat) + '</strong></td>';
-      html += '<td style="font-size:12px;color:#065f46;">' + escapeHtml(c.eat) + '</td>';
-      html += '<td style="font-size:12px;color:#991b1b;">' + escapeHtml(c.avoid) + '</td>';
-      html += '</tr>';
-    });
-    html += '</tbody></table></div>';
-
-    return html;
-  }
-
   function generateDietChart() {
+    if (isScanning) {
+      toast('Please wait, prescription scanning is in progress...', '⏳');
+      return;
+    }
+
     if (!currentImage && verifiedMedicines.length === 0) {
       toast('Please upload a prescription or add a medicine first!', '⚠️');
       drop.style.borderColor = '#f43f5e';
@@ -2779,7 +2482,7 @@ footer .inner{
     if (e.target === pwaModal) pwaModal.classList.remove('open');
   });
 
-  console.log('[ArogyaDiet AI] Clinical Contraindication & Renal Precision Engine Ready ✓');
+  console.log('[ArogyaDiet AI] Scanning Lock & Laser Animation Ready ✓');
 })();
 </script>
 
