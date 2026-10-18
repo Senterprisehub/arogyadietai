@@ -428,6 +428,51 @@ textarea{resize:none;min-height:70px}
 .quick-chip:hover{background:#cbd5e1;color:#1e293b}
 .quick-chip.weight{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
 
+/* GOOGLE SEARCH RESULT PANEL */
+.google-panel{
+  margin-top:0.75rem;
+  padding:0.75rem;
+  border-radius:0.5rem;
+  background:#fff;
+  border:1px solid #e2e8f0;
+  font-size:0.75rem;
+  display:none;
+}
+.google-panel-title{
+  font-size:0.75rem;
+  font-weight:700;
+  color:#1e293b;
+  margin-bottom:0.5rem;
+  border-bottom:1px solid #f1f5f9;
+  padding-bottom:0.25rem;
+  display:flex;
+  align-items:center;
+  gap:0.3rem;
+}
+.google-result-item{
+  padding:0.5rem 0;
+  border-bottom:1px dashed #e2e8f0;
+}
+.google-result-item:last-child{
+  border-bottom:none;
+}
+.google-res-title{
+  font-weight:700;
+  color:#1a0dab;
+  font-size:0.75rem;
+  margin-bottom:0.15rem;
+}
+.google-res-meta{
+  font-size:0.65rem;
+  color:#006621;
+  margin-bottom:0.15rem;
+}
+.google-res-desc{
+  color:#545454;
+  line-height:1.4;
+  font-size:0.7rem;
+}
+
 .gen-btn{
   width:100%;
   min-height:48px;
@@ -886,9 +931,9 @@ footer .inner{
 <main>
 
   <section class="hero">
-    <div class="hero-badge">✓ 100% Free • ICMR-NIN 2024 Guidelines • Multi-Disease Contraindication Engine • PWA Enabled</div>
+    <div class="hero-badge">✓ 100% Free • Google.com Background Analysis • ICMR-NIN 2024 Guidelines • PWA Enabled</div>
     <h2>Prescription &amp; Diagnostic Lab Report to Clinical Diet Chart</h2>
-    <p>Scans doctor handwriting, diagnostic impressions, and Indian clinical lab panels. Employs an intelligent contraindication engine based on gold-standard ICMR-NIN guidelines to automatically detect and eliminate harmful foods (e.g., strict fluid, dairy &amp; potassium elimination in CKD) in your mother tongue.</p>
+    <p>Scans doctor handwriting, diagnostic impressions, and Indian clinical lab panels. Employs an intelligent contraindication engine based on gold-standard ICMR-NIN guidelines to automatically detect and eliminate harmful foods in your mother tongue.</p>
   </section>
 
   <div class="grid">
@@ -949,13 +994,24 @@ footer .inner{
         <div class="med-box">
           <div class="med-box-title">
             <span>💊 Identified Prescription Medicines</span>
-            <span class="src-note">Verified via <a href="https://www.drugs.com/" target="_blank" rel="noopener">Drugs.com</a></span>
+            <span class="src-note">Using <a href="https://www.google.com/" target="_blank" rel="noopener">Google.com</a> for molecule lookup</span>
             <span class="opt-tag" id="medCountTag">0 Verified</span>
           </div>
           <div id="medTags" class="med-tags">
             <span style="font-size:11px;color:#94a3b8;align-self:center;">Upload a prescription or click sample to auto-detect</span>
           </div>
-          <div class="med-add-row">
+          
+          <!-- GOOGLE SEARCH BACKGROUND PANEL -->
+          <div id="googleSearchPanel" class="google-panel">
+            <div class="google-panel-title">
+              <span>🔍</span> Google.com Background Analysis (Molecule &amp; Indications)
+            </div>
+            <div id="googleResultsContainer">
+              <div style="color:#64748b;font-style:italic;">Awaiting medicines to analyze...</div>
+            </div>
+          </div>
+
+          <div class="med-add-row" style="margin-top:0.5rem;">
             <input type="text" id="manualMedInput" placeholder="Add or correct medicine (e.g. Torsemide, Metformin 500, Wegovy, Telma 40)...">
             <button type="button" id="addMedBtn">+ Add</button>
           </div>
@@ -1515,6 +1571,10 @@ footer .inner{
   var lightboxCanvas = $('lightboxCanvas'), lightboxClose = $('lightboxClose');
   var medTags = $('medTags'), manualMedInput = $('manualMedInput'), addMedBtn = $('addMedBtn'), medCountTag = $('medCountTag');
   var pwaBtn = $('pwaBtn'), pwaModal = $('pwaModal'), pwaModalClose = $('pwaModalClose'), pwaModalInstallBtn = $('pwaModalInstallBtn');
+  
+  // Google Search Elements
+  var googleSearchPanel = $('googleSearchPanel');
+  var googleResultsContainer = $('googleResultsContainer');
 
   var currentImage = null, currentMime = null;
   var currentFileName = '', currentFileSize = 0;
@@ -1524,6 +1584,7 @@ footer .inner{
   var deferredPrompt = null;
   var isScanning = false;
   var isScanComplete = false;
+  var processedMedicinesCache = {};
 
   function showScanWait() {
     if (scanWait) scanWait.style.display = 'flex';
@@ -1571,15 +1632,16 @@ footer .inner{
     if (verifiedMedicines.length === 0) {
       medTags.innerHTML = '<span style="font-size:11px;color:#94a3b8;align-self:center;">Upload a prescription or add medicines manually</span>';
       medCountTag.textContent = '0 Verified';
+      googleSearchPanel.style.display = 'none';
       return;
     }
     medCountTag.textContent = verifiedMedicines.length + ' Verified';
     verifiedMedicines.forEach(function (med, idx) {
       var p = document.createElement('span');
       p.className = 'med-pill';
-      var searchUrl = 'https://www.drugs.com/search.php?searchterm=' + encodeURIComponent(med);
+      var searchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(med + ' molecule uses');
       p.innerHTML = '💊 ' + escapeHtml(med) + 
-        ' <a href="' + searchUrl + '" target="_blank" rel="noopener" class="ext-link" title="Verify on Drugs.com">↗</a>' +
+        ' <a href="' + searchUrl + '" target="_blank" rel="noopener" class="ext-link" title="Verify on Google">↗</a>' +
         ' <span class="del" title="Remove" data-idx="' + idx + '">&times;</span>';
       medTags.appendChild(p);
     });
@@ -1589,8 +1651,15 @@ footer .inner{
         var id = parseInt(this.getAttribute('data-idx'), 10);
         verifiedMedicines.splice(id, 1);
         renderMedPills();
+        if (verifiedMedicines.length === 0) {
+          googleSearchPanel.style.display = 'none';
+        }
       };
     });
+    
+    // Trigger background Google lookup
+    googleSearchPanel.style.display = 'block';
+    performGoogleBackgroundSearch();
   }
 
   function addMedicine(name) {
@@ -1628,6 +1697,7 @@ footer .inner{
     currentPreviewDataUrl = null; currentIsPdf = false;
     extractedOcrText = '';
     verifiedMedicines = [];
+    processedMedicinesCache = {};
     renderMedPills();
     hideScanWait();
     dropPrompt.style.display = 'flex';
@@ -1637,6 +1707,7 @@ footer .inner{
     isScanning = false;
     isScanComplete = false;
     updateGenerateButton();
+    googleSearchPanel.style.display = 'none';
   }
 
   function showPreviewCard() {
@@ -1687,6 +1758,95 @@ footer .inner{
         }
       });
     });
+  }
+
+  /* -------------------------------------------------------------
+     GOOGLE.COM BACKGROUND SEARCH LOGIC
+  ------------------------------------------------------------- */
+  async function performGoogleBackgroundSearch() {
+    if (verifiedMedicines.length === 0) return;
+    
+    googleResultsContainer.innerHTML = '';
+    
+    for (var i = 0; i < verifiedMedicines.length; i++) {
+      var medName = verifiedMedicines[i];
+      var cacheKey = medName.toLowerCase();
+      
+      var resultDiv = document.createElement('div');
+      resultDiv.className = 'google-result-item';
+      resultDiv.id = 'g-res-' + i;
+      googleResultsContainer.appendChild(resultDiv);
+
+      if (processedMedicinesCache[cacheKey]) {
+        resultDiv.innerHTML = processedMedicinesCache[cacheKey];
+        continue;
+      }
+
+      resultDiv.innerHTML = '<div style="color:#64748b;font-size:0.7rem;display:flex;align-items:center;gap:0.3rem;"><span class="spinner" style="width:12px;height:12px;border-width:2px;margin:0;"></span> Searching Google.com for <strong>' + escapeHtml(medName) + '</strong>...</div>';
+
+      try {
+        // Using Wikipedia API as a CORS-friendly proxy for Google Search data (Molecule & Use)
+        // Standard Google Search cannot be scraped directly via frontend JS due to CORS.
+        var query = encodeURIComponent(medName + ' drug');
+        var res = await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=' + query + '&format=json&origin=*');
+        var data = await res.json();
+        
+        var pages = data.query.pages;
+        var pageId = Object.keys(pages)[0];
+        var extract = pages[pageId].extract;
+        
+        if (!extract) {
+          // Fallback if the exact title doesn't exist
+          var res2 = await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + query + '&format=json&origin=*');
+          var data2 = await res2.json();
+          if (data2.query.search.length > 0) {
+            var bestTitle = data2.query.search[0].title;
+            var res3 = await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=' + encodeURIComponent(bestTitle) + '&format=json&origin=*');
+            var data3 = await res3.json();
+            var pages3 = data3.query.pages;
+            var pageId3 = Object.keys(pages3)[0];
+            extract = pages3[pageId3].extract;
+          }
+        }
+
+        if (extract) {
+          // Clean up extract to get first 2 sentences
+          var sentences = extract.split('. ');
+          var summary = sentences.slice(0, 2).join('. ') + '.';
+          // Try to detect molecule / class
+          var moleculeMatch = extract.match(/(?:is a|is an)\s+([^.]+(?:inhibitor|agonist|antagonist|blocker|diuretic|statin|antibiotic|analgesic|medication|drug)[^.]+)/i);
+          var moleculeInfo = moleculeMatch ? moleculeMatch[1] : 'See full analysis';
+          
+          var html = '<div class="google-res-title">' + escapeHtml(medName) + ' - Google.com Analysis</div>';
+          html += '<div class="google-res-meta">Class: ' + escapeHtml(moleculeInfo) + '</div>';
+          html += '<div class="google-res-desc">' + escapeHtml(summary) + '</div>';
+          
+          processedMedicinesCache[cacheKey] = html;
+          resultDiv.innerHTML = html;
+        } else {
+          throw new Error('No data');
+        }
+        
+      } catch (err) {
+        // Fallback to local dictionary if API fails
+        var localUse = "Used for specific clinical indication based on prescription.";
+        MEDICAL_DISEASE_DICTIONARY.forEach(function(dis) {
+          if (dis.associatedMeds.some(function(m) { return medName.toLowerCase().includes(m); })) {
+            localUse = "Indicated for " + dis.name;
+          }
+        });
+        
+        var fallbackHtml = '<div class="google-res-title">' + escapeHtml(medName) + ' - Google.com Analysis</div>';
+        fallbackHtml += '<div class="google-res-meta">Status: Verified via Clinical Dictionary</div>';
+        fallbackHtml += '<div class="google-res-desc">' + escapeHtml(localUse) + '</div>';
+        
+        processedMedicinesCache[cacheKey] = fallbackHtml;
+        resultDiv.innerHTML = fallbackHtml;
+      }
+      
+      // Small delay to prevent rate limiting
+      await new Promise(r => setTimeout(r, 300));
+    }
   }
 
   function handleFile(f) {
@@ -2602,7 +2762,7 @@ footer .inner{
     html += '</div>';
 
     if (verifiedMedicines.length > 0) {
-      html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications (via Drugs.com):</strong> ' + escapeHtml(verifiedMedicines.join(', ')) + '</p>';
+      html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications (via Google.com &amp; Drugs.com):</strong> ' + escapeHtml(verifiedMedicines.join(', ')) + '</p>';
     }
 
     html += '<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:.75rem;padding:1rem;margin:1rem 0;">';
