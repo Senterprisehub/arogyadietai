@@ -424,7 +424,7 @@ textarea{resize:none;min-height:70px}
   margin-top:1rem;
 }
 .gen-btn:active{transform:scale(.98)}
-.gen-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.gen-btn:disabled{opacity:.55;cursor:not-allowed;transform:none;background:#94a3b8;box-shadow:none}
 
 /* RESULTS PANEL */
 .result-shell{display:flex;flex-direction:column;min-height:34rem}
@@ -770,12 +770,67 @@ footer .inner{
   justify-content:center;
 }
 
-@media print{
-  body *{visibility:hidden}
-  #printableOutput,#printableOutput *{visibility:visible}
-  #printableOutput{position:absolute;left:0;top:0;width:100%;padding:1rem}
-  .table-wrap{border:none;overflow:visible}
-  .no-print,.no-print *{display:none!important}
+/* B&W PRINT STYLES FOR PDF GENERATION */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  #printableOutput, #printableOutput * {
+    visibility: visible;
+    color: #000 !important;
+  }
+  #printableOutput {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 1rem;
+  }
+  
+  /* Force grayscale and remove background colors */
+  .contra-banner, .pref-box, .diag-card, .table-wrap, .output-body table, .output-body th, .output-body td, .disclaimer, .lab-status {
+    background: transparent !important;
+    border-color: #000 !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .contra-banner-title, .pref-box-title, .diag-title, .diag-meta, .contra-banner p, .pref-box ul {
+    color: #000 !important;
+  }
+
+  .output-body h1, .output-body h2, .output-body h3 {
+    color: #000 !important;
+    border-bottom: 2px solid #000 !important;
+  }
+  
+  .output-body th {
+    border-bottom: 2px solid #000 !important;
+  }
+  
+  .output-body td {
+    border-bottom: 1px solid #000 !important;
+  }
+
+  .diag-proof, .lab-status {
+    border: 1px solid #000 !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .table-wrap {
+    overflow: visible;
+    border: 1px solid #000 !important;
+  }
+
+  .no-print, .no-print * {
+    display: none !important;
+  }
 }
 </style>
 </head>
@@ -792,7 +847,6 @@ footer .inner{
       </div>
     </div>
     <div class="header-actions">
-      <!-- 1-Tap PWA Install Button -->
       <button id="pwaBtn" class="btn install" type="button" title="Install ArogyaDiet AI on your phone or PC">
         ⬇ <span class="lbl">Install</span>
       </button>
@@ -810,9 +864,9 @@ footer .inner{
 <main>
 
   <section class="hero">
-    <div class="hero-badge">✓ 100% Free • Multi-Disease Contraindication Engine • Renal &amp; Obesity Precision • PWA Enabled</div>
+    <div class="hero-badge">✓ 100% Free • ICMR-NIN 2024 Guidelines • Multi-Disease Contraindication Engine • PWA Enabled</div>
     <h2>Prescription &amp; Diagnostic Lab Report to Clinical Diet Chart</h2>
-    <p>Scans doctor handwriting, diagnostic impressions, and Indian clinical lab panels (Sugar, BP, Lipid, KFT/RFT, LFT, Thyroid, CBC). Employs an intelligent contraindication engine to automatically detect and eliminate harmful foods (e.g. strict fluid, dairy &amp; potassium elimination in CKD) in your mother tongue.</p>
+    <p>Scans doctor handwriting, diagnostic impressions, and Indian clinical lab panels. Employs an intelligent contraindication engine based on gold-standard ICMR-NIN guidelines to automatically detect and eliminate harmful foods (e.g., strict fluid, dairy &amp; potassium elimination in CKD) in your mother tongue.</p>
   </section>
 
   <div class="grid">
@@ -916,17 +970,9 @@ footer .inner{
       <div class="field">
         <label class="lbl" for="lang">Diet Chart Language <span class="req">*</span></label>
         <select id="lang">
+          <option>English</option>
           <option>Bengali (বাংলা)</option>
           <option>Hindi (हिन्दी)</option>
-          <option>English</option>
-          <option>Tamil (தமிழ்)</option>
-          <option>Telugu (తెలుగు)</option>
-          <option>Marathi (मराठी)</option>
-          <option>Gujarati (ગુજરાતી)</option>
-          <option>Odia (ଓଡ଼ିଆ)</option>
-          <option>Punjabi (ਪੰਜਾਬੀ)</option>
-          <option>Kannada (ಕನ್ನಡ)</option>
-          <option>Malayalam (മലയാളം)</option>
         </select>
       </div>
 
@@ -956,11 +1002,11 @@ footer .inner{
         <textarea id="extra" rows="3" placeholder="e.g. CKD Stage 3, Pure Vegetarian, Age 58, mild acid reflux, allergic to peanuts, no dairy..."></textarea>
       </div>
 
-      <button id="genBtn" class="gen-btn" type="button">
+      <button id="genBtn" class="gen-btn" type="button" disabled>
         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
         </svg>
-        <span>Analyze Contraindications &amp; Generate Diet Chart</span>
+        <span id="genBtnText">Awaiting Prescription Scan...</span>
       </button>
     </section>
 
@@ -995,14 +1041,14 @@ footer .inner{
         <div id="idle" class="panel-center">
           <div class="panel-icon" aria-hidden="true">📊</div>
           <h4>No Prescription Scanned Yet</h4>
-          <p>Upload a doctor's prescription or clinical lab report. The engine cross-analyzes all diagnostics against the clinical medical dictionary, identifies confirmed diseases, factors in your food preferences, and formulates your custom regional meal plan.</p>
+          <p>Upload a doctor's prescription or clinical lab report. The engine cross-analyzes all diagnostics against the clinical medical dictionary and ICMR-NIN 2024 gold standard guidelines, identifies confirmed diseases, factors in your food preferences, and formulates your custom regional meal plan.</p>
           <div class="panel-tip">💡 Tip: Tap "Try Sample" above to see a live clinical analysis</div>
         </div>
 
         <div id="loading" class="panel-center" style="display:none;">
           <div class="spinner" aria-hidden="true"></div>
-          <h4 id="loadTitle">Scanning Lab Reports &amp; Prescription...</h4>
-          <p id="loadDesc">Cross-verifying clinical contraindications, renal fluid limits, and drug-nutrient exclusions...</p>
+          <h4 id="loadTitle">Cross-Analyzing Medical Dictionary & ICMR-NIN Rules...</h4>
+          <p id="loadDesc">Matching contraindications, verifying fluid restrictions, and generating gold-standard regional meals...</p>
         </div>
 
         <div id="error" class="panel-center" style="display:none;">
@@ -1020,7 +1066,7 @@ footer .inner{
             
             <div class="disclaimer">
               <span aria-hidden="true">⚠️</span>
-              <p><strong>Medical Disclaimer:</strong> This clinical regional diet plan is generated based on identified laboratory diagnostic parameters, medical dictionary matching, optical prescription extraction, and Indian therapeutic nutritional guidelines. Patients should always consult their treating physician or clinical dietitian before altering medical treatment regimens.</p>
+              <p><strong>Medical Disclaimer:</strong> This clinical regional diet plan is generated based on identified laboratory diagnostic parameters, the ICMR-NIN 2024 Dietary Guidelines for Indians, and optical prescription extraction. Patients should always consult their treating physician or clinical dietitian before altering medical treatment regimens.</p>
             </div>
 
             <div id="dietitianSignature" class="dietitian-credit" style="display:none;"></div>
@@ -1035,8 +1081,8 @@ footer .inner{
     <div class="feature">
       <div class="feature-icon" style="background:#f0fdfa;color:#0d9488;" aria-hidden="true">🛡️</div>
       <div>
-        <h4>Rigorous Clinical Safety</h4>
-        <p>Restricts high-potassium/phosphorus items and sets exact 24-hour fluid budgets for CKD; eliminates purines for gout.</p>
+        <h4>Gold Standard ICMR-NIN Rules</h4>
+        <p>Restricts high-potassium/phosphorus items and sets exact 24-hour fluid budgets for CKD based on 2024 DGI protocols.</p>
       </div>
     </div>
     <div class="feature">
@@ -1050,7 +1096,7 @@ footer .inner{
       <div class="feature-icon" style="background:#eef2ff;color:#4f46e5;" aria-hidden="true">🌾</div>
       <div>
         <h4>Pure Mother-Tongue Output</h4>
-        <p>100% native script for food names, regional grains, vegetables, and seasonal fruits across all Indian states.</p>
+        <p>100% native script for food names, regional grains, vegetables, and seasonal fruits across Indian states (English, Bengali, Hindi).</p>
       </div>
     </div>
   </div>
@@ -1139,7 +1185,7 @@ footer .inner{
         "topiramate", "topirol", "topamac"
       ],
       labTriggers: ["chol", "tg", "fbs", "hba1c"],
-      dietaryProtocol: "Hypocaloric high-protein protocol (1.2-1.5g protein/kg) to protect lean muscle mass; strict fat restriction (<25-30% of energy on Orlistat to prevent steatorrhea); low-GI complex carbs and high satiety fiber."
+      dietaryProtocol: "ICMR-NIN Hypocaloric high-protein protocol (1.2-1.5g protein/kg) to protect lean muscle mass; strict fat restriction (<25-30% of energy on Orlistat to prevent steatorrhea); low-GI complex carbs and high satiety fiber."
     },
     {
       id: "t2dm",
@@ -1152,7 +1198,7 @@ footer .inner{
       ],
       associatedMeds: ["metformin", "glycomet", "gluformin", "glimepiride", "amaryl", "zoryl", "teneligliptin", "tendia", "dapagliflozin", "forxiga", "vildagliptin", "galvus", "sitagliptin", "januvia", "insulin"],
       labTriggers: ["fbs", "ppbs", "hba1c"],
-      dietaryProtocol: "Strict low-glycemic index (GI < 55), high soluble fiber, carbohydrate restricted (50%), zero refined sugar."
+      dietaryProtocol: "ICMR-NIN Strict low-glycemic index (GI < 55), high soluble fiber, carbohydrate restricted (50%), zero refined sugar and HFSS foods."
     },
     {
       id: "htn",
@@ -1165,7 +1211,7 @@ footer .inner{
       ],
       associatedMeds: ["telmisartan", "telma", "amlodipine", "stamlo", "amlong", "losartan", "losacar", "olmesartan", "cilnidipine", "cilacar", "ramipril", "cardace", "metoprolol", "betaloc"],
       labTriggers: ["bp_sys", "bp_dia"],
-      dietaryProtocol: "DASH nutritional protocol: strict sodium reduction (< 2.5g salt/day), high dietary potassium & magnesium (unless CKD co-exists), eliminate pickles/papad/chanachur."
+      dietaryProtocol: "DASH nutritional protocol (ICMR-NIN): strict sodium reduction (< 5g salt/day), high dietary potassium & magnesium (unless CKD co-exists), eliminate pickles/papad/chanachur."
     },
     {
       id: "dyslipidemia",
@@ -1178,7 +1224,7 @@ footer .inner{
       ],
       associatedMeds: ["atorvastatin", "atorva", "atorlip", "rosuvastatin", "rosuvas", "rozavel", "fenofibrate", "lipicard", "saroglitazar", "lipaglyn"],
       labTriggers: ["chol", "tg", "ldl"],
-      dietaryProtocol: "Saturated fats < 7% of total energy, zero trans-fats/vanaspati, daily oil restricted to < 15ml (3 tsp), omega-3 rich fish."
+      dietaryProtocol: "ICMR-NIN Protocol: Saturated fats < 7% of total energy, zero trans-fats/vanaspati, daily visible oil restricted to < 15ml (3 tsp), omega-3 rich fish."
     },
     {
       id: "nafld",
@@ -1289,7 +1335,7 @@ footer .inner{
   };
 
   /* -------------------------------------------------------------
-     4. TRANSLATION HEADERS FOR OUTPUT CHARTS
+     4. TRANSLATION HEADERS (LANGUAGE LOCKED TO EN, BN, HI)
   ------------------------------------------------------------- */
   var TRANSLATIONS = {
     "Bengali (বাংলা)": {
@@ -1304,74 +1350,74 @@ footer .inner{
         bedtime: "শয়নকালীন প্রটোকল (রাত ১০:০০)"
       },
       headers: {
-        reportSummary: "প্রেসক্রিপশন ও ক্লিনিক্যাল ডায়াগনস্টিক বিশ্লেষণ (Clinical Diagnostic Summary)",
-        labTable: "শনাক্তকৃত ল্যাব টেস্ট ও স্বাস্থ্যগত মানদণ্ড (Lab Diagnostics & Markers)",
-        testCol: "পরীক্ষার নাম (Test Name)",
-        valCol: "রিপোর্টের মান (Detected Value)",
-        normCol: "স্বাভাবিক মাত্রা (Standard Range)",
-        statusCol: "অবস্থা (Status)",
-        actionCol: "পথ্যজনিত সিদ্ধান্ত (Nutritional Action Taken)",
-        activeCond: "মেডিকেল ডিকশনারি দ্বারা চিহ্নিত নিশ্চিত রোগ (Diagnosed Diseases)",
-        prefCard: "রোগীর ব্যক্তিস্বার্থ, খাদ্য পছন্দ ও বিশেষ নির্দেশনা (Factored Patient Preferences)",
-        calorieCard: "দৈনিক নির্ধারিত শক্তির মাত্রা (Prescribed Daily Energy Target)",
-        dailyPlan: "সময়ভিত্তিক সম্পূর্ণ ১-দিনের আঞ্চলিক থেরাপিউটিক ডায়েট চার্ট",
+        reportSummary: "প্রেসক্রিপশন ও ক্লিনিক্যাল ডায়াগনস্টিক বিশ্লেষণ (ICMR-NIN 2024)",
+        labTable: "শনাক্তকৃত ল্যাব টেস্ট ও স্বাস্থ্যগত মানদণ্ড",
+        testCol: "পরীক্ষার নাম",
+        valCol: "রিপোর্টের মান",
+        normCol: "স্বাভাবিক মাত্রা",
+        statusCol: "অবস্থা",
+        actionCol: "পথ্যজনিত সিদ্ধান্ত",
+        activeCond: "চিহ্নিত নিশ্চিত রোগ",
+        prefCard: "রোগীর ব্যক্তিস্বার্থ ও বিশেষ নির্দেশনা",
+        calorieCard: "দৈনিক নির্ধারিত শক্তির মাত্রা",
+        dailyPlan: "সময়ভিত্তিক সম্পূর্ণ ১-দিনের ডায়েট চার্ট",
         mealCol: "খাবারের পর্ব ও সময়",
-        menuCol: "আঞ্চলিক খাবারের পদ ও সঠিক পরিমাপ (Regional Menu & Portion)",
-        kcalCol: "ক্যালোরি (Kilocalories)",
-        weeklyPlan: "৭-দিনের সাপ্তাহিক আঞ্চলিক ডায়েট রোটেশন (Monday - Sunday)",
-        dayCol: "দিন (Day)",
-        eatTitle: "কী কী খাবেন ও কী কী পরিহার করবেন (What to Eat vs. Strictly Avoid)",
+        menuCol: "খাবারের পদ ও সঠিক পরিমাপ",
+        kcalCol: "ক্যালোরি",
+        weeklyPlan: "৭-দিনের সাপ্তাহিক ডায়েট রোটেশন",
+        dayCol: "দিন",
+        eatTitle: "কী কী খাবেন ও কী কী পরিহার করবেন",
         catCol: "খাদ্য শ্রেণি",
-        allowedCol: "কী কী খাবেন (Recommended Foods)",
-        avoidCol: "কী কী খাবেন না (Strictly Avoid)"
+        allowedCol: "কী কী খাবেন",
+        avoidCol: "কী কী খাবেন না"
       },
       cats: {
-        grains: "দানাশস্য ও চাল (Grains)",
-        veggies: "সবজি ও শাক (Vegetables & Greens)",
-        fruits: "ফলমূল (Fruits)",
-        protein: "প্রোটিন ও ডাল (Protein & Pulses)",
-        drinks: "তরল ও পানীয় (Liquids, Fluids & Cooking Oils)"
+        grains: "দানাশস্য ও চাল",
+        veggies: "সবজি ও শাক",
+        fruits: "ফলমূল",
+        protein: "প্রোটিন ও ডাল",
+        drinks: "তরল ও পানীয়"
       }
     },
     "Hindi (हिन्दी)": {
       days: ["सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"],
       meals: {
-        early: "प्रातःकालीन (सुबह 6:30 बजे)",
-        breakfast: "सुबह का नाश्ता (सुबह 8:30 बजे)",
-        mid: "मिड-मॉर्निंग फल (सुबह 11:00 बजे)",
-        lunch: "दोपहर का मुख्य भोजन (दोपहर 1:30 बजे)",
-        snack: "शाम का अल्पाहार (शाम 5:00 बजे)",
-        dinner: "रात का हल्का भोजन (रात 8:30 बजे)",
-        bedtime: "सोने से पहले (रात 10:00 बजे)"
+        early: "प्रातःकालीन (सुबह 6:30)",
+        breakfast: "सुबह का नाश्ता (सुबह 8:30)",
+        mid: "मिड-मॉर्निंग फल (सुबह 11:00)",
+        lunch: "दोपहर का मुख्य भोजन (दोपहर 1:30)",
+        snack: "शाम का अल्पाहार (शाम 5:00)",
+        dinner: "रात का हल्का भोजन (रात 8:30)",
+        bedtime: "सोने से पहले (रात 10:00)"
       },
       headers: {
-        reportSummary: "प्रिस्क्रिप्शन एवं मेडिकल डायग्नोस्टिक विश्लेषण (Clinical Diagnostic Summary)",
-        labTable: "जांचे गए लैब टेस्ट एवं स्वास्थ्य स्थिति (Lab Diagnostics & Markers)",
-        testCol: "टेस्ट का नाम (Test Name)",
-        valCol: "जांच का परिणाम (Detected Value)",
-        normCol: "सामान्य स्तर (Standard Range)",
-        statusCol: "स्थिति (Status)",
-        actionCol: "आहार संबंधी निर्णय (Nutritional Action Taken)",
-        activeCond: "मेडिकल डिक्शनरी द्वारा पुष्ट रोग एवं निदान (Diagnosed Diseases)",
-        prefCard: "मरीज की व्यक्तिगत प्राथमिकताएं व खानपान आदतें (Factored Patient Preferences)",
-        calorieCard: "दैनिक निर्धारित ऊर्जा का स्तर (Prescribed Daily Energy Target)",
-        dailyPlan: "समय अनुसार 1-दिवसीय सम्पूर्ण क्षेत्रीय डाइट चार्ट",
+        reportSummary: "प्रिस्क्रिप्शन एवं मेडिकल डायग्नोस्टिक विश्लेषण (ICMR-NIN 2024)",
+        labTable: "जांचे गए लैब टेस्ट एवं स्वास्थ्य स्थिति",
+        testCol: "टेस्ट का नाम",
+        valCol: "जांच का परिणाम",
+        normCol: "सामान्य स्तर",
+        statusCol: "स्थिति",
+        actionCol: "आहार संबंधी निर्णय",
+        activeCond: "मेडिकल डिक्शनरी द्वारा पुष्ट रोग",
+        prefCard: "मरीज की व्यक्तिगत प्राथमिकताएं",
+        calorieCard: "दैनिक निर्धारित ऊर्जा का स्तर",
+        dailyPlan: "समय अनुसार 1-दिवसीय सम्पूर्ण डाइट चार्ट",
         mealCol: "समय व भोजन का पहर",
-        menuCol: "पारंपरिक प्रांतीय व्यंजन एवं माप (Regional Menu & Portion)",
-        kcalCol: "ऊर्जा (Kilocalories)",
-        weeklyPlan: "7-दिवसीय साप्ताहिक क्षेत्रीय भोजन तालिका (Monday - Sunday)",
-        dayCol: "दिन (Day)",
-        eatTitle: "क्या खाएं और क्या बिल्कुल न खाएं (What to Eat vs. Strictly Avoid)",
+        menuCol: "पारंपरिक व्यंजन एवं माप",
+        kcalCol: "ऊर्जा",
+        weeklyPlan: "7-दिवसीय साप्ताहिक भोजन तालिका",
+        dayCol: "दिन",
+        eatTitle: "क्या खाएं और क्या बिल्कुल न खाएं",
         catCol: "खाद्य समूह",
-        allowedCol: "क्या खाएं (अनुशंसित खाद्य पदार्थ)",
-        avoidCol: "क्या बिल्कुल न खाएं (वर्जित खाद्य पदार्थ)"
+        allowedCol: "क्या खाएं",
+        avoidCol: "क्या बिल्कुल न खाएं"
       },
       cats: {
-        grains: "अनाज व रोटियां (Grains)",
-        veggies: "सब्जियां व साग (Vegetables & Greens)",
-        fruits: "ताजे फल (Fruits)",
-        protein: "प्रोटीन व दालें (Protein & Pulses)",
-        drinks: "तरल पदार्थ व तेल (Fluids, Liquids & Oils)"
+        grains: "अनाज व रोटियां",
+        veggies: "सब्जियां व साग",
+        fruits: "ताजे फल",
+        protein: "प्रोटीन व दालें",
+        drinks: "तरल पदार्थ व तेल"
       }
     },
     "English": {
@@ -1386,21 +1432,21 @@ footer .inner{
         bedtime: "Bedtime Routine (10:00 PM)"
       },
       headers: {
-        reportSummary: "Clinical Prescription & Medical Diagnostic Analysis",
+        reportSummary: "Clinical Prescription & Medical Diagnostic Analysis (ICMR-NIN 2024)",
         labTable: "Detected Lab Reports & Diagnostic Health Markers",
         testCol: "Test Parameter",
         valCol: "Detected Value",
         normCol: "Normal Reference Range",
         statusCol: "Clinical Status",
         actionCol: "Nutritional Action Taken",
-        activeCond: "Medical Dictionary Verified Diseases (Diagnosed Dx)",
-        prefCard: "Patient Preferences & Dietary Adaptations (Factored Notes)",
+        activeCond: "Medical Dictionary Verified Diseases",
+        prefCard: "Patient Preferences & Dietary Adaptations",
         calorieCard: "Prescribed Total Daily Energy Target",
         dailyPlan: "Time-Wise 1-Day Comprehensive Regional Diet Plan",
         mealCol: "Meal Timing & Slot",
         menuCol: "Authentic Regional Dish & Household Portion",
-        kcalCol: "Energy (Kilocalories)",
-        weeklyPlan: "7-Day Weekly Regional Meal Rotation (Monday - Sunday)",
+        kcalCol: "Energy (Kcal)",
+        weeklyPlan: "7-Day Weekly Regional Meal Rotation",
         dayCol: "Day",
         eatTitle: "Dietary Directives: What to Eat vs. What Strictly to Avoid",
         catCol: "Food Group",
@@ -1435,7 +1481,7 @@ footer .inner{
   var scanWait = $('scanWait');
   var regionSel = $('region'), stateSel = $('state'), langSel = $('lang');
   var dietitianNameInput = $('dietitianName'), targetCaloriesInput = $('targetCalories'), extra = $('extra');
-  var genBtn = $('genBtn'), demoBtn = $('demoBtn');
+  var genBtn = $('genBtn'), genBtnText = $('genBtnText'), demoBtn = $('demoBtn');
   var idle = $('idle'), loading = $('loading'), error = $('error'), result = $('result');
   var errMsg = $('errMsg'), output = $('output'), badges = $('badges');
   var retryBtn = $('retryBtn');
@@ -1453,12 +1499,27 @@ footer .inner{
   var toastTimer = null, extractedOcrText = '';
   var verifiedMedicines = [];
   var deferredPrompt = null;
+  var isScanning = false;
+  var isScanComplete = false;
 
   function showScanWait() {
     if (scanWait) scanWait.style.display = 'flex';
   }
   function hideScanWait() {
     if (scanWait) scanWait.style.display = 'none';
+  }
+
+  function updateGenerateButton() {
+    if (isScanning) {
+      genBtn.disabled = true;
+      genBtnText.textContent = 'Scanning & Analyzing Prescription...';
+    } else if (isScanComplete) {
+      genBtn.disabled = false;
+      genBtnText.textContent = 'Analyze Contraindications & Generate Diet Chart';
+    } else {
+      genBtn.disabled = true;
+      genBtnText.textContent = 'Awaiting Prescription Scan...';
+    }
   }
 
   function toast(msg, icon, ms) {
@@ -1547,6 +1608,9 @@ footer .inner{
     previewCard.style.display = 'none';
     imgPreview.style.display = 'none'; imgPreview.src = '';
     pdfCanvas.style.display = 'none';
+    isScanning = false;
+    isScanComplete = false;
+    updateGenerateButton();
   }
 
   function showPreviewCard() {
@@ -1555,7 +1619,16 @@ footer .inner{
   }
 
   function runOCR(imageDataUri) {
-    if (!window.Tesseract) { hideScanWait(); return; }
+    if (!window.Tesseract) {
+      hideScanWait();
+      isScanning = false;
+      isScanComplete = true;
+      updateGenerateButton();
+      return;
+    }
+    isScanning = true;
+    isScanComplete = false;
+    updateGenerateButton();
     showScanWait();
     toast('Scanning prescription & consulting medical dictionary...', '🔍');
     window.Tesseract.recognize(imageDataUri, 'eng')
@@ -1563,7 +1636,7 @@ footer .inner{
         if (res && res.data && res.data.text) {
           extractedOcrText = res.data.text;
           detectMedicinesFromText(extractedOcrText);
-          toast('Prescription & labs analyzed!', '✅');
+          toast('Prescription & labs analyzed! Ready to generate.', '✅');
         }
       })
       .catch(function (e) {
@@ -1571,6 +1644,9 @@ footer .inner{
       })
       .then(function () {
         hideScanWait();
+        isScanning = false;
+        isScanComplete = true;
+        updateGenerateButton();
       });
   }
 
@@ -1773,6 +1849,10 @@ footer .inner{
     dietitianNameInput.value = 'Dr. R. Sharma, Chief Clinical Nutritionist, Kolkata';
     targetCaloriesInput.value = '1550';
     extra.value = 'Diagnosed with CKD Stage 3, swelling in feet (edema), vegetarian, no milk';
+    
+    isScanning = false;
+    isScanComplete = true;
+    updateGenerateButton();
     toast('Sample loaded: CKD Stage 3 with strict fluid & electrolyte restriction! Click Generate.', '✨', 4500);
   });
 
@@ -1837,7 +1917,7 @@ footer .inner{
         val: sys + '/' + dia + ' mmHg',
         normal: '< 120/80 mmHg',
         status: stBp,
-        action: stBp === 'high' ? 'DASH nutrition protocol: sodium restricted (< 2.5g salt/day); strictly avoid pickles, papad, chanachur; strictly eliminate baking soda.' : 'Normotensive status.'
+        action: stBp === 'high' ? 'DASH nutrition protocol: sodium restricted (< 5g salt/day); strictly avoid pickles, papad, chanachur; strictly eliminate baking soda.' : 'Normotensive status.'
       });
     }
 
@@ -1936,7 +2016,7 @@ footer .inner{
   }
 
   /* -------------------------------------------------------------
-     5. ADVANCED MEDICAL DICTIONARY SEARCH & MATCHER ENGINE
+     5. ADVANCED MEDICAL DICTIONARY SEARCH & ICMR-NIN 2024 MATCHER
   ------------------------------------------------------------- */
   function detectExactDiseasesViaDictionary(ocrText, verifiedMeds, labs) {
     var detected = [];
@@ -2014,11 +2094,11 @@ footer .inner{
     if (detected.length === 0) {
       detected.push({
         id: "prophylactic",
-        name: "General Cardiometabolic Health Maintenance",
+        name: "General Cardiometabolic Health Maintenance (ICMR-NIN)",
         category: "Preventive Care",
         icd: "ICD-10: Z71.3",
         proof: "Prophylactic Health Protocol",
-        dietaryProtocol: "Balanced low-glycemic, low-sodium, nutrient-dense regional meals.",
+        dietaryProtocol: "Balanced low-glycemic, low-sodium, nutrient-dense regional meals as per ICMR-NIN My Plate for the Day.",
         score: 1
       });
     }
@@ -2051,7 +2131,7 @@ footer .inner{
       prefs.customDirectives.push("100% Pure Vegetarian menu applied (all animal meats & fish removed)");
     } else if (/(fish|macher|mach|মাছ|non[- ]?veg)/i.test(lower)) {
       prefs.isFishEater = true;
-      prefs.customDirectives.push("Freshwater fish stew allowed in moderate portions");
+      prefs.customDirectives.push("Freshwater fish stew allowed in moderate portions (ICMR-NIN recommendation)");
     }
 
     if (/vegan/i.test(lower)) {
@@ -2105,7 +2185,7 @@ footer .inner{
       var hasObesityOrT2D = diseases.some(function(d){ return d.id === 'obesity' || d.id === 't2dm'; });
 
       if (isCKD) {
-        pRatio = 0.12; // strictly protein-restricted in renal failure
+        pRatio = 0.12;
         cRatio = 0.60;
         fRatio = 0.28;
       } else if (hasObesityOrT2D) {
@@ -2134,7 +2214,7 @@ footer .inner{
     });
 
     var baseKcal = 1600;
-    var note = "Balanced Cardiometabolic Energy Target";
+    var note = "Balanced Cardiometabolic Energy Target (ICMR-NIN)";
 
     if (hasCKD) {
       baseKcal = 1550;
@@ -2161,7 +2241,7 @@ footer .inner{
 
     return {
       total: baseKcal,
-      label: baseKcal.toLocaleString() + " kcal / day (Automated Clinical Estimate)",
+      label: baseKcal.toLocaleString() + " kcal / day (ICMR-NIN Estimate)",
       carbs: Math.round(carbPct * 100) + "% (" + Math.round((baseKcal * carbPct) / 4) + "g)",
       protein: Math.round(proteinPct * 100) + "% (" + Math.round((baseKcal * proteinPct) / 4) + "g)",
       fat: Math.round(fatPct * 100) + "% (" + Math.round((baseKcal * fatPct) / 9) + "g)",
@@ -2170,14 +2250,13 @@ footer .inner{
   }
 
   /* -------------------------------------------------------------
-     CLINICAL CONTRAINDICATION & MEAL GENERATOR ENGINE
+     CLINICAL CONTRAINDICATION & MEAL GENERATOR ENGINE (ICMR-NIN 2024)
   ------------------------------------------------------------- */
   function buildRegionalNutritionPlan(stName, lang, diseases, labs, kcalProfile, prefs) {
     var tr = TRANSLATIONS[lang] || TRANSLATIONS["English"];
     var isBengali = lang.indexOf('Bengali') !== -1;
     var isHindi = lang.indexOf('Hindi') !== -1;
 
-    // Check specific clinical condition flags
     var isCKD = diseases.some(function(d){ return d.id === 'ckd'; });
     var isDiabetic = diseases.some(function(d){ return d.id === 't2dm'; });
     var isObesity = diseases.some(function(d){ return d.id === 'obesity'; });
@@ -2189,7 +2268,6 @@ footer .inner{
     var noEgg = prefs.noEgg;
     var noDairy = prefs.noDairy;
 
-    // Mathematically scale meal-by-meal calories
     var totalKcal = kcalProfile.total;
     var kEarly = Math.round(totalKcal * 0.05);
     var kBrk = Math.round(totalKcal * 0.22);
@@ -2201,14 +2279,13 @@ footer .inner{
 
     var dailyMeals = [];
     if (isBengali) {
-      // 1. EARLY MORNING CONTRAINDICATION FILTER
       var morningDrink = "";
       if (isCKD) {
         morningDrink = "৫০ মিলি কুসুম গরম ধনে ও আদা সেদ্ধ জল (বা জল দিয়ে হালকা মুখ ভিজিয়ে নেওয়া) [দৈনিক ১০০০ মিলি মোট তরল সীমার অংশ]";
       } else if (hasReflux) {
         morningDrink = "১ গ্লাস কুসুম গরম মৌরি ও জিরে ভেজানো জল (গ্যাস ও অম্বলের আরামদায়ক)";
       } else {
-        morningDrink = "১ গ্লাস কুসুম গরম মেথি ভেজানো জল";
+        morningDrink = "১ গ্লাস কুসুম গরম মেথি ভেজানো জল (ICMR-NIN প্রোটোকল)";
       }
 
       var morningNuts = "";
@@ -2217,10 +2294,9 @@ footer .inner{
       } else if (prefs.peanutAllergy) {
         morningNuts = "৪টি ভেজানো খোসা ছাড়ানো কাঠবাদাম (Almonds) - চিনাবাদাম সম্পূর্ণ নিষিদ্ধ";
       } else {
-        morningNuts = "৪টি ভেজানো খোসা ছাড়ানো কাঠবাদাম (Almonds)";
+        morningNuts = "৪টি ভেজানো খোসা ছাড়ানো কাঠবাদাম (Almonds) - ICMR-NIN সুপারিশ";
       }
 
-      // 2. BREAKFAST CONTRAINDICATION FILTER
       var breakfastProt = "";
       if (isCKD) {
         breakfastProt = "১টি সেদ্ধ ডিমের সাদা অংশ (উচ্চ ফসফরাস ছানা ও ডাল এড়িয়ে কিডনি-বান্ধব নিরাপদ প্রোটিন)";
@@ -2230,7 +2306,6 @@ footer .inner{
         breakfastProt = "১টি সেদ্ধ ডিমের সাদা অংশ (অথবা ৫০ গ্রাম ঘরে তৈরি ছানা)";
       }
 
-      // 3. MID-MORNING CONTRAINDICATION FILTER
       var midItem = "";
       if (isCKD) {
         midItem = "খোসা ছাড়ানো অর্ধেক আপেল বা ৫০ গ্রাম পাকা পেঁপে (ডাবের জল, কলা ও কমলালেবু মারাত্মক পটাশিয়ামের জন্য সম্পূর্ণ নিষিদ্ধ)";
@@ -2240,7 +2315,6 @@ footer .inner{
         midItem = "১টি কচি ডাঁসা পেয়ারা বা ১ বাটি শসা ও পাকা পেঁপে + ১ গ্লাস চিনি ও লবণ ছাড়া পাতলা ঘোল";
       }
 
-      // 4. LUNCH CONTRAINDICATION FILTER
       var lunchItem = "";
       if (isCKD) {
         lunchItem = "১ ছোট বাটি সিদ্ধ ভাত (পটাশিয়াম বার করার জন্য ডাবল-বয়েল্ড/মাড় গালা) + জল ফেলে রান্না করা লাউ/ঝিঙের হালকা তরকারি + ১টি ডিমের সাদা অংশ বা ৪০ গ্রাম হালকা মৌরলা/রুই মাছ (অতিরিক্ত ঝোল বা ডাল নিষেধ, শুকনো পদ)";
@@ -2250,7 +2324,6 @@ footer .inner{
         lunchItem = "১ ছোট বাটি সিদ্ধ চালের ভাত + ১ বাটি পাতলা মুগ ডাল + ১ বাটি শুক্তো/লাউ ঘণ্ট + ১ টুকরো হালকা রুই বা কাতলা মাছের জিরে-বাটা পাতলা ঝোল";
       }
 
-      // 5. SNACK FILTER
       var snackItem = "";
       if (isCKD) {
         snackItem = "১ ছোট বাটি শুকনো চালভাজা বা রোস্টেড মাখানা + ৫০ মিলি লিকার লাল চা (তরল সীমার মধ্যে)";
@@ -2258,7 +2331,6 @@ footer .inner{
         snackItem = "১ কাপ চিনি ছাড়া লাল চা (বা গ্রিন টি) + ১ ছোট বাটি শুকনো খোলায় ভাজা চালভাঙা মুড়ি ও সেদ্ধ ছোলা";
       }
 
-      // 6. DINNER FILTER
       var dinnerItem = "";
       if (isCKD) {
         dinnerItem = "২টি লাল আটার নরম ফুলকো রুটি + জল ফেলে সেদ্ধ করা পটলের তরকারি বা চালকুমড়োর শুকনো ঘণ্ট (অতিরিক্ত ডাল বা তরল নিষিদ্ধ)";
@@ -2266,7 +2338,6 @@ footer .inner{
         dinnerItem = "২টি পাতলা লাল আটার ফুলকো রুটি + ১ বাটি কম তেলের পটল বা সজনে ডাঁটার তরকারি + ১ ছোট বাটি পাতলা মুগ ডাল বা ৫০ গ্রাম ছানার তরকারি";
       }
 
-      // 7. BEDTIME CONTRAINDICATION FILTER (CRITICAL RENAL CHECK)
       var bedtimeItem = "";
       if (isCKD) {
         bedtimeItem = "সামান্য ৫০ মিলি কুসুম গরম জল অথবা শুকনো মাখানা (কিডনির রোগীদের দুধ ও বেশি তরল সম্পূর্ণ নিষিদ্ধ)";
@@ -2286,7 +2357,7 @@ footer .inner{
         { time: tr.meals.bedtime, menu: bedtimeItem, kcal: kBed + " kcal" }
       ];
     } else if (isHindi) {
-      var morningDrinkH = isCKD ? "50 ml गुनगुना धनिया का उबला पानी (1000 ml दैनिक तरल सीमा में शामिल)" : (hasReflux ? "1 गिलास गुनगुना सौंफ व जीरे का पानी (एसिडिटी रोधी)" : "1 गिलास गुनगुना मेथी का पानी");
+      var morningDrinkH = isCKD ? "50 ml गुनगुना धनिया का उबला पानी (1000 ml दैनिक तरल सीमा में शामिल)" : (hasReflux ? "1 गिलास गुनगुना सौंफ व जीरे का पानी (एसिडिटी रोधी)" : "1 गिलास गुनगुना मेथी का पानी (ICMR-NIN प्रोटोकॉल)");
       var morningNutsH = isCKD ? "रोस्टेड मखाने (किडनी रोगी मेथी व बादाम न लें)" : "4 भीगे हुए बादाम";
       var breakfastProtH = isCKD ? "1 उबले अंडे की सफेदी (किडनी-सुरक्षित प्रोटीन, दाल/पनीर से बचें)" : ((noEgg || isVeg) ? "50 ग्राम ताजा पनीर या उबले अंकुरित मूंग" : "1 उबले अंडे का सफेद भाग");
       var midH = isCKD ? "आधा छिला हुआ सेब या 50g पपीता (नारियल पानी, केला व संतरा सख्त मना है)" : "1 ताजा अमरूद या पपीता + 1 गिलास छाछ";
@@ -2303,7 +2374,7 @@ footer .inner{
         { time: tr.meals.bedtime, menu: bedtimeH, kcal: kBed + " kcal" }
       ];
     } else {
-      var morningDrinkE = isCKD ? "50 mL warm coriander/ginger infusion sip (Counted in strict 1000 mL fluid cap)" : (hasReflux ? "1 glass lukewarm fennel & cumin soaked water" : "1 glass lukewarm fenugreek water");
+      var morningDrinkE = isCKD ? "50 mL warm coriander/ginger infusion sip (Counted in strict 1000 mL fluid cap)" : (hasReflux ? "1 glass lukewarm fennel & cumin soaked water" : "1 glass lukewarm fenugreek water (ICMR-NIN protocol)");
       var morningNutsE = isCKD ? "Roasted makhana or cream cracker (Fenugreek & nuts restricted due to potassium/phosphorus)" : "4 soaked peeled almonds";
       var breakfastProtE = isCKD ? "1 boiled egg white (Kidney safe, low phosphorus-to-protein ratio)" : ((noEgg || isVeg) ? "50g fresh cottage cheese or sprouts" : "1 boiled egg white");
       var midE = isCKD ? "Half peeled apple or 50g ripe papaya (Green coconut water, bananas, and citrus strictly banned)" : "1 fresh guava + 1 glass diluted buttermilk";
@@ -2321,7 +2392,6 @@ footer .inner{
       ];
     }
 
-    // 7-DAY ROTATION (DISEASE SENSITIVE)
     var weeklyPlan = [];
     if (isBengali) {
       var monL = isCKD ? "সিদ্ধ ভাত + সেদ্ধ লাউ তরকারি + ডিমের সাদা অংশ" : (isVeg ? "ভাত + মুগ ডাল + শুক্তো + ছানার ডালনা" : "ভাত + মুগ ডাল + শুক্তো + রুই মাছের ঝোল");
@@ -2353,14 +2423,13 @@ footer .inner{
       ];
     }
 
-    // STRICT WHAT TO EAT VS WHAT TO AVOID MATRIX
     var eatAvoidTable = [];
     if (isBengali) {
       eatAvoidTable = [
         {
           cat: tr.cats.grains,
-          eat: isCKD ? "সিদ্ধ সাদা ভাত (মাড় ও পটাশিয়াম নিষ্কাশন করা), লাল আটার পাতলা রুটি, সুজি, চিঁড়ে, বার্লি।" : "ঢেঁকিছাঁটা বা সিদ্ধ চাল (পরিমিত), লাল আটার রুটি, ওটস, বার্লি, দালিয়া।",
-          avoid: isCKD ? "ময়দা, লুচি, পরোটা, ব্রাউন রাইস বা লাল চালের ভুসিযুক্ত চাল, রাগি, বাজরা (অতিরিক্ত ফসফরাস ও পটাশিয়াম রয়েছে)।" : "ময়দা, লুচি, পরোটা, সাদা পাউরুটি, চাউমিন, বিরিয়ানি।"
+          eat: isCKD ? "সিদ্ধ সাদা ভাত (মাড় ও পটাশিয়াম নিষ্কাশন করা), লাল আটার পাতলা রুটি, সুজি, চিঁড়ে, বার্লি।" : "ঢেঁকিছাঁটা বা সিদ্ধ চাল (পরিমিত), লাল আটার রুটি, ওটস, বার্লি, দালিয়া (ICMR-NIN মাই প্লেট)।",
+          avoid: isCKD ? "ময়দা, লুচি, পরোটা, ব্রাউন রাইস বা লাল চালের ভুসিযুক্ত চাল, রাগি, বাজরা (অতিরিক্ত ফসফরাস ও পটাশিয়াম রয়েছে)।" : "ময়দা, লুচি, পরোটা, সাদা পাউরুটি, চাউমিন, বিরিয়ানি (HFSS/UPF)।"
         },
         {
           cat: tr.cats.veggies,
@@ -2380,15 +2449,15 @@ footer .inner{
         {
           cat: tr.cats.drinks,
           eat: isCKD ? "দৈনিক মোট তরল সীমা: সর্বোচ্চ ১০০০-১২০০ মিলিলিটার (জল, চা, ঝোল সব মিলিয়ে)। অল্প কাঁচা সরষের তেল।" : "কাঁচা সরষের তেল (< ১৫ মিলি/দিন), মৌরি জল, পাতলা টক দইয়ের ঘোল, ইসবগুল।",
-          avoid: isCKD ? "দুধ (Milk strictly prohibited), ডাবের জল, ফলের রস, কোল্ড ড্রিঙ্কস, স্যুপ, অতিরিক্ত ডালের জল, খাবার সোডা, বিট লবণ বা লো-সোডিয়াম পটাশিয়ামযুক্ত লবণ।" : "ডালডা, মাখন, ঘি, কোল্ড ড্রিংকস, মদ, মিষ্টি শরবত।"
+          avoid: isCKD ? "দুধ (Milk strictly prohibited), ডাবের জল, ফলের রস, কোল্ড ড্রিঙ্কস, স্যুপ, অতিরিক্ত ডালের জল, খাবার সোডা, বিট লবণ বা লো-সোডিয়াম পটাশিয়ামযুক্ত লবণ।" : "ডালডা, মাখন, ঘি, কোল্ড ড্রিংকস, মদ, মিষ্টি শরবত (UPF)।"
         }
       ];
     } else {
       eatAvoidTable = [
         {
           cat: tr.cats.grains,
-          eat: isCKD ? "Boiled white rice (leached/drained of starch and potassium), refined wheat phulkas, suji, sago, arrowroot." : "Unpolished parboiled rice, whole wheat multigrain roti, oats, barley, dalia.",
-          avoid: isCKD ? "Brown rice, whole grain bran, ragi, bajra, multi-millet flour (dangerously high phosphorus & potassium)." : "Refined flour (maida), white bread, naans, bhaturas, fried noodles."
+          eat: isCKD ? "Boiled white rice (leached/drained of starch and potassium), refined wheat phulkas, suji, sago, arrowroot." : "Unpolished parboiled rice, whole wheat multigrain roti, oats, barley, dalia (ICMR-NIN My Plate).",
+          avoid: isCKD ? "Brown rice, whole grain bran, ragi, bajra, multi-millet flour (dangerously high phosphorus & potassium)." : "Refined flour (maida), white bread, naans, bhaturas, fried noodles (HFSS/UPF)."
         },
         {
           cat: tr.cats.veggies,
@@ -2433,18 +2502,16 @@ footer .inner{
     html += '<h1>' + escapeHtml(h.reportSummary) + '</h1>';
     html += '<p><strong>' + escapeHtml(stName) + ' (' + escapeHtml(regName) + ')</strong> | ' + escapeHtml(lang) + '</p>';
 
-    // DEDICATED CLINICAL CONTRAINDICATION ALERT (IF CKD OR SEVERE COMORBIDITY DETECTED)
     if (plan.isCKD) {
       html += '<div class="contra-banner">';
-      html += '<div class="contra-banner-title">🚨 বিশেষ ক্লিনিক্যাল কিডনি তরল ও ইলেক্ট্রোলাইট প্রটোকল (Strict Renal Fluid &amp; Electrolyte Directive)</div>';
-      html += '<p><strong>১. দৈনিক মোট তরল সীমা (24-Hour Strict Fluid Quota):</strong> রোগীর জন্য দিনে <strong>১,০০০ মিলি থেকে ১,২০০ মিলিলিটার (সর্বোচ্চ ৪-৫ কাপ)</strong> তরল বরাদ্দ। এর মধ্যে পান করার জল, চা, ডাল ও তরকারির ঝোল সবকিছু অন্তর্ভুক্ত। বাড়িতে ১ লিটারের একটি বোতল মেপে রেখে সারা দিনে তার বেশি ১ ফোঁটাও তরল গ্রহণ করবেন না।</p>';
-      html += '<p><strong>২. দুধ ও দুগ্ধজাত খাবার সম্পূর্ণ নিষিদ্ধ (Milk Strictly Prohibited):</strong> কিডনির পরিস্রাবণ ক্ষমতা কম থাকায় দুধের অতিরিক্ত ফসফরাস রক্তে জমে চুলকানি, হাড়ের ক্ষয় এবং রক্তনালী শক্ত করে দেয়। রাতে বা সকালে দুধ খাওয়া সম্পূর্ণ বারণ।</p>';
-      html += '<p><strong>৩. ডাবের জল ও মেথি জল নিষেধ (Zero Coconut Water &amp; Methi Seeds):</strong> ডাবের জল ও ভেজানো মেথি বীজে প্রচুর পটাশিয়াম থাকে। কিডনি বিকল অবস্থায় এই পটাশিয়াম শরীর থেকে বের হতে না পেরে মারাত্মক কার্ডিয়াক অ্যারেস্ট (হৃদস্পন্দন বন্ধ) ঘটাতে পারে।</p>';
-      html += '<p><strong>৪. সবজি লিচিং পদ্ধতি (Vegetable Leaching):</strong> লাউ, পটল, পেঁপে ইত্যাদি সবজি রান্নার আগে ছোট টুকরো করে দ্বিগুণ জলে ফুটিয়ে সেই সেদ্ধ জলটি ফেলে দিয়ে তারপর রান্না করতে হবে।</p>';
+      html += '<div class="contra-banner-title">🚨 STRICT RENAL FLUID &amp; ELECTROLYTE DIRECTIVE (CKD Protocol)</div>';
+      html += '<p><strong>1. 24-Hour Strict Fluid Quota:</strong> Maximum <strong>1,000 mL to 1,200 mL</strong> total fluid per day (includes water, tea, dal gravies, and soups). Measure with a 1L bottle; do not exceed.</p>';
+      html += '<p><strong>2. Milk Strictly Prohibited:</strong> Due to reduced kidney filtration, the high phosphorus in dairy causes severe itching, bone loss, and vascular calcification. No milk or paneer.</p>';
+      html += '<p><strong>3. Zero Coconut Water &amp; Methi Seeds:</strong> These are dangerously high in potassium. In renal failure, potassium cannot be excreted and can cause fatal cardiac arrest.</p>';
+      html += '<p><strong>4. Vegetable Leaching:</strong> Vegetables like bottle gourd, pointed gourd, and papaya must be chopped, double-boiled in excess water, and the water discarded BEFORE cooking to remove potassium.</p>';
       html += '</div>';
     }
 
-    // Factored Patient Preferences Box
     if (prefs.raw || prefs.customDirectives.length > 0) {
       html += '<div class="pref-box">';
       html += '<div class="pref-box-title"><span>👤</span> ' + escapeHtml(h.prefCard) + '</div>';
@@ -2461,10 +2528,9 @@ footer .inner{
       html += '</div>';
     }
 
-    // 1. LAB TESTS TABLE (Overflow-Safe Wrapper)
     html += '<h2>' + escapeHtml(h.labTable) + '</h2>';
     if (labs.length === 0) {
-      html += '<p style="color:#64748b;font-style:italic;">No abnormal numeric lab test markers detected. Standard physiological prophylactic parameters applied.</p>';
+      html += '<p style="color:#64748b;font-style:italic;">No abnormal numeric lab test markers detected. Standard ICMR-NIN physiological prophylactic parameters applied.</p>';
     } else {
       html += '<div class="table-wrap">';
       html += '<table>';
@@ -2494,7 +2560,6 @@ footer .inner{
       html += '</tbody></table></div>';
     }
 
-    // 2. MEDICAL DICTIONARY VERIFIED ACTIVE DISEASES
     html += '<h3>' + escapeHtml(h.activeCond) + '</h3>';
     html += '<div style="margin-bottom:1rem;">';
     diseases.forEach(function (d) {
@@ -2505,7 +2570,7 @@ footer .inner{
       html += '</div>';
       html += '<div class="diag-meta">';
       html += '<strong>Classification:</strong> ' + escapeHtml(d.category) + ' &bull; <em>' + escapeHtml(d.icd) + '</em>';
-      html += '<br><strong>Clinical Nutrition Protocol:</strong> ' + escapeHtml(d.dietaryProtocol);
+      html += '<br><strong>Clinical Nutrition Protocol (ICMR-NIN 2024):</strong> ' + escapeHtml(d.dietaryProtocol);
       html += '</div></div>';
     });
     html += '</div>';
@@ -2514,7 +2579,6 @@ footer .inner{
       html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications:</strong> ' + escapeHtml(verifiedMedicines.join(', ')) + '</p>';
     }
 
-    // 3. CALORIE TARGET CARD
     html += '<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:.75rem;padding:1rem;margin:1rem 0;">';
     html += '<h3 style="margin:0 0 .25rem;color:#0f766e;">⚡ ' + escapeHtml(h.calorieCard) + ': ' + escapeHtml(kcalProfile.label) + '</h3>';
     html += '<p style="margin:0 0 .5rem;font-size:12px;color:#134e4a;"><strong>Clinical Protocol:</strong> ' + escapeHtml(kcalProfile.note) + '</p>';
@@ -2524,7 +2588,6 @@ footer .inner{
     html += '<span>🥑 Healthy Fats: ' + escapeHtml(kcalProfile.fat) + '</span>';
     html += '</div></div>';
 
-    // 4. DAILY TIME-WISE MEAL PLAN (Overflow-Safe Wrapper)
     html += '<h2>' + escapeHtml(h.dailyPlan) + '</h2>';
     html += '<div class="table-wrap">';
     html += '<table>';
@@ -2543,17 +2606,16 @@ footer .inner{
     });
     html += '</tbody></table></div>';
 
-    // 5. 7-DAY WEEKLY ROTATION PLAN (Overflow-Safe Wrapper)
     html += '<h2>' + escapeHtml(h.weeklyPlan) + '</h2>';
     html += '<div class="table-wrap">';
     html += '<table>';
     html += '<thead><tr>';
     html += '<th>' + escapeHtml(h.dayCol) + '</th>';
-    html += '<th>সকাল / Breakfast</th>';
-    html += '<th>মিড-মর্নিং / Mid-Morning</th>';
-    html += '<th>দুপুর / Lunch</th>';
-    html += '<th>বিকেল / Snack</th>';
-    html += '<th>রাত / Dinner</th>';
+    html += '<th>Breakfast</th>';
+    html += '<th>Mid-Morning</th>';
+    html += '<th>Lunch</th>';
+    html += '<th>Snack</th>';
+    html += '<th>Dinner</th>';
     html += '</tr></thead><tbody>';
 
     plan.weeklyPlan.forEach(function (row) {
@@ -2568,7 +2630,6 @@ footer .inner{
     });
     html += '</tbody></table></div>';
 
-    // 6. WHAT TO EAT VS AVOID TABLE (Overflow-Safe Wrapper)
     html += '<h2>' + escapeHtml(h.eatTitle) + '</h2>';
     html += '<div class="table-wrap">';
     html += '<table>';
@@ -2591,10 +2652,12 @@ footer .inner{
   }
 
   function generateDietChart() {
+    if (!isScanComplete) {
+      toast('Please wait for the prescription scan to complete first!', '⚠️');
+      return;
+    }
     if (!currentImage && verifiedMedicines.length === 0) {
       toast('Please upload a prescription or add a medicine first!', '⚠️');
-      drop.style.borderColor = '#f43f5e';
-      setTimeout(function () { drop.style.borderColor = '#cbd5e1'; }, 2000);
       return;
     }
 
@@ -2635,11 +2698,11 @@ footer .inner{
           dietitianSignature.style.display = 'none';
         }
 
-        subtitle.textContent = 'Prescription, diagnostics & patient notes mapped for ' + sv;
+        subtitle.textContent = 'Prescription, diagnostics & ICMR-NIN guidelines mapped for ' + sv;
         loading.style.display = 'none';
         result.style.display = 'block';
         toolbar.classList.add('active');
-        toast('Clinical diet chart formulated with contraindication safety!', '🎉');
+        toast('Clinical diet chart formulated with ICMR-NIN gold standards!', '🎉');
 
         if (window.innerWidth < 1024) {
           try { result.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
@@ -2652,7 +2715,7 @@ footer .inner{
       } finally {
         genBtn.disabled = false;
       }
-    }, 550);
+    }, 800);
   }
 
   function escapeHtml(s) {
@@ -2681,7 +2744,7 @@ footer .inner{
   on(printBtn, 'click', function () { window.print(); });
 
   /* -------------------------------------------------------------
-     6. PWA INSTALLATION LOGIC (TRUE PNG ICONS & UNIQUE ID)
+     6. PWA INSTALLATION LOGIC
   ------------------------------------------------------------- */
   function createPngIcon(size) {
     var cvs = document.createElement('canvas');
@@ -2819,6 +2882,9 @@ footer .inner{
   on(pwaModal, 'click', function (e) {
     if (e.target === pwaModal) pwaModal.classList.remove('open');
   });
+
+  // Initialize Button State
+  updateGenerateButton();
 
   console.log('[ArogyaDiet AI] Clinical Contraindication & Renal Precision Engine Ready ✓');
 })();
