@@ -382,7 +382,10 @@ textarea{resize:none;min-height:70px}
 
 /* MEDICINE VERIFIER BOX */
 .med-box{margin-top:0.75rem;padding:0.875rem;border-radius:0.75rem;background:#f8fafc;border:1px solid #e2e8f0}
-.med-box-title{font-size:0.75rem;font-weight:700;color:#334155;margin-bottom:0.5rem;display:flex;align-items:center;justify-content:space-between}
+.med-box-title{font-size:0.75rem;font-weight:700;color:#334155;margin-bottom:0.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.25rem}
+.med-box-title .src-note{font-size:9px;color:#94a3b8;font-weight:400;display:flex;align-items:center;gap:0.25rem}
+.med-box-title .src-note a{color:#0d9488;text-decoration:none}
+.med-box-title .src-note a:hover{text-decoration:underline}
 .med-tags{display:flex;flex-wrap:wrap;gap:0.375rem;margin-bottom:0.5rem;min-height:1.75rem}
 .med-pill{
   display:inline-flex;
@@ -395,6 +398,26 @@ textarea{resize:none;min-height:70px}
   border-radius:9999px;
   font-size:0.6875rem;
   font-weight:600;
+}
+.med-pill .ext-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:1.1rem;
+  height:1.1rem;
+  border-radius:50%;
+  background:#fff;
+  border:1px solid #99f6e4;
+  color:#0d9488;
+  text-decoration:none;
+  font-size:0.6rem;
+  margin-left:0.1rem;
+  transition:all .15s;
+}
+.med-pill .ext-link:hover{
+  background:#0d9488;
+  color:#fff;
+  border-color:#0d9488;
 }
 .med-pill .del{cursor:pointer;font-weight:bold;color:#f43f5e;margin-left:0.125rem}
 .med-add-row{display:flex;gap:0.375rem}
@@ -791,7 +814,6 @@ footer .inner{
     padding: 1rem;
   }
   
-  /* Force grayscale and remove background colors */
   .contra-banner, .pref-box, .diag-card, .table-wrap, .output-body table, .output-body th, .output-body td, .disclaimer, .lab-status {
     background: transparent !important;
     border-color: #000 !important;
@@ -927,6 +949,7 @@ footer .inner{
         <div class="med-box">
           <div class="med-box-title">
             <span>💊 Identified Prescription Medicines</span>
+            <span class="src-note">Verified via <a href="https://www.drugs.com/" target="_blank" rel="noopener">Drugs.com</a></span>
             <span class="opt-tag" id="medCountTag">0 Verified</span>
           </div>
           <div id="medTags" class="med-tags">
@@ -1554,7 +1577,10 @@ footer .inner{
     verifiedMedicines.forEach(function (med, idx) {
       var p = document.createElement('span');
       p.className = 'med-pill';
-      p.innerHTML = '💊 ' + escapeHtml(med) + ' <span class="del" title="Remove" data-idx="' + idx + '">&times;</span>';
+      var searchUrl = 'https://www.drugs.com/search.php?searchterm=' + encodeURIComponent(med);
+      p.innerHTML = '💊 ' + escapeHtml(med) + 
+        ' <a href="' + searchUrl + '" target="_blank" rel="noopener" class="ext-link" title="Verify on Drugs.com">↗</a>' +
+        ' <span class="del" title="Remove" data-idx="' + idx + '">&times;</span>';
       medTags.appendChild(p);
     });
     var dels = medTags.querySelectorAll('.del');
@@ -2576,7 +2602,7 @@ footer .inner{
     html += '</div>';
 
     if (verifiedMedicines.length > 0) {
-      html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications:</strong> ' + escapeHtml(verifiedMedicines.join(', ')) + '</p>';
+      html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications (via Drugs.com):</strong> ' + escapeHtml(verifiedMedicines.join(', ')) + '</p>';
     }
 
     html += '<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:.75rem;padding:1rem;margin:1rem 0;">';
