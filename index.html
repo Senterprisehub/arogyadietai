@@ -431,23 +431,49 @@ textarea{resize:none;min-height:70px}
 /* GOOGLE SEARCH RESULT PANEL */
 .google-panel{
   margin-top:0.75rem;
-  padding:0.75rem;
   border-radius:0.5rem;
   background:#fff;
   border:1px solid #e2e8f0;
   font-size:0.75rem;
   display:none;
+  overflow:hidden;
 }
 .google-panel-title{
   font-size:0.75rem;
   font-weight:700;
   color:#1e293b;
-  margin-bottom:0.5rem;
-  border-bottom:1px solid #f1f5f9;
-  padding-bottom:0.25rem;
+  padding:0.5rem 0.75rem;
   display:flex;
   align-items:center;
-  gap:0.3rem;
+  justify-content:space-between;
+  cursor:pointer;
+  user-select:none;
+  background:#f8fafc;
+  transition:background 0.15s;
+}
+.google-panel-title:hover{
+  background:#f1f5f9;
+}
+.google-panel-title .title-text{
+  display:flex;
+  align-items:center;
+  gap:0.35rem;
+}
+.google-panel-title .toggle-icon{
+  font-size:0.6rem;
+  transition:transform 0.2s;
+  color:#64748b;
+}
+.google-panel.expanded .toggle-icon{
+  transform:rotate(180deg);
+}
+.google-panel-content{
+  display:none;
+  padding:0.5rem 0.75rem;
+  border-top:1px solid #e2e8f0;
+}
+.google-panel.expanded .google-panel-content{
+  display:block;
 }
 .google-result-item{
   padding:0.5rem 0;
@@ -455,6 +481,7 @@ textarea{resize:none;min-height:70px}
 }
 .google-result-item:last-child{
   border-bottom:none;
+  padding-bottom:0;
 }
 .google-res-title{
   font-weight:700;
@@ -1001,13 +1028,18 @@ footer .inner{
             <span style="font-size:11px;color:#94a3b8;align-self:center;">Upload a prescription or click sample to auto-detect</span>
           </div>
           
-          <!-- GOOGLE SEARCH BACKGROUND PANEL -->
+          <!-- GOOGLE SEARCH BACKGROUND PANEL (COLLAPSIBLE) -->
           <div id="googleSearchPanel" class="google-panel">
-            <div class="google-panel-title">
-              <span>🔍</span> Google.com Background Analysis (Molecule &amp; Indications)
+            <div class="google-panel-title" id="googlePanelToggle">
+              <div class="title-text">
+                <span>🔍</span> Google.com Background Analysis (Molecule &amp; Indications)
+              </div>
+              <span class="toggle-icon">▼</span>
             </div>
-            <div id="googleResultsContainer">
-              <div style="color:#64748b;font-style:italic;">Awaiting medicines to analyze...</div>
+            <div class="google-panel-content">
+              <div id="googleResultsContainer">
+                <div style="color:#64748b;font-style:italic;">Awaiting medicines to analyze...</div>
+              </div>
             </div>
           </div>
 
@@ -1575,6 +1607,7 @@ footer .inner{
   // Google Search Elements
   var googleSearchPanel = $('googleSearchPanel');
   var googleResultsContainer = $('googleResultsContainer');
+  var googlePanelToggle = $('googlePanelToggle');
 
   var currentImage = null, currentMime = null;
   var currentFileName = '', currentFileSize = 0;
@@ -1585,6 +1618,10 @@ footer .inner{
   var isScanning = false;
   var isScanComplete = false;
   var processedMedicinesCache = {};
+
+  on(googlePanelToggle, 'click', function() {
+    googleSearchPanel.classList.toggle('expanded');
+  });
 
   function showScanWait() {
     if (scanWait) scanWait.style.display = 'flex';
@@ -1653,12 +1690,16 @@ footer .inner{
         renderMedPills();
         if (verifiedMedicines.length === 0) {
           googleSearchPanel.style.display = 'none';
+          googleSearchPanel.classList.remove('expanded');
         }
       };
     });
     
-    // Trigger background Google lookup
+    // Trigger background Google lookup but keep panel collapsed by default
     googleSearchPanel.style.display = 'block';
+    if (!googleSearchPanel.classList.contains('expanded')) {
+       // It stays collapsed, which is what we want. 
+    }
     performGoogleBackgroundSearch();
   }
 
@@ -1708,6 +1749,7 @@ footer .inner{
     isScanComplete = false;
     updateGenerateButton();
     googleSearchPanel.style.display = 'none';
+    googleSearchPanel.classList.remove('expanded');
   }
 
   function showPreviewCard() {
