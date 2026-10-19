@@ -644,32 +644,6 @@ textarea{resize:none;min-height:70px}
   color:#9f1239;
 }
 
-/* GITHUB LIVE REFERENCE BOX */
-.github-ref-box{
-  background:#f0fdf4;
-  border:1px solid #bbf7d0;
-  border-radius:0.75rem;
-  padding:1rem;
-  margin:1rem 0;
-}
-.github-ref-title{
-  color:#166534;
-  font-weight:700;
-  font-size:0.875rem;
-  display:flex;
-  align-items:center;
-  gap:0.35rem;
-  margin-bottom:0.5rem;
-}
-.github-ref-content{
-  font-size:0.75rem;
-  color:#15803d;
-  line-height:1.5;
-  max-height:15rem;
-  overflow-y:auto;
-  padding-right:0.5rem;
-}
-
 /* RESPONSIVE SCROLL-SAFE TABLE WRAPPER */
 .table-wrap{
   width:100%;
@@ -912,7 +886,7 @@ footer .inner{
     padding: 1rem;
   }
   
-  .contra-banner, .pref-box, .diag-card, .table-wrap, .output-body table, .output-body th, .output-body td, .disclaimer, .lab-status, .github-ref-box {
+  .contra-banner, .pref-box, .diag-card, .table-wrap, .output-body table, .output-body th, .output-body td, .disclaimer, .lab-status {
     background: transparent !important;
     border-color: #000 !important;
     box-shadow: none !important;
@@ -920,7 +894,7 @@ footer .inner{
     print-color-adjust: exact;
   }
   
-  .contra-banner-title, .pref-box-title, .diag-title, .diag-meta, .contra-banner p, .pref-box ul, .github-ref-title, .github-ref-content {
+  .contra-banner-title, .pref-box-title, .diag-title, .diag-meta, .contra-banner p, .pref-box ul {
     color: #000 !important;
   }
 
@@ -1203,7 +1177,7 @@ footer .inner{
             
             <div class="disclaimer">
               <span aria-hidden="true">⚠️</span>
-              <p><strong>Medical Disclaimer:</strong> This clinical regional diet plan is generated based on identified laboratory diagnostic parameters, the ICMR-NIN 2024 Dietary Guidelines for Indians (live-fetched from GitHub), and optical prescription extraction. Patients should always consult their treating physician or clinical dietitian before altering medical treatment regimens.</p>
+              <p><strong>Medical Disclaimer:</strong> This clinical regional diet plan is generated based on identified laboratory diagnostic parameters, the ICMR-NIN 2024 Dietary Guidelines for Indians, and optical prescription extraction. Patients should always consult their treating physician or clinical dietitian before altering medical treatment regimens.</p>
             </div>
 
             <div id="dietitianSignature" class="dietitian-credit" style="display:none;"></div>
@@ -2738,7 +2712,7 @@ footer .inner{
     };
   }
 
-  function renderDietChartHTML(stName, regName, lang, verifiedMeds, labs, diseases, kcalProfile, plan, prefs, liveGuidelines) {
+  function renderDietChartHTML(stName, regName, lang, verifiedMeds, labs, diseases, kcalProfile, plan, prefs) {
     var h = plan.headers;
     var html = '';
 
@@ -2817,16 +2791,6 @@ footer .inner{
       html += '</div></div>';
     });
     html += '</div>';
-
-    if (liveGuidelines && liveGuidelines.length > 0) {
-      html += '<div class="github-ref-box">';
-      html += '<div class="github-ref-title"><span>🌐</span> Live ICMR-NIN 2024 Reference (Fetched from GitHub)</div>';
-      html += '<div class="github-ref-content">';
-      liveGuidelines.forEach(function(gl) {
-        html += '<p style="margin-bottom:0.5rem;">' + escapeHtml(gl) + '</p>';
-      });
-      html += '</div></div>';
-    }
 
     if (verifiedMedicines.length > 0) {
       html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications (via Google.com &amp; Drugs.com):</strong> ' + escapeHtml(verifiedMedicines.join(', ')) + '</p>';
@@ -2931,14 +2895,12 @@ footer .inner{
 
     if (!combinedText) return [];
 
-    // Split into sentences/paragraphs and search for disease keywords
     var paragraphs = combinedText.split(/\n\s*\n/);
     
     paragraphs.forEach(function(p) {
       var lowerP = p.toLowerCase();
       for (var j = 0; j < searchTerms.length; j++) {
         var term = searchTerms[j];
-        // Simple keyword matching for the disease name
         var keyword = term.split(' ')[0]; 
         if (keyword.length > 3 && lowerP.includes(keyword)) {
           if (p.trim().length > 50 && p.trim().length < 500) {
@@ -2950,7 +2912,6 @@ footer .inner{
       }
     });
 
-    // Return top 5 unique matches
     return foundParagraphs.slice(0, 5);
   }
 
@@ -2980,13 +2941,13 @@ footer .inner{
       var parsedLabs = parseAllLabReports(extractedOcrText);
       var activeDiseases = detectExactDiseasesViaDictionary(extractedOcrText, verifiedMedicines, parsedLabs);
       
-      // FETCH LIVE GUIDELINES FROM GITHUB
-      var liveGuidelines = await fetchLiveGuidelines(activeDiseases);
+      // Background fetch (not displayed)
+      await fetchLiveGuidelines(activeDiseases);
       
       var kcalProfile = calculateKcalTarget(activeDiseases, parsedLabs, patientPrefs, docCalories);
       var planData = buildRegionalNutritionPlan(sv, lv, activeDiseases, parsedLabs, kcalProfile, patientPrefs);
 
-      var finalHTML = renderDietChartHTML(sv, rv, lv, verifiedMedicines, parsedLabs, activeDiseases, kcalProfile, planData, patientPrefs, liveGuidelines);
+      var finalHTML = renderDietChartHTML(sv, rv, lv, verifiedMedicines, parsedLabs, activeDiseases, kcalProfile, planData, patientPrefs);
       output.innerHTML = finalHTML;
 
       badges.innerHTML =
@@ -2994,7 +2955,6 @@ footer .inner{
         '<span class="chip blue">🗣️ ' + escapeHtml(lv) + '</span>' +
         '<span class="chip amber">⚡ ' + escapeHtml(kcalProfile.label) + '</span>' +
         (planData.isCKD ? '<span class="chip red">💧 1,000 mL Fluid Budget</span>' : '') +
-        (liveGuidelines.length > 0 ? '<span class="chip green">🌐 Live Guidelines Fetched</span>' : '') +
         '<span class="chip purple">🩺 ' + activeDiseases.length + ' Diseases Verified</span>' +
         '<span class="chip green">🧪 ' + parsedLabs.length + ' Lab Markers Analyzed</span>';
 
