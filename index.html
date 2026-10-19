@@ -644,6 +644,32 @@ textarea{resize:none;min-height:70px}
   color:#9f1239;
 }
 
+/* GITHUB LIVE REFERENCE BOX */
+.github-ref-box{
+  background:#f0fdf4;
+  border:1px solid #bbf7d0;
+  border-radius:0.75rem;
+  padding:1rem;
+  margin:1rem 0;
+}
+.github-ref-title{
+  color:#166534;
+  font-weight:700;
+  font-size:0.875rem;
+  display:flex;
+  align-items:center;
+  gap:0.35rem;
+  margin-bottom:0.5rem;
+}
+.github-ref-content{
+  font-size:0.75rem;
+  color:#15803d;
+  line-height:1.5;
+  max-height:15rem;
+  overflow-y:auto;
+  padding-right:0.5rem;
+}
+
 /* RESPONSIVE SCROLL-SAFE TABLE WRAPPER */
 .table-wrap{
   width:100%;
@@ -886,7 +912,7 @@ footer .inner{
     padding: 1rem;
   }
   
-  .contra-banner, .pref-box, .diag-card, .table-wrap, .output-body table, .output-body th, .output-body td, .disclaimer, .lab-status {
+  .contra-banner, .pref-box, .diag-card, .table-wrap, .output-body table, .output-body th, .output-body td, .disclaimer, .lab-status, .github-ref-box {
     background: transparent !important;
     border-color: #000 !important;
     box-shadow: none !important;
@@ -894,7 +920,7 @@ footer .inner{
     print-color-adjust: exact;
   }
   
-  .contra-banner-title, .pref-box-title, .diag-title, .diag-meta, .contra-banner p, .pref-box ul {
+  .contra-banner-title, .pref-box-title, .diag-title, .diag-meta, .contra-banner p, .pref-box ul, .github-ref-title, .github-ref-content {
     color: #000 !important;
   }
 
@@ -1158,8 +1184,8 @@ footer .inner{
 
         <div id="loading" class="panel-center" style="display:none;">
           <div class="spinner" aria-hidden="true"></div>
-          <h4 id="loadTitle">Cross-Analyzing Medical Dictionary & ICMR-NIN Rules...</h4>
-          <p id="loadDesc">Matching contraindications, verifying fluid restrictions, and generating gold-standard regional meals...</p>
+          <h4 id="loadTitle">Fetching Live Guidelines & Generating Diet Chart...</h4>
+          <p id="loadDesc">Connecting to GitHub for real-time ICMR-NIN reference search, matching contraindications, and building your diet plan...</p>
         </div>
 
         <div id="error" class="panel-center" style="display:none;">
@@ -1177,7 +1203,7 @@ footer .inner{
             
             <div class="disclaimer">
               <span aria-hidden="true">⚠️</span>
-              <p><strong>Medical Disclaimer:</strong> This clinical regional diet plan is generated based on identified laboratory diagnostic parameters, the ICMR-NIN 2024 Dietary Guidelines for Indians, and optical prescription extraction. Patients should always consult their treating physician or clinical dietitian before altering medical treatment regimens.</p>
+              <p><strong>Medical Disclaimer:</strong> This clinical regional diet plan is generated based on identified laboratory diagnostic parameters, the ICMR-NIN 2024 Dietary Guidelines for Indians (live-fetched from GitHub), and optical prescription extraction. Patients should always consult their treating physician or clinical dietitian before altering medical treatment regimens.</p>
             </div>
 
             <div id="dietitianSignature" class="dietitian-credit" style="display:none;"></div>
@@ -1695,11 +1721,7 @@ footer .inner{
       };
     });
     
-    // Trigger background Google lookup but keep panel collapsed by default
     googleSearchPanel.style.display = 'block';
-    if (!googleSearchPanel.classList.contains('expanded')) {
-       // It stays collapsed, which is what we want. 
-    }
     performGoogleBackgroundSearch();
   }
 
@@ -1827,8 +1849,6 @@ footer .inner{
       resultDiv.innerHTML = '<div style="color:#64748b;font-size:0.7rem;display:flex;align-items:center;gap:0.3rem;"><span class="spinner" style="width:12px;height:12px;border-width:2px;margin:0;"></span> Searching Google.com for <strong>' + escapeHtml(medName) + '</strong>...</div>';
 
       try {
-        // Using Wikipedia API as a CORS-friendly proxy for Google Search data (Molecule & Use)
-        // Standard Google Search cannot be scraped directly via frontend JS due to CORS.
         var query = encodeURIComponent(medName + ' drug');
         var res = await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=' + query + '&format=json&origin=*');
         var data = await res.json();
@@ -1838,7 +1858,6 @@ footer .inner{
         var extract = pages[pageId].extract;
         
         if (!extract) {
-          // Fallback if the exact title doesn't exist
           var res2 = await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + query + '&format=json&origin=*');
           var data2 = await res2.json();
           if (data2.query.search.length > 0) {
@@ -1852,10 +1871,8 @@ footer .inner{
         }
 
         if (extract) {
-          // Clean up extract to get first 2 sentences
           var sentences = extract.split('. ');
           var summary = sentences.slice(0, 2).join('. ') + '.';
-          // Try to detect molecule / class
           var moleculeMatch = extract.match(/(?:is a|is an)\s+([^.]+(?:inhibitor|agonist|antagonist|blocker|diuretic|statin|antibiotic|analgesic|medication|drug)[^.]+)/i);
           var moleculeInfo = moleculeMatch ? moleculeMatch[1] : 'See full analysis';
           
@@ -1870,7 +1887,6 @@ footer .inner{
         }
         
       } catch (err) {
-        // Fallback to local dictionary if API fails
         var localUse = "Used for specific clinical indication based on prescription.";
         MEDICAL_DISEASE_DICTIONARY.forEach(function(dis) {
           if (dis.associatedMeds.some(function(m) { return medName.toLowerCase().includes(m); })) {
@@ -1886,7 +1902,6 @@ footer .inner{
         resultDiv.innerHTML = fallbackHtml;
       }
       
-      // Small delay to prevent rate limiting
       await new Promise(r => setTimeout(r, 300));
     }
   }
@@ -2723,7 +2738,7 @@ footer .inner{
     };
   }
 
-  function renderDietChartHTML(stName, regName, lang, verifiedMeds, labs, diseases, kcalProfile, plan, prefs) {
+  function renderDietChartHTML(stName, regName, lang, verifiedMeds, labs, diseases, kcalProfile, plan, prefs, liveGuidelines) {
     var h = plan.headers;
     var html = '';
 
@@ -2803,6 +2818,16 @@ footer .inner{
     });
     html += '</div>';
 
+    if (liveGuidelines && liveGuidelines.length > 0) {
+      html += '<div class="github-ref-box">';
+      html += '<div class="github-ref-title"><span>🌐</span> Live ICMR-NIN 2024 Reference (Fetched from GitHub)</div>';
+      html += '<div class="github-ref-content">';
+      liveGuidelines.forEach(function(gl) {
+        html += '<p style="margin-bottom:0.5rem;">' + escapeHtml(gl) + '</p>';
+      });
+      html += '</div></div>';
+    }
+
     if (verifiedMedicines.length > 0) {
       html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications (via Google.com &amp; Drugs.com):</strong> ' + escapeHtml(verifiedMedicines.join(', ')) + '</p>';
     }
@@ -2879,7 +2904,57 @@ footer .inner{
     return html;
   }
 
-  function generateDietChart() {
+  async function fetchLiveGuidelines(diseases) {
+    var baseUrl = 'https://senterprisehub.github.io/diet_guidlines/';
+    var files = [
+      'DGI_2024_copy.js',
+      'DietaryGuidelines_2024.js',
+      'DietaryGuidelinesforIndians.js',
+      'DietaryGuidelinesforNINwebsite_copy.js'
+    ];
+    
+    var searchTerms = diseases.map(function(d) { return d.name.toLowerCase(); });
+    var combinedText = '';
+    var foundParagraphs = [];
+
+    for (var i = 0; i < files.length; i++) {
+      try {
+        var res = await fetch(baseUrl + files[i]);
+        if (res.ok) {
+          var text = await res.text();
+          combinedText += text + '\n\n';
+        }
+      } catch (e) {
+        console.warn("Could not fetch " + files[i], e);
+      }
+    }
+
+    if (!combinedText) return [];
+
+    // Split into sentences/paragraphs and search for disease keywords
+    var paragraphs = combinedText.split(/\n\s*\n/);
+    
+    paragraphs.forEach(function(p) {
+      var lowerP = p.toLowerCase();
+      for (var j = 0; j < searchTerms.length; j++) {
+        var term = searchTerms[j];
+        // Simple keyword matching for the disease name
+        var keyword = term.split(' ')[0]; 
+        if (keyword.length > 3 && lowerP.includes(keyword)) {
+          if (p.trim().length > 50 && p.trim().length < 500) {
+             if (!foundParagraphs.includes(p.trim())) {
+               foundParagraphs.push(p.trim());
+             }
+          }
+        }
+      }
+    });
+
+    // Return top 5 unique matches
+    return foundParagraphs.slice(0, 5);
+  }
+
+  async function generateDietChart() {
     if (!isScanComplete) {
       toast('Please wait for the prescription scan to complete first!', '⚠️');
       return;
@@ -2900,50 +2975,53 @@ footer .inner{
     genBtn.disabled = true;
     toolbar.classList.remove('active');
 
-    setTimeout(function () {
-      try {
-        var patientPrefs = parsePatientPreferences(extra.value);
-        var parsedLabs = parseAllLabReports(extractedOcrText);
-        var activeDiseases = detectExactDiseasesViaDictionary(extractedOcrText, verifiedMedicines, parsedLabs);
-        var kcalProfile = calculateKcalTarget(activeDiseases, parsedLabs, patientPrefs, docCalories);
-        var planData = buildRegionalNutritionPlan(sv, lv, activeDiseases, parsedLabs, kcalProfile, patientPrefs);
+    try {
+      var patientPrefs = parsePatientPreferences(extra.value);
+      var parsedLabs = parseAllLabReports(extractedOcrText);
+      var activeDiseases = detectExactDiseasesViaDictionary(extractedOcrText, verifiedMedicines, parsedLabs);
+      
+      // FETCH LIVE GUIDELINES FROM GITHUB
+      var liveGuidelines = await fetchLiveGuidelines(activeDiseases);
+      
+      var kcalProfile = calculateKcalTarget(activeDiseases, parsedLabs, patientPrefs, docCalories);
+      var planData = buildRegionalNutritionPlan(sv, lv, activeDiseases, parsedLabs, kcalProfile, patientPrefs);
 
-        var finalHTML = renderDietChartHTML(sv, rv, lv, verifiedMedicines, parsedLabs, activeDiseases, kcalProfile, planData, patientPrefs);
-        output.innerHTML = finalHTML;
+      var finalHTML = renderDietChartHTML(sv, rv, lv, verifiedMedicines, parsedLabs, activeDiseases, kcalProfile, planData, patientPrefs, liveGuidelines);
+      output.innerHTML = finalHTML;
 
-        badges.innerHTML =
-          '<span class="chip teal">📍 ' + escapeHtml(sv) + ' (' + escapeHtml(rv) + ')</span>' +
-          '<span class="chip blue">🗣️ ' + escapeHtml(lv) + '</span>' +
-          '<span class="chip amber">⚡ ' + escapeHtml(kcalProfile.label) + '</span>' +
-          (planData.isCKD ? '<span class="chip red">💧 1,000 mL Fluid Budget</span>' : '') +
-          '<span class="chip purple">🩺 ' + activeDiseases.length + ' Diseases Verified</span>' +
-          '<span class="chip green">🧪 ' + parsedLabs.length + ' Lab Markers Analyzed</span>';
+      badges.innerHTML =
+        '<span class="chip teal">📍 ' + escapeHtml(sv) + ' (' + escapeHtml(rv) + ')</span>' +
+        '<span class="chip blue">🗣️ ' + escapeHtml(lv) + '</span>' +
+        '<span class="chip amber">⚡ ' + escapeHtml(kcalProfile.label) + '</span>' +
+        (planData.isCKD ? '<span class="chip red">💧 1,000 mL Fluid Budget</span>' : '') +
+        (liveGuidelines.length > 0 ? '<span class="chip green">🌐 Live Guidelines Fetched</span>' : '') +
+        '<span class="chip purple">🩺 ' + activeDiseases.length + ' Diseases Verified</span>' +
+        '<span class="chip green">🧪 ' + parsedLabs.length + ' Lab Markers Analyzed</span>';
 
-        if (dietitianName) {
-          dietitianSignature.textContent = 'Clinical Diet Chart customized & formulated by: ' + dietitianName;
-          dietitianSignature.style.display = 'block';
-        } else {
-          dietitianSignature.style.display = 'none';
-        }
-
-        subtitle.textContent = 'Prescription, diagnostics & ICMR-NIN guidelines mapped for ' + sv;
-        loading.style.display = 'none';
-        result.style.display = 'block';
-        toolbar.classList.add('active');
-        toast('Clinical diet chart formulated with ICMR-NIN gold standards!', '🎉');
-
-        if (window.innerWidth < 1024) {
-          try { result.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
-        }
-      } catch (err) {
-        console.error(err);
-        loading.style.display = 'none';
-        errMsg.textContent = 'Error during clinical formulation: ' + (err.message || 'unknown');
-        error.style.display = 'block';
-      } finally {
-        genBtn.disabled = false;
+      if (dietitianName) {
+        dietitianSignature.textContent = 'Clinical Diet Chart customized & formulated by: ' + dietitianName;
+        dietitianSignature.style.display = 'block';
+      } else {
+        dietitianSignature.style.display = 'none';
       }
-    }, 800);
+
+      subtitle.textContent = 'Prescription, diagnostics & ICMR-NIN guidelines mapped for ' + sv;
+      loading.style.display = 'none';
+      result.style.display = 'block';
+      toolbar.classList.add('active');
+      toast('Clinical diet chart formulated with ICMR-NIN gold standards!', '🎉');
+
+      if (window.innerWidth < 1024) {
+        try { result.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+      }
+    } catch (err) {
+      console.error(err);
+      loading.style.display = 'none';
+      errMsg.textContent = 'Error during clinical formulation: ' + (err.message || 'unknown');
+      error.style.display = 'block';
+    } finally {
+      genBtn.disabled = false;
+    }
   }
 
   function escapeHtml(s) {
