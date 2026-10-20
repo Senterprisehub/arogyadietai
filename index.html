@@ -2875,11 +2875,32 @@ footer .inner{
 
   async function fetchLiveGuidelines(diseases) {
     var baseUrl = 'https://senterprisehub.github.io/diet_guidlines/';
-    var files = [
-      'DGI_2024_copy.pdf',
-      'DietaryGuidelinesforNINwebsite_copy.pdf'
-    ];
+    var apiUrl = 'https://api.github.com/repos/Senterprisehub/diet_guidlines/contents/';
+    var files = [];
     
+    // 1. Try to dynamically fetch the list of files from the GitHub API
+    try {
+      var apiRes = await fetch(apiUrl);
+      if (apiRes.ok) {
+        var contents = await apiRes.json();
+        // Filter only for PDF files
+        files = contents
+          .filter(item => item.type === 'file' && item.name.toLowerCase().endsWith('.pdf'))
+          .map(item => item.name);
+      } else {
+        throw new Error("GitHub API limit reached or unavailable.");
+      }
+    } catch (e) {
+      console.warn("GitHub API Auto-Discovery failed. Using fallback hardcoded filenames.", e);
+      // Fallback to the known files if API fails (e.g., rate limit)
+      files = [
+        'DGI_2024_copy.pdf',
+        'DietaryGuidelinesforNINwebsite_copy.pdf'
+      ];
+    }
+
+    if (files.length === 0) return [];
+
     var searchTerms = diseases.map(function(d) { return d.name.toLowerCase(); });
     var combinedText = '';
     var foundParagraphs = [];
