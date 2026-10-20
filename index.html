@@ -1260,6 +1260,11 @@ footer .inner{
 (function () {
   'use strict';
 
+  // Set up PDF.js worker for background parsing
+  if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
   /* -------------------------------------------------------------
      1. COMPREHENSIVE CLINICAL MEDICAL DICTIONARY & ONTOLOGY
   ------------------------------------------------------------- */
@@ -2871,10 +2876,8 @@ footer .inner{
   async function fetchLiveGuidelines(diseases) {
     var baseUrl = 'https://senterprisehub.github.io/diet_guidlines/';
     var files = [
-      'DGI_2024_copy.js',
-      'DietaryGuidelines_2024.js',
-      'DietaryGuidelinesforIndians.js',
-      'DietaryGuidelinesforNINwebsite_copy.js'
+      'DGI_2024_copy.pdf',
+      'DietaryGuidelinesforNINwebsite_copy.pdf'
     ];
     
     var searchTerms = diseases.map(function(d) { return d.name.toLowerCase(); });
@@ -2883,13 +2886,17 @@ footer .inner{
 
     for (var i = 0; i < files.length; i++) {
       try {
-        var res = await fetch(baseUrl + files[i]);
-        if (res.ok) {
-          var text = await res.text();
-          combinedText += text + '\n\n';
+        var pdf = await pdfjsLib.getDocument(baseUrl + files[i]).promise;
+        var numPages = Math.min(pdf.numPages, 15); // Limit to first 15 pages to prevent freezing
+        
+        for (var p = 1; p <= numPages; p++) {
+          var page = await pdf.getPage(p);
+          var textContent = await page.getTextContent();
+          var pageText = textContent.items.map(item => item.str).join(' ');
+          combinedText += pageText + '\n\n';
         }
       } catch (e) {
-        console.warn("Could not fetch " + files[i], e);
+        console.warn("Could not fetch/parse PDF: " + files[i], e);
       }
     }
 
@@ -2911,6 +2918,13 @@ footer .inner{
         }
       }
     });
+
+    // Log the findings to console for verification (not displayed in UI)
+    if (foundParagraphs.length > 0) {
+      console.log("Live Guidelines Search Results (from GitHub PDFs):", foundParagraphs);
+    } else {
+      console.log("Live Guidelines Search: No specific matches found in the first 15 pages of the PDFs.");
+    }
 
     return foundParagraphs.slice(0, 5);
   }
@@ -2941,7 +2955,7 @@ footer .inner{
       var parsedLabs = parseAllLabReports(extractedOcrText);
       var activeDiseases = detectExactDiseasesViaDictionary(extractedOcrText, verifiedMedicines, parsedLabs);
       
-      // Background fetch (not displayed)
+      // Background fetch from GitHub PDFs (silent)
       await fetchLiveGuidelines(activeDiseases);
       
       var kcalProfile = calculateKcalTarget(activeDiseases, parsedLabs, patientPrefs, docCalories);
