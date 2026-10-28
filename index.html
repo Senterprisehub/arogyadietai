@@ -3191,38 +3191,45 @@ footer .inner{
 })();
 </script>
 
-<!-- Global Visitor Counter -->
+<!-- Global Visitor Counter (Abacus - free, no API key) -->
 <script>
   (function () {
-    const NS = 'arogyadiet-ai-official', KEY = 'visits';
-    const BASE = 'https://api.counterapi.dev/v1/' + NS + '/' + KEY;
+    const NS = 'senterprisehub-arogyadietai';   // unique namespace for this site
+    const KEY = 'visits';
+    const START_FROM = 0;                        // optional: add an offset (e.g. your old total) to the displayed number
+    const API = 'https://abacus.jasoncameron.dev';
     const el = document.getElementById('visitor-count');
     if (!el) return;
 
-    const pick = d => Number(d && (d.count !== undefined ? d.count : (d.value !== undefined ? d.value : (d.data && d.data.up_count))));
     const show = n => {
+      n = Number(n);
       if (isFinite(n) && n >= 0) {
-        el.textContent = n.toLocaleString('en-IN');
+        el.textContent = (n + START_FROM).toLocaleString('en-IN');
         try { localStorage.setItem('arogya_vc', String(n)); } catch (e) {}
       }
     };
-    const call = path => fetch(BASE + path, { cache: 'no-store' })
-      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(pick);
+    const call = path => fetch(API + path, { cache: 'no-store' })
+      .then(r => {
+        if (r.status === 404) return { value: 0 };           // counter not created yet
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(d => d.value);
 
     // Show last known total instantly
-    try { const c = Number(localStorage.getItem('arogya_vc')); if (c) show(c); } catch (e) {}
+    try { const c = localStorage.getItem('arogya_vc'); if (c !== null) show(c); } catch (e) {}
 
-    // +1 once per browser session (not on every refresh), else just read
+    // +1 once per browser session; otherwise just read the shared total
     let counted = false;
     try { counted = sessionStorage.getItem('arogya_counted') === '1'; } catch (e) {}
 
-    call(counted ? '' : '/up')
+    const base = '/' + encodeURIComponent(NS) + '/' + encodeURIComponent(KEY);
+    call((counted ? '/get' : '/hit') + base)
       .then(n => { show(n); try { sessionStorage.setItem('arogya_counted', '1'); } catch (e) {} })
-      .catch(() => call('').then(show).catch(() => { if (el.textContent === 'Loading...') el.textContent = '—'; }));
+      .catch(() => call('/get' + base).then(show).catch(() => { if (el.textContent === 'Loading...') el.textContent = '—'; }));
 
-    // Live refresh so everyone sees the shared total
-    setInterval(() => { if (!document.hidden) call('').then(show).catch(() => {}); }, 30000);
+    // Live refresh so everyone sees the updated shared total
+    setInterval(() => { if (!document.hidden) call('/get' + base).then(show).catch(() => {}); }, 20000);
   })();
 </script>
 
