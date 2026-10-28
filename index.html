@@ -428,7 +428,7 @@ textarea{resize:none;min-height:70px}
 .quick-chip:hover{background:#cbd5e1;color:#1e293b}
 .quick-chip.weight{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
 
-/* GOOGLE SEARCH RESULT PANEL */
+/* WEB SEARCH RESULT PANEL */
 .google-panel{
   margin-top:0.75rem;
   border-radius:0.5rem;
@@ -958,9 +958,9 @@ footer .inner{
 <main>
 
   <section class="hero">
-    <div class="hero-badge">✓ 100% Free • Google.com Background Analysis • ICMR-NIN 2024 Guidelines • PWA Enabled</div>
+    <div class="hero-badge">✓ 100% Free • Fuzzy Logic Handwriting Engine • Web Search Integration • ICMR-NIN 2024</div>
     <h2>Prescription &amp; Diagnostic Lab Report to Clinical Diet Chart</h2>
-    <p>Scans doctor handwriting, diagnostic impressions, and Indian clinical lab panels. Employs an intelligent contraindication engine based on gold-standard ICMR-NIN guidelines to automatically detect and eliminate harmful foods in your mother tongue.</p>
+    <p>Scans doctor handwriting using advanced fuzzy-logic OCR correction, pulls live Web Search analysis for identified brands, cross-checks diagnostics against clinical medical guidelines, and automatically detects harmful foods to generate a highly safe regional diet plan.</p>
   </section>
 
   <div class="grid">
@@ -1013,7 +1013,7 @@ footer .inner{
         <!-- SCAN WAITING NOTICE -->
         <div id="scanWait">
           <span class="sw-icon" aria-hidden="true">⏳</span>
-          <span>Please wait until the scan is complete...</span>
+          <span>Reading handwriting via Fuzzy Logic & Searching Web...</span>
         </div>
       </div>
 
@@ -1021,18 +1021,18 @@ footer .inner{
         <div class="med-box">
           <div class="med-box-title">
             <span>💊 Identified Prescription Medicines</span>
-            <span class="src-note">Using <a href="https://www.google.com/" target="_blank" rel="noopener">Google.com</a> for molecule lookup</span>
+            <span class="src-note">Live Web Search (Uses & Dosages)</span>
             <span class="opt-tag" id="medCountTag">0 Verified</span>
           </div>
           <div id="medTags" class="med-tags">
             <span style="font-size:11px;color:#94a3b8;align-self:center;">Upload a prescription or click sample to auto-detect</span>
           </div>
           
-          <!-- GOOGLE SEARCH BACKGROUND PANEL (COLLAPSIBLE) -->
+          <!-- WEB SEARCH BACKGROUND PANEL (COLLAPSIBLE) -->
           <div id="googleSearchPanel" class="google-panel">
             <div class="google-panel-title" id="googlePanelToggle">
               <div class="title-text">
-                <span>🔍</span> Google.com Background Analysis (Molecule &amp; Indications)
+                <span>🌐</span> Web Search Analysis (Uses & Dosages)
               </div>
               <span class="toggle-icon">▼</span>
             </div>
@@ -1152,14 +1152,14 @@ footer .inner{
         <div id="idle" class="panel-center">
           <div class="panel-icon" aria-hidden="true">📊</div>
           <h4>No Prescription Scanned Yet</h4>
-          <p>Upload a doctor's prescription or clinical lab report. The engine cross-analyzes all diagnostics against the clinical medical dictionary and ICMR-NIN 2024 gold standard guidelines, identifies confirmed diseases, factors in your food preferences, and formulates your custom regional meal plan.</p>
+          <p>Upload a doctor's prescription or clinical lab report. The engine cross-analyzes all diagnostics using Fuzzy-Logic OCR, verifies brands via live Web Search, checks the medical dictionary, and formulates your custom regional meal plan.</p>
           <div class="panel-tip">💡 Tip: Tap "Try Sample" above to see a live clinical analysis</div>
         </div>
 
         <div id="loading" class="panel-center" style="display:none;">
           <div class="spinner" aria-hidden="true"></div>
-          <h4 id="loadTitle">Fetching Live Guidelines & Generating Diet Chart...</h4>
-          <p id="loadDesc">Connecting to GitHub for real-time ICMR-NIN reference search, matching contraindications, and building your diet plan...</p>
+          <h4 id="loadTitle">Analyzing Contraindications & Generating Diet...</h4>
+          <p id="loadDesc">Processing detected medicines against the ICMR-NIN 2024 gold standard guidelines to build your secure diet plan...</p>
         </div>
 
         <div id="error" class="panel-center" style="display:none;">
@@ -1199,15 +1199,15 @@ footer .inner{
     <div class="feature">
       <div class="feature-icon" style="background:#ecfdf5;color:#059669;" aria-hidden="true">⚖️</div>
       <div>
-        <h4>Doctor Calorie &amp; Drug Scaling</h4>
-        <p>Supports obesity pharmacopeia (Wegovy, Mounjaro, Orlistat) and scales every meal slot to prescribed calories.</p>
+        <h4>Doctor Calorie &amp; Web Scrape</h4>
+        <p>Supports live web scrape to detect real dosage uses (Wegovy, Metformin) and auto-scales meals based on conditions.</p>
       </div>
     </div>
     <div class="feature">
       <div class="feature-icon" style="background:#eef2ff;color:#4f46e5;" aria-hidden="true">🌾</div>
       <div>
-        <h4>Pure Mother-Tongue Output</h4>
-        <p>100% native script for food names, regional grains, vegetables, and seasonal fruits across Indian states (English, Bengali, Hindi).</p>
+        <h4>Fuzzy-Logic Handwriting Fix</h4>
+        <p>Solves poor doctor handwriting OCR by calculating Levenshtein distance on misread prescription brands.</p>
       </div>
     </div>
   </div>
@@ -1681,9 +1681,9 @@ footer .inner{
     verifiedMedicines.forEach(function (med, idx) {
       var p = document.createElement('span');
       p.className = 'med-pill';
-      var searchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(med + ' molecule uses');
+      var searchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(med + ' medicine uses and dosage');
       p.innerHTML = '💊 ' + escapeHtml(med) + 
-        ' <a href="' + searchUrl + '" target="_blank" rel="noopener" class="ext-link" title="Verify on Google">↗</a>' +
+        ' <a href="' + searchUrl + '" target="_blank" rel="noopener" class="ext-link" title="Verify on Web">↗</a>' +
         ' <span class="del" title="Remove" data-idx="' + idx + '">&times;</span>';
       medTags.appendChild(p);
     });
@@ -1770,7 +1770,7 @@ footer .inner{
     isScanComplete = false;
     updateGenerateButton();
     showScanWait();
-    toast('Scanning prescription & consulting medical dictionary...', '🔍');
+    toast('Scanning handwriting via Fuzzy Logic...', '🔍');
     window.Tesseract.recognize(imageDataUri, 'eng')
       .then(function (res) {
         if (res && res.data && res.data.text) {
@@ -1790,21 +1790,68 @@ footer .inner{
       });
   }
 
+  /* -------------------------------------------------------------
+     FUZZY LOGIC LEVENSHTEIN DISTANCE FOR MESSY HANDWRITING
+  ------------------------------------------------------------- */
+  function getLevenshteinDistance(a, b) {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+    var matrix = [];
+    for (var i = 0; i <= b.length; i++) matrix[i] = [i];
+    for (var j = 0; j <= a.length; j++) matrix[0][j] = j;
+    for (var i = 1; i <= b.length; i++) {
+      for (var j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // substitution
+            Math.min(matrix[i][j - 1] + 1, // insertion
+            matrix[i - 1][j] + 1)); // deletion
+        }
+      }
+    }
+    return matrix[b.length][a.length];
+  }
+
   function detectMedicinesFromText(txt) {
-    var lower = txt.toLowerCase();
+    var rawText = txt.toLowerCase();
+    // Split into readable alphanumeric chunks for fuzzy testing
+    var words = rawText.replace(/[^a-z0-9]/g, ' ').split(/\s+/);
+    var foundMeds = {};
+
     MEDICAL_DISEASE_DICTIONARY.forEach(function (dis) {
       dis.associatedMeds.forEach(function (medTerm) {
-        var pattern = new RegExp('\\b' + medTerm + '\\b', 'i');
-        if (pattern.test(lower)) {
-          var formattedName = medTerm.charAt(0).toUpperCase() + medTerm.slice(1);
-          addMedicine(formattedName);
+        var mLower = medTerm.toLowerCase();
+        
+        // 1. Direct Regex Exact Match (Fast)
+        var pattern = new RegExp('\\b' + mLower + '\\b', 'i');
+        if (pattern.test(rawText)) {
+          foundMeds[mLower] = true;
+        } else {
+          // 2. Fuzzy Matching for Handwritten Typos (e.g. "7elmisartan" for "telmisartan")
+          words.forEach(function(word) {
+            // Only fuzzy match words that are reasonably close in length to prevent false positives
+            if (word.length >= 4 && Math.abs(word.length - mLower.length) <= 2) {
+              var distance = getLevenshteinDistance(word, mLower);
+              // Threshold: Max 2 typo errors, or 3 if the medicine name is very long (>8 chars)
+              if (distance <= 2 || (mLower.length >= 8 && distance <= 3)) {
+                foundMeds[mLower] = true;
+              }
+            }
+          });
         }
       });
     });
+
+    for (var key in foundMeds) {
+      var formattedName = key.charAt(0).toUpperCase() + key.slice(1);
+      addMedicine(formattedName);
+    }
   }
 
   /* -------------------------------------------------------------
-     GOOGLE.COM BACKGROUND SEARCH LOGIC
+     WEB SCRAPING & GOOGLE SEARCH FALLBACK WITHOUT API KEYS
   ------------------------------------------------------------- */
   async function performGoogleBackgroundSearch() {
     if (verifiedMedicines.length === 0) return;
@@ -1825,45 +1872,69 @@ footer .inner{
         continue;
       }
 
-      resultDiv.innerHTML = '<div style="color:#64748b;font-size:0.7rem;display:flex;align-items:center;gap:0.3rem;"><span class="spinner" style="width:12px;height:12px;border-width:2px;margin:0;"></span> Searching Google.com for <strong>' + escapeHtml(medName) + '</strong>...</div>';
+      resultDiv.innerHTML = '<div style="color:#64748b;font-size:0.7rem;display:flex;align-items:center;gap:0.3rem;"><span class="spinner" style="width:12px;height:12px;border-width:2px;margin:0;"></span> Fetching live Web Search data for <strong>' + escapeHtml(medName) + '</strong>...</div>';
 
       try {
-        var query = encodeURIComponent(medName + ' drug');
-        var res = await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=' + query + '&format=json&origin=*');
-        var data = await res.json();
+        // Step 1: Use CORS-free DuckDuckGo Lite via AllOrigins to scrape real-world uses/dosage securely without keys
+        var ddgQuery = encodeURIComponent(medName + ' medicine uses and dosage');
+        var allOriginsUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://html.duckduckgo.com/html/?q=' + ddgQuery);
+        var searchSnippet = "";
         
-        var pages = data.query.pages;
-        var pageId = Object.keys(pages)[0];
-        var extract = pages[pageId].extract;
-        
-        if (!extract) {
-          var res2 = await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + query + '&format=json&origin=*');
-          var data2 = await res2.json();
-          if (data2.query.search.length > 0) {
-            var bestTitle = data2.query.search[0].title;
-            var res3 = await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=' + encodeURIComponent(bestTitle) + '&format=json&origin=*');
-            var data3 = await res3.json();
-            var pages3 = data3.query.pages;
-            var pageId3 = Object.keys(pages3)[0];
-            extract = pages3[pageId3].extract;
-          }
+        var ddgRes = await fetch(allOriginsUrl);
+        if(ddgRes.ok) {
+           var ddgData = await ddgRes.json();
+           var parser = new DOMParser();
+           var doc = parser.parseFromString(ddgData.contents, 'text/html');
+           var snippetNode = doc.querySelector('.result__snippet');
+           if(snippetNode) {
+               searchSnippet = snippetNode.textContent.trim();
+           }
         }
 
-        if (extract) {
-          var sentences = extract.split('. ');
-          var summary = sentences.slice(0, 2).join('. ') + '.';
-          var moleculeMatch = extract.match(/(?:is a|is an)\s+([^.]+(?:inhibitor|agonist|antagonist|blocker|diuretic|statin|antibiotic|analgesic|medication|drug)[^.]+)/i);
-          var moleculeInfo = moleculeMatch ? moleculeMatch[1] : 'See full analysis';
-          
-          var html = '<div class="google-res-title">' + escapeHtml(medName) + ' - Google.com Analysis</div>';
-          html += '<div class="google-res-meta">Class: ' + escapeHtml(moleculeInfo) + '</div>';
-          html += '<div class="google-res-desc">' + escapeHtml(summary) + '</div>';
-          
-          processedMedicinesCache[cacheKey] = html;
-          resultDiv.innerHTML = html;
-        } else {
-          throw new Error('No data');
+        // Step 2: Fetch official drug nomenclature and standard formulations from NIH RxTerms API (Public/No Key)
+        var dosageInfo = "Dosage follows standard physician prescription.";
+        try {
+           var rxTerms = await fetch('https://clinicaltables.nlm.nih.gov/api/rxterms/v3/search?terms=' + encodeURIComponent(medName) + '&ef=STRENGTHS_AND_FORMS');
+           var rxData = await rxTerms.json();
+           if (rxData[0] > 0 && rxData[2] && rxData[2].STRENGTHS_AND_FORMS) {
+               dosageInfo = "Common Market Dosages: " + rxData[2].STRENGTHS_AND_FORMS[0].slice(0, 3).join(', ');
+           }
+        } catch(e) { /* ignore rx failure */ }
+        
+        // Step 3: If DuckDuckGo failed, fallback to Wikipedia summaries
+        if (!searchSnippet || searchSnippet.length < 20) {
+            var wikiQuery = encodeURIComponent(medName + ' medication');
+            var res = await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=' + wikiQuery + '&format=json&origin=*');
+            var data = await res.json();
+            var pages = data.query.pages;
+            var pageId = Object.keys(pages)[0];
+            var extract = pages[pageId].extract;
+            
+            if (!extract || pageId === '-1') {
+              var res2 = await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + wikiQuery + '&format=json&origin=*');
+              var data2 = await res2.json();
+              if (data2.query.search.length > 0) {
+                var bestTitle = data2.query.search[0].title;
+                var res3 = await fetch('https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=' + encodeURIComponent(bestTitle) + '&format=json&origin=*');
+                var data3 = await res3.json();
+                var pages3 = data3.query.pages;
+                extract = pages3[Object.keys(pages3)[0]].extract;
+              }
+            }
+            if(extract) {
+                var sentences = extract.split('. ');
+                searchSnippet = sentences.slice(0, 2).join('. ') + '.';
+            } else {
+                throw new Error('No web data found');
+            }
         }
+        
+        var html = '<div class="google-res-title">' + escapeHtml(medName) + ' - Live Web Analysis</div>';
+        html += '<div class="google-res-meta"><strong>Information:</strong> ' + escapeHtml(searchSnippet) + '</div>';
+        html += '<div class="google-res-desc" style="color:#0f766e;font-weight:600;">' + escapeHtml(dosageInfo) + '</div>';
+        
+        processedMedicinesCache[cacheKey] = html;
+        resultDiv.innerHTML = html;
         
       } catch (err) {
         var localUse = "Used for specific clinical indication based on prescription.";
@@ -1873,15 +1944,15 @@ footer .inner{
           }
         });
         
-        var fallbackHtml = '<div class="google-res-title">' + escapeHtml(medName) + ' - Google.com Analysis</div>';
+        var fallbackHtml = '<div class="google-res-title">' + escapeHtml(medName) + ' - Local DB Analysis</div>';
         fallbackHtml += '<div class="google-res-meta">Status: Verified via Clinical Dictionary</div>';
-        fallbackHtml += '<div class="google-res-desc">' + escapeHtml(localUse) + '</div>';
+        fallbackHtml += '<div class="google-res-desc"><strong>Uses:</strong> ' + escapeHtml(localUse) + '<br><strong>Dosage:</strong> Strictly follow treating physician directives.</div>';
         
         processedMedicinesCache[cacheKey] = fallbackHtml;
         resultDiv.innerHTML = fallbackHtml;
       }
       
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, 200)); // anti-spam delay
     }
   }
 
@@ -1981,7 +2052,7 @@ footer .inner{
 
   /* SAMPLE WITH CHRONIC KIDNEY DISEASE (CKD Stage 3) & DIABETES */
   on(demoBtn, 'click', function () {
-    toast('Generating CKD Stage 3 clinical prescription with elevated creatinine...', '📝');
+    toast('Generating CKD Stage 3 clinical prescription with messy handwriting simulation...', '📝');
     var c = document.createElement('canvas');
     c.width = 850; c.height = 1150;
     var ctx = c.getContext('2d');
@@ -2026,11 +2097,11 @@ footer .inner{
 
     ctx.fillStyle = '#0d9488'; ctx.font = 'bold 36px serif';
     ctx.fillText('\u211E', 40, 550);
-    ctx.fillStyle = '#1e293b'; ctx.font = 'bold 15px sans-serif';
-    ctx.fillText('1. Tab. Torsemide 10 mg - Morning after breakfast', 65, 590);
-    ctx.fillText('2. Tab. Telmisartan 40 mg - Morning after breakfast', 65, 630);
-    ctx.fillText('3. Tab. Febuxostat 40 mg - Once daily afternoon', 65, 670);
-    ctx.fillText('4. Tab. Metformin 500 mg - Twice daily after meals', 65, 710);
+    ctx.fillStyle = '#1e293b'; ctx.font = 'italic 16px cursive'; // Simulating handwriting
+    ctx.fillText('1. Tab. Torsenid 10 mg - Morning after breakfast', 65, 590); // intentional typo for Fuzzy Logic to catch
+    ctx.fillText('2. Tab. Telmizartn 40 mg - Morning after breakfast', 65, 630);
+    ctx.fillText('3. Tab. Fcbuxostat 40 mg - Once daily afternoon', 65, 670);
+    ctx.fillText('4. Tab. Melfornin 500 mg - Twice daily after meals', 65, 710);
 
     ctx.fillStyle = '#9f1239'; ctx.font = 'bold 15px sans-serif';
     ctx.fillText('CRITICAL RENAL DIETARY DIRECTIVES:', 40, 770);
@@ -2060,10 +2131,11 @@ footer .inner{
     fsize.textContent = fmtBytes(currentFileSize);
     showPreviewCard();
 
-    verifiedMedicines = ["Torsemide 10mg", "Telmisartan 40mg", "Febuxostat 40mg", "Metformin 500mg"];
-    renderMedPills();
-
-    extractedOcrText = 'Ramesh Chandra Pal 58 Yrs Serum Creatinine: 2.1 mg/dL BP: 146/92 mmHg Fasting Blood Sugar FBS: 142 mg/dL Serum Uric Acid: 7.8 mg/dL eGFR 34 mL/min Dx: Chronic Kidney Disease CKD Stage 3, Diabetic Nephropathy, Essential Hypertension, Hyperuricemia Tab Torsemide 10mg Tab Telmisartan 40mg Tab Febuxostat 40mg Tab Metformin 500mg Strict fluid restriction 1000 mL/day No milk No coconut water';
+    // Note the simulated messy handwriting text for OCR text substitution (Torsenid instead of Torsemide, etc)
+    extractedOcrText = 'Ramesh Chandra Pal 58 Yrs Serum Creatinine: 2.1 mg/dL BP: 146/92 mmHg Fasting Blood Sugar FBS: 142 mg/dL Serum Uric Acid: 7.8 mg/dL eGFR 34 mL/min Dx: Chronic Kidney Disease CKD Stage 3, Diabetic Nephropathy, Essential Hypertension, Hyperuricemia Tab Torsenid 10mg Tab Telmizartn 40mg Tab Fcbuxostat 40mg Tab Melfornin 500mg Strict fluid restriction 1000 mL/day No milk No coconut water';
+    
+    // Pass it directly to fuzzy matching engine
+    detectMedicinesFromText(extractedOcrText);
 
     regionSel.value = 'Eastern India'; updateStates();
     stateSel.value = 'West Bengal';
@@ -2075,7 +2147,7 @@ footer .inner{
     isScanning = false;
     isScanComplete = true;
     updateGenerateButton();
-    toast('Sample loaded: CKD Stage 3 with strict fluid & electrolyte restriction! Click Generate.', '✨', 4500);
+    toast('Sample scanned! Fuzzy-Logic auto-corrected the handwritten typos. Click Generate.', '✨', 4500);
   });
 
   function parseAllLabReports(text) {
@@ -2798,7 +2870,7 @@ footer .inner{
     html += '</div>';
 
     if (verifiedMedicines.length > 0) {
-      html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications (via Google.com &amp; Drugs.com):</strong> ' + escapeHtml(verifiedMedicines.join(', ')) + '</p>';
+      html += '<p style="font-size:12px;color:#475569;margin-bottom:1rem;"><strong>Verified Prescription Medications:</strong> ' + escapeHtml(verifiedMedicines.join(', ')) + '</p>';
     }
 
     html += '<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:.75rem;padding:1rem;margin:1rem 0;">';
@@ -2939,13 +3011,6 @@ footer .inner{
         }
       }
     });
-
-    // Log the findings to console for verification (not displayed in UI)
-    if (foundParagraphs.length > 0) {
-      console.log("Live Guidelines Search Results (from GitHub PDFs):", foundParagraphs);
-    } else {
-      console.log("Live Guidelines Search: No specific matches found in the first 15 pages of the PDFs.");
-    }
 
     return foundParagraphs.slice(0, 5);
   }
